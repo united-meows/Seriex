@@ -4,6 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import pisi.unitedmeows.seriex.command.Command;
+import pisi.unitedmeows.seriex.command.CommandSystem;
 import pisi.unitedmeows.seriex.config.DatabaseDataProvider;
 import pisi.unitedmeows.seriex.config.IDataProvider;
 import pisi.unitedmeows.seriex.config.StelixDataProvider;
@@ -21,6 +23,8 @@ public class Seriex extends JavaPlugin {
 
 	private IDataProvider dataProvider;
 
+	/* main command system */
+	private CommandSystem commandSystem;
 
 	private static HashMap<Player, PlayerW> playerWrapperMap = new HashMap<>();
 
@@ -28,6 +32,9 @@ public class Seriex extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		_self = this;
+
+		/* creates the command system */
+		commandSystem = new CommandSystem();
 
 		/* create the provider */
 		dataProvider = setupDataProvider();
@@ -37,6 +44,17 @@ public class Seriex extends JavaPlugin {
 		{
 			Bukkit.getServer().getPluginManager().registerEvents(new SeriexRawListener(), this);
 		}
+
+		/* commands */
+		{
+			Command.create("cat", "kedi", "deneme").inputs("var1", "var2").onRun(executeInfo -> {
+				executeInfo.playerW().getHooked().sendRawMessage("Command has executed");
+				final String var1 = executeInfo.arguments().get("var1");
+				final String var2 = executeInfo.arguments().get("var2");
+				executeInfo.playerW().getHooked().sendRawMessage(var1 + " " + var2);
+			});
+		}
+
 
 		/* log the provider that plugin going to use to server cmd */
 		if (dataProvider instanceof StelixDataProvider) {
@@ -62,6 +80,10 @@ public class Seriex extends JavaPlugin {
 
 	public IDataProvider dataProvider() {
 		return dataProvider;
+	}
+
+	public CommandSystem commandSystem() {
+		return commandSystem;
 	}
 
 	protected static IDataProvider setupDataProvider() {

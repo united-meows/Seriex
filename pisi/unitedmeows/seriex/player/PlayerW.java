@@ -41,6 +41,10 @@ public class PlayerW extends HookClass<Player> {
 	}
 
 
+	@Override
+	public Player getHooked() {
+		return super.getHooked();
+	}
 
 	public void onJoin() { }
 	public void onLeave() { }
