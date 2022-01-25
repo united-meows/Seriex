@@ -24,13 +24,11 @@ public class PlayerW extends HookClass<Player> {
 			playerConfig = new PlayerConfig();
 			playerConfig.username = hooked.getName();
 			playerConfig.token = CoID.generate().toString();
-			System.out.println("creating the config");
+
 			try {
 				MessageDigest digest = MessageDigest.getInstance("SHA-1");
 				digest.update(hooked.getAddress().getAddress().getHostAddress().getBytes(StandardCharsets.UTF_8));
-				byte[] digestBytes = digest.digest();
-				String digestStr = javax.xml.bind.DatatypeConverter.printHexBinary(digestBytes);
-				playerConfig.address = digestStr;
+				playerConfig.address = javax.xml.bind.DatatypeConverter.printHexBinary(digest.digest());
 			} catch (Exception ex) {
 				playerConfig.address = "unknown";
 			}

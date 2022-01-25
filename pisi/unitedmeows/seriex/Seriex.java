@@ -6,13 +6,20 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.command.CommandSystem;
+import pisi.unitedmeows.seriex.config.ConfigManager;
 import pisi.unitedmeows.seriex.config.DatabaseDataProvider;
 import pisi.unitedmeows.seriex.config.IDataProvider;
 import pisi.unitedmeows.seriex.config.StelixDataProvider;
+import pisi.unitedmeows.seriex.config.impl.ServerConfig;
+import pisi.unitedmeows.seriex.config.impl.WorldConfigs;
 import pisi.unitedmeows.seriex.listener.SeriexRawListener;
 import pisi.unitedmeows.seriex.player.PlayerW;
+import pisi.unitedmeows.yystal.file.YFile;
 import pisi.unitedmeows.yystal.sql.YDatabaseClient;
+import stelix.xfile.reader.SxfReader;
+import stelix.xfile.writer.SxfWriter;
 
+import java.io.File;
 import java.util.HashMap;
 
 public class Seriex extends JavaPlugin {
@@ -20,18 +27,41 @@ public class Seriex extends JavaPlugin {
 	/* instance of the seriex */
 	public static Seriex _self;
 
-
 	private IDataProvider dataProvider;
 
 	/* main command system */
 	private CommandSystem commandSystem;
 
+	/* player wrapper map */
 	private static HashMap<Player, PlayerW> playerWrapperMap = new HashMap<>();
 
+	/* server config */
+	private ServerConfig serverConfig;
+
+	/* world configs */
+	private WorldConfigs worldConfigs;
 
 	@Override
 	public void onEnable() {
 		_self = this;
+
+		/* load server config */
+		{
+			if (!ConfigManager.serverConfig().exists()) {
+				serverConfig = new ServerConfig();
+
+				SxfWriter sxfWriter = new SxfWriter();
+				sxfWriter.setWriteType(SxfWriter.WriteType.MULTI_LINE);
+				sxfWriter.writeClassToFile(serverConfig, ConfigManager.serverConfig());
+			} else {
+				serverConfig = SxfReader.readObject(ServerConfig.class,
+						new YFile(ConfigManager.serverConfig()).readAllText());
+			}
+		}
+
+		/* worldConfigs */
+		worldConfigs = new WorldConfigs();
+
 
 		/* creates the command system */
 		commandSystem = new CommandSystem();
@@ -67,6 +97,10 @@ public class Seriex extends JavaPlugin {
 
 	}
 
+	@Override
+	public void onDisable() {
+		worldConfigs.save();
+	}
 
 	public static PlayerW playerw(Player player) {
 		return playerWrapperMap.computeIfAbsent(player, (k) ->
@@ -84,6 +118,10 @@ public class Seriex extends JavaPlugin {
 
 	public CommandSystem commandSystem() {
 		return commandSystem;
+	}
+
+	public ServerConfig serverConfig() {
+		return serverConfig;
 	}
 
 	protected static IDataProvider setupDataProvider() {

@@ -1,0 +1,2 @@
+create a logger
+    only log when serverConfig log is true
