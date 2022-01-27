@@ -62,7 +62,6 @@ public class Seriex extends JavaPlugin {
 		/* worldConfigs */
 		worldConfigs = new WorldConfigs();
 
-
 		/* creates the command system */
 		commandSystem = new CommandSystem();
 

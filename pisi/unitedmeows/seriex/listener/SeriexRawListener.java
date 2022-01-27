@@ -5,6 +5,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.player.PlayerW;
@@ -22,6 +23,11 @@ public class SeriexRawListener implements Listener {
 		PlayerW playerW = Seriex.removePlayerW(event.getPlayer());
 		if (playerW != null)
 			playerW.onLeave();
+	}
+
+	@EventHandler
+	public void onMove(PlayerMoveEvent event) {
+		Seriex.playerw(event.getPlayer()).onMove(event);
 	}
 
 
