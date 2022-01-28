@@ -1,11 +1,15 @@
 package pisi.unitedmeows.seriex.player.addons.impl;
 
+import net.minecraft.server.v1_8_R3.PacketPlayOutEntityDestroy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.player.PlayerMoveEvent;
+import pisi.unitedmeows.eventapi.event.listener.Listener;
+import pisi.unitedmeows.pispigot.events.EventPlayerMotion;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.player.PlayerW;
 import pisi.unitedmeows.seriex.player.addons.PlayerAddon;
@@ -25,6 +29,7 @@ public class InfoTagAddon extends PlayerAddon {
 	@Override
 	public void onActivated() {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Seriex._self, () -> add("hello world :D"), 40);
+		Bukkit.getScheduler().scheduleSyncDelayedTask(Seriex._self, () -> add(":DDDDDD"), 60);
 	}
 
 	@Override
@@ -36,14 +41,18 @@ public class InfoTagAddon extends PlayerAddon {
 	public void add(String line) {
 		InfoLine infoLine = new InfoLine(this);
 		infoLine.createLine(line, playerW().getHooked().getWorld());
+		if (lines.size() > 0) {
+			lines.get(lines.size() - 1).entity.setPassenger(infoLine.entity);
+		} else {
+			playerW().getHooked().setPassenger(infoLine.entity);
+		}
 		lines.add(infoLine);
 	}
 
-	@Override
-	public void onMove(PlayerMoveEvent event) {
-		if (!event.isCancelled())
-			lines.forEach(x->x.teleport(event.getTo().clone().add(0, 0.7, 0)));
-	}
+
+	public Listener<EventPlayerMotion> playerMotionListener = new Listener<EventPlayerMotion>(event -> {
+		System.out.println(event.player().getDisplayName() + " " + + event.from().getX() + " " +  event.to().getX());
+	});
 
 	protected static class InfoLine {
 		private ArmorStand entity;
@@ -55,12 +64,17 @@ public class InfoTagAddon extends PlayerAddon {
 
 		public void createLine(String line, World world) {
 			entity = world.spawn(owner.playerW().getHooked().getLocation(), ArmorStand.class);
+			entity.setSmall(true);
 			entity.setVisible(false);
 			entity.setRemoveWhenFarAway(true);
 			entity.setGravity(false);
 			entity.setCustomNameVisible(true);
 
 			entity.setCustomName(line);
+
+
+			PacketPlayOutEntityDestroy destroy = new PacketPlayOutEntityDestroy(entity.getEntityId());
+			((CraftPlayer)owner.playerW().getHooked()).getHandle().playerConnection.sendPacket(destroy);
 		}
 
 		public void remove() {

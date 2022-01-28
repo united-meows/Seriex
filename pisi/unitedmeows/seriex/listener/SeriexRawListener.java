@@ -25,11 +25,6 @@ public class SeriexRawListener implements Listener {
 			playerW.onLeave();
 	}
 
-	@EventHandler
-	public void onMove(PlayerMoveEvent event) {
-		Seriex.playerw(event.getPlayer()).onMove(event);
-	}
-
 
 	@EventHandler
 	public void onAsyncChat(AsyncPlayerChatEvent event) {

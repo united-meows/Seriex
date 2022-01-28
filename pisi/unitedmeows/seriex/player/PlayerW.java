@@ -1,7 +1,8 @@
 package pisi.unitedmeows.seriex.player;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerMoveEvent;
+import pisi.unitedmeows.eventapi.system.BasicEventSystem;
+import pisi.unitedmeows.pispigot.Pispigot;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.config.impl.PlayerConfig;
 import pisi.unitedmeows.seriex.player.addons.PlayerAddon;
@@ -17,13 +18,17 @@ public class PlayerW extends HookClass<Player> {
 
 	private PlayerConfig playerConfig;
 	private HashMap<Class<? extends PlayerAddon>, PlayerAddon> addons;
+	private BasicEventSystem eventSystem;
 
 	public PlayerW(Player _player) {
 		hooked = _player;
 
+		/* get player's event system */
+		eventSystem = Pispigot.eventSystem(hooked);
+
 		/* addons */
 		addons = new HashMap<>();
-		addAddon(new InfoTagAddon(this));
+		registerAddon(new InfoTagAddon(this));
 
 		/* tries to retrieve the player config */
 		playerConfig = Seriex._self.dataProvider().playerConfig(hooked.getName());
@@ -46,10 +51,10 @@ public class PlayerW extends HookClass<Player> {
 		}
 	}
 
-	public void addAddon(PlayerAddon addon) {
-		System.out.println(":DDDDDDDDDDDDDDDDDd");
+	public void registerAddon(PlayerAddon addon) {
 		addons.put(addon.getClass(), addon);
 		addon.onActivated();
+		eventSystem.subscribeAll(addon);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -60,15 +65,12 @@ public class PlayerW extends HookClass<Player> {
 
 	public PlayerAddon removeAddon(Class<? extends PlayerAddon> addon) {
 		PlayerAddon instance = addons.remove(addon);
-		if (instance != null)
+		if (instance != null) {
+			eventSystem.unsubscribeAll(instance);
 			instance.onDisabled();
+		}
 
 		return instance;
-	}
-
-
-	public void onMove(PlayerMoveEvent event) {
-		addons.values().forEach(x -> x.onMove(event));
 	}
 
 

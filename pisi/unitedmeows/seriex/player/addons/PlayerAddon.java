@@ -17,7 +17,4 @@ public abstract class PlayerAddon {
 	public PlayerW playerW() {
 		return playerW;
 	}
-
-	public void onMove(PlayerMoveEvent event) { }
-
 }
