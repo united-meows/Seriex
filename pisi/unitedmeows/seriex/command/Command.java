@@ -1,6 +1,5 @@
 package pisi.unitedmeows.seriex.command;
 
-import org.bukkit.entity.Player;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.player.PlayerW;
 
@@ -9,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.DoubleFunction;
 import java.util.function.Function;
 
 public class Command {
