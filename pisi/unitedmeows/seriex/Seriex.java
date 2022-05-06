@@ -1,120 +1,159 @@
 package pisi.unitedmeows.seriex;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
+import static java.lang.System.*;
+import static java.lang.Thread.*;
+import static java.util.Optional.*;
+import static org.bukkit.Bukkit.*;
+import static pisi.unitedmeows.seriex.util.timings.TimingsCalculator.*;
+import static pisi.unitedmeows.yystal.parallel.Async.*;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import java.io.File;
+import java.util.*;
+
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import pisi.unitedmeows.seriex.command.Command;
-import pisi.unitedmeows.seriex.command.CommandSystem;
-import pisi.unitedmeows.seriex.config.ConfigManager;
-import pisi.unitedmeows.seriex.config.DatabaseDataProvider;
-import pisi.unitedmeows.seriex.config.IDataProvider;
-import pisi.unitedmeows.seriex.config.StelixDataProvider;
-import pisi.unitedmeows.seriex.config.impl.ServerConfig;
-import pisi.unitedmeows.seriex.config.impl.WorldConfigs;
-import pisi.unitedmeows.seriex.listener.SeriexRawListener;
-import pisi.unitedmeows.seriex.player.PlayerW;
-import pisi.unitedmeows.seriex.util.BasicLogger;
-import pisi.unitedmeows.yystal.file.YFile;
-import pisi.unitedmeows.yystal.sql.YDatabaseClient;
-import stelix.xfile.reader.SxfReader;
-import stelix.xfile.writer.SxfWriter;
+import com.electronwill.nightconfig.core.CommentedConfig;
+import com.electronwill.nightconfig.core.file.FormatDetector;
+import com.electronwill.nightconfig.core.io.WritingMode;
+import com.electronwill.nightconfig.toml.TomlFormat;
+import com.electronwill.nightconfig.toml.TomlWriter;
+
+import pisi.unitedmeows.seriex.anticheat.Anticheat;
+import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
+import pisi.unitedmeows.seriex.managers.data.DataManager;
+import pisi.unitedmeows.seriex.managers.future.FutureManager;
+import pisi.unitedmeows.seriex.util.ICleanup;
+import pisi.unitedmeows.seriex.util.config.FileManager;
+import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
+import pisi.unitedmeows.seriex.util.lists.GlueList;
+import pisi.unitedmeows.seriex.util.logging.SLogger;
+import pisi.unitedmeows.seriex.util.yystal.FixedTaskPool;
+import pisi.unitedmeows.yystal.YYStal;
 
 public class Seriex extends JavaPlugin {
-	/* instance of the seriex */
-	public static Seriex _self;
-	private IDataProvider dataProvider;
-	/* main command system */
-	private CommandSystem commandSystem;
-	/* player wrapper map */
-	private static HashMap<Player, PlayerW> playerWrapperMap = new HashMap<>();
-	/* server config */
-	private ServerConfig serverConfig;
-	/* world configs */
-	private WorldConfigs worldConfigs;
-	private final BasicLogger logger = new BasicLogger(getClass());
+	private static Optional<Seriex> instance_;
+	private static FileManager fileManager;
+	private static DataManager dataManager;
+	private static FutureManager futureManager;
+	private static List<ICleanup> cleanupabbleObjects = new GlueList<>();
+	private SLogger logger = new SLogger(getClass());
+	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here so it can work async :D
+	private static boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
+	private Thread primaryThread;
+	public String suffix = colorizeString("&7[&dSer&5iex&7]"); // TODO get this from server-config
+	public String ghostsDiscord = colorizeString("&dfemboy ghost&8#&72173");  // TODO get this from server-config
 
 	@Override
 	public void onEnable() {
-		_self = this;
-		/* load server config */
-		{
-			if (!ConfigManager.serverConfig().exists()) {
-				serverConfig = new ServerConfig();
-				final SxfWriter sxfWriter = new SxfWriter();
-				sxfWriter.setWriteType(SxfWriter.WriteType.MULTI_LINE);
-				sxfWriter.writeClassToFile(serverConfig, ConfigManager.serverConfig());
-			} else {
-				serverConfig = SxfReader.readObject(ServerConfig.class,
-							new YFile(ConfigManager.serverConfig()).readAllText());
+		loadedCorrectly = true;
+		try {
+			instance_ = of(this);
+			logger().info("Starting seriex...");
+			primaryThread = currentThread();
+			YYStal.setCurrentPool(new FixedTaskPool(3, 15));
+			managers: {
+				setProperty("nightconfig.preserveInsertionOrder", "true");
+				FormatDetector.registerExtension("seriex", TomlFormat.instance());
+				GET.benchmark(temp -> {
+					logger().info("Loading Managers...");
+					cleanupabbleObjects.add(fileManager = new FileManager(getDataFolder()));
+					cleanupabbleObjects.add(dataManager = new DataManager());
+					cleanupabbleObjects.add(futureManager = new FutureManager()); // this should be always last!
+				}, "Managers");
+			}
+			async_stuff: {
+				// 🤞 🤞 🤞 🤞 🤞
+				logger().info("Starting threads...");
+				async_loop(futureManager::updateFutures, 1);
+			}
+			listeners: {
+				logger().info("Registering listeners...");
+				getPluginManager().registerEvents(new SeriexSpigotListener(), this);
 			}
 		}
-		/* worldConfigs */
-		worldConfigs = new WorldConfigs();
-		/* creates the command system */
-		commandSystem = new CommandSystem();
-		/* create the provider */
-		dataProvider = setupDataProvider();
-		/* listeners */
-		{
-			Bukkit.getServer().getPluginManager().registerEvents(new SeriexRawListener(), this);
+		catch (Exception e) {
+			loadedCorrectly = false;
+			e.printStackTrace();
 		}
-		/* commands */
-		{
-			Command.create("cat", "kedi", "deneme").inputs("var1", "var2").onRun(executeInfo -> {
-				executeInfo.playerW().getHooked().sendRawMessage("Command has executed");
-				final String var1 = executeInfo.arguments().get("var1");
-				final String var2 = executeInfo.arguments().get("var2");
-				executeInfo.playerW().getHooked().sendRawMessage(var1 + " " + var2);
-			});
-		}
-		/* log the provider that plugin going to use to server cmd */
-		if (dataProvider instanceof StelixDataProvider) {
-			logger.fatal(ChatColor.RED + "Couldn't connect to database. Using config files instead.");
-		} else {
-			logger.info(ChatColor.GREEN + "Database connection successful.");
-		}
+		super.onEnable();
 	}
 
 	@Override
-	public void onDisable() { worldConfigs.save(); }
-
-	public static PlayerW playerw(final Player player) {
-		return playerWrapperMap.computeIfAbsent(player, k -> new PlayerW(player));
-	}
-
-	public static PlayerW removePlayerW(final Player player) {
-		return playerWrapperMap.remove(player);
-	}
-
-	public IDataProvider dataProvider() { return dataProvider; }
-
-	public CommandSystem commandSystem() { return commandSystem; }
-
-	public BasicLogger logger() { return logger; }
-
-	public ServerConfig serverConfig() { return serverConfig; }
-
-	protected static IDataProvider setupDataProvider() {
-		try {
-			/* connect the database */
-			final YDatabaseClient yDatabaseClient = new YDatabaseClient("root", "12345", "seriex",
-						"localhost");
-			/* if connection is successful return the provider */
-			// using reflection because i dont have latest yystal :DD:DD:D
-			// TODO -> update yystal so we can use connected() from YDatabaseClient instead of reflection
-			final Field field = yDatabaseClient.getClass().getDeclaredField("connected");
-			field.setAccessible(true);
-			final boolean connected = field.getBoolean(field);
-			if (connected) return new DatabaseDataProvider(yDatabaseClient);
-		} catch (final Exception exception) {
-			exception.printStackTrace();
+	public void onDisable() {
+		// maybe this is slower than using a for loop for the getOnlinePlayers collection
+		List<Player> tempPlayers = new GlueList<>(getOnlinePlayers());
+		for (int i = 0; i < tempPlayers.size(); i++) {
+			Player player = tempPlayers.get(i);
+			player.kickPlayer(suffix + "\n" + "Restarting the server...");
 		}
-		/* if db connection failed return config file provider */
-		return new StelixDataProvider();
+		for (int i = 0; i < cleanupabbleObjects.size(); i++) {
+			ICleanup cleanup = cleanupabbleObjects.get(i);
+			cleanup.cleanup();
+		}
+		dataManager = null;
+		anticheats = null;
+		fileManager = null;
+		futureManager = null;
+		instance_ = Optional.empty(); // this should be last.
+		super.onDisable();
+	}
+
+	public static Seriex get() {
+		return instance_.orElseThrow(() -> new SeriexException("Seriex has not been loaded correctly!"));
+	}
+
+	public static void main(String... args) throws Exception {
+		CommentedConfig config = CommentedConfig.inMemoryConcurrent();
+		setProperty("nightconfig.preserveInsertionOrder", "true");
+		List<String> adresses = new ArrayList<>();
+		for (int i = 10; i > 0; i--) {
+			Random r = new Random();
+			String randomIP = r.nextInt(256) + "." + r.nextInt(256) + "." + r.nextInt(256) + "." + r.nextInt(256);
+			adresses.add(randomIP);
+		}
+		config.set("general.alo", adresses);
+		System.out.println("Config: " + config);
+		List<String> object = config.get("general.alo");
+		object.forEach(System.out::println);
+		//		System.out.println("alo: " + object);
+		//		List<String> ips = getIPsAsList(config.get("general.alo"));
+		//		ips.forEach(System.out::println);
+		File configFile = new File("commentedConfig.toml");
+		TomlWriter writer = new TomlWriter();
+		writer.write(config, configFile, WritingMode.REPLACE);
+	}
+
+	enum kek {
+		ataturk,
+		hihiha
+	}
+
+	public Thread primaryThread() {
+		return primaryThread;
+	}
+
+	public SLogger logger() {
+		return logger;
+	}
+
+	public FutureManager futureManager() {
+		return futureManager;
+	}
+
+	public DataManager dataManager() {
+		return dataManager;
+	}
+
+	public FileManager fileManager() {
+		return fileManager;
+	}
+
+	public String colorizeString(String input) {
+		return input.replace('&', '\u00A7');
+	}
+
+	public Set<Anticheat> antiCheats() {
+		return new HashSet<>(anticheats);
 	}
 }
