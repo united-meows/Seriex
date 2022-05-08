@@ -20,6 +20,8 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import com.electronwill.nightconfig.toml.TomlWriter;
 
 import pisi.unitedmeows.seriex.anticheat.Anticheat;
+import pisi.unitedmeows.seriex.command.Command;
+import pisi.unitedmeows.seriex.command.CommandSystem;
 import pisi.unitedmeows.seriex.database.SeriexDB;
 import pisi.unitedmeows.seriex.database.structs.StructPlayerW;
 import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
@@ -36,6 +38,7 @@ import pisi.unitedmeows.yystal.sql.YSQLCommand;
 import pisi.unitedmeows.yystal.utils.CoID;
 
 public class Seriex extends JavaPlugin {
+
 	private static Optional<Seriex> instance_;
 	private static FileManager fileManager;
 	private static DataManager dataManager;
@@ -48,11 +51,16 @@ public class Seriex extends JavaPlugin {
 	public String suffix = colorizeString("&7[&dSer&5iex&7]"); // TODO get this from server-config
 	public String ghostsDiscord = colorizeString("&dfemboy ghost&8#&72173");  // TODO get this from server-config
 
+	/* Command System */
+	private CommandSystem commandSystem;
+
 	private SeriexDB database = new SeriexDB("seriex", "seriexdb123", "seriex",
-			"79.110.234.147"); // make the ip something like (db.seriex.software)
+			"79.110.234.147"); //TODO: get this values from a config file
 
 	@Override
 	public void onEnable() {
+		//TODO: for supporting /reload command we should register all online players at onEnable
+
 		loadedCorrectly = true;
 		try {
 			instance_ = of(this);
@@ -83,6 +91,27 @@ public class Seriex extends JavaPlugin {
 			loadedCorrectly = false;
 			e.printStackTrace();
 		}
+
+
+
+		/* maybe make similar thing for small areas like */
+		/* Area.create(x, y, z, x1, y2, z3).(p ->
+		{
+			p.heal(5)
+		}) ;
+		 regenerates heal when player is inside (runs on every tick)
+		 and events like onEnter() onLeave()
+		 */
+		/* commands */
+		/* :DDD don't delete this @ghost */
+		{
+			Command.create("cat", "kedi", "deneme").inputs("var1", "var2").onRun(executeInfo -> {
+				executeInfo.playerW().getHooked().sendRawMessage("Command has executed");
+				final String var1 = executeInfo.arguments().get("var1");
+				final String var2 = executeInfo.arguments().get("var2");
+				executeInfo.playerW().getHooked().sendRawMessage(var1 + " " + var2);
+			});
+		}
 		super.onEnable();
 	}
 
@@ -111,7 +140,6 @@ public class Seriex extends JavaPlugin {
 	}
 
 	public static void main(String... args) throws Exception {
-		System.out.println(CoID.generate());
 		SeriexDB seriexDB = new SeriexDB("seriex", "seriexdb123", "seriex",
 				"79.110.234.147");
 
@@ -150,5 +178,9 @@ public class Seriex extends JavaPlugin {
 
 	public SeriexDB database() {
 		return database;
+	}
+
+	public CommandSystem commandSystem() {
+		return commandSystem;
 	}
 }

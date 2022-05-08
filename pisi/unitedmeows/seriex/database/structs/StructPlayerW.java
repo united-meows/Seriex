@@ -13,8 +13,6 @@ public class StructPlayerW {
     public String last_ip;
     public int api_access;
 
-    public boolean isNew = true;
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("StructPlayerW{");
@@ -25,7 +23,6 @@ public class StructPlayerW {
         sb.append(", last_online=").append(last_online);
         sb.append(", last_ip='").append(last_ip).append('\'');
         sb.append(", api_access=").append(api_access);
-        sb.append(", isNew=").append(isNew);
         sb.append('}');
         return sb.toString();
     }
