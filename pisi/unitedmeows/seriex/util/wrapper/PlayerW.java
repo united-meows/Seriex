@@ -1,11 +1,5 @@
 package pisi.unitedmeows.seriex.util.wrapper;
 
-import static java.nio.charset.StandardCharsets.*;
-
-import java.util.*;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
@@ -15,45 +9,40 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import pisi.unitedmeows.seriex.Seriex;
-import pisi.unitedmeows.seriex.database.structs.StructPlayerSettings;
-import pisi.unitedmeows.seriex.database.structs.StructPlayerW;
+import pisi.unitedmeows.seriex.database.structs.impl.StructPlayerSettings;
+import pisi.unitedmeows.seriex.database.structs.impl.StructPlayer;
 import pisi.unitedmeows.seriex.util.MaintainersUtil;
 import pisi.unitedmeows.yystal.clazz.HookClass;
 import pisi.unitedmeows.yystal.utils.CoID;
 
 public class PlayerW extends HookClass<Player> {
-
-	private final StructPlayerW playerInfo;
+	private final StructPlayer playerInfo;
 	private StructPlayerSettings playerSettings;
 
 	public PlayerW(final Player _player) {
 		hooked = _player;
 		final String name = hooked.getName();
-
 		/* TODO: create player database values on VERIFY */
 		/* ^^ ghost :DDD */
 		playerInfo = Seriex.get().database().getPlayerW(_player.getName());
-
 		/*TODO: maybe do this check on login event and pass the playerInfo on constructor? */
 		if (playerInfo == null) {
 			Seriex.get().logger().warn("Database values of player %s was missing! (maybe not verified?)", name);
 			_player.kickPlayer(ChatColor.YELLOW + "Please verify :DDDD or your db values are corrupted" /* @ghost make this cool */);
-			return;
 		}
-
 		/* tries to retrieve player's settings if not exists creates new one */
-		playerSettings = Seriex.get().database().getPlayerSetting(playerInfo.player_id);
-		if (playerSettings == null) {
-			Seriex.get().logger().warn("The player %s does not have Settings row on database (maybe first login?)", name);
-			playerSettings = new StructPlayerSettings();
-			playerSettings.player_id = playerInfo.player_id;
-			Seriex.get().database().createPlayerSettings(playerSettings);
-		}
+		//		playerSettings = Seriex.get().database().getPlayerSetting(playerInfo.player_id);
+		//		if (playerSettings == null) {
+		//			Seriex.get().logger().warn("The player %s does not have Settings row on database (maybe first login?)", name);
+		//			playerSettings = new StructPlayerSettings();
+		//			playerSettings.player_id = playerInfo.player_id;
+		//			Seriex.get().database().createPlayerSettings(playerSettings);
+		//		}
 	}
 
 	private String generateUserToken(final String name) {
-//		final byte[] bytes = UUID.nameUUIDFromBytes(name.getBytes(UTF_8)).toString().getBytes(UTF_8);
-//		return "2173" + DigestUtils.sha256Hex(bytes);
+		//		final byte[] bytes = UUID.nameUUIDFromBytes(name.getBytes(UTF_8)).toString().getBytes(UTF_8);
+		//		return "2173" + DigestUtils.sha256Hex(bytes);
 		return CoID.generate().toString(); /* :D */
 	}
 
@@ -99,10 +88,8 @@ public class PlayerW extends HookClass<Player> {
 	}
 
 	public String getIp() {
-		if (MaintainersUtil.isMaintainer(hooked.getName())) {
-			// ...
+		if (MaintainersUtil.isMaintainer(hooked.getName())) // ...
 			return hooked.getUniqueId().hashCode() + ".0.0.0";
-		}
 		return hooked.getAddress().getHostName();
 	}
 

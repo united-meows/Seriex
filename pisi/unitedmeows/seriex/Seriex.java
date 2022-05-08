@@ -7,23 +7,22 @@ import static org.bukkit.Bukkit.*;
 import static pisi.unitedmeows.seriex.util.timings.TimingsCalculator.*;
 import static pisi.unitedmeows.yystal.parallel.Async.*;
 
-import java.io.File;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.FormatDetector;
-import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.toml.TomlFormat;
-import com.electronwill.nightconfig.toml.TomlWriter;
 
 import pisi.unitedmeows.seriex.anticheat.Anticheat;
 import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.command.CommandSystem;
 import pisi.unitedmeows.seriex.database.SeriexDB;
-import pisi.unitedmeows.seriex.database.structs.StructPlayerW;
+import pisi.unitedmeows.seriex.database.structs.impl.StructPlayer;
 import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
 import pisi.unitedmeows.seriex.managers.data.DataManager;
 import pisi.unitedmeows.seriex.managers.future.FutureManager;
@@ -34,15 +33,14 @@ import pisi.unitedmeows.seriex.util.lists.GlueList;
 import pisi.unitedmeows.seriex.util.logging.SLogger;
 import pisi.unitedmeows.seriex.util.yystal.FixedTaskPool;
 import pisi.unitedmeows.yystal.YYStal;
-import pisi.unitedmeows.yystal.sql.YSQLCommand;
-import pisi.unitedmeows.yystal.utils.CoID;
 
 public class Seriex extends JavaPlugin {
-
 	private static Optional<Seriex> instance_;
+	private CommandSystem commandSystem;
 	private static FileManager fileManager;
 	private static DataManager dataManager;
 	private static FutureManager futureManager;
+	public static SeriexDB database = new SeriexDB("seriex", "seriexdb123", "seriex", "79.110.234.147"); //TODO: get this values from a config file
 	private static List<ICleanup> cleanupabbleObjects = new GlueList<>();
 	private SLogger logger = new SLogger(getClass());
 	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here so it can work async :D
@@ -51,16 +49,9 @@ public class Seriex extends JavaPlugin {
 	public String suffix = colorizeString("&7[&dSer&5iex&7]"); // TODO get this from server-config
 	public String ghostsDiscord = colorizeString("&dfemboy ghost&8#&72173");  // TODO get this from server-config
 
-	/* Command System */
-	private CommandSystem commandSystem;
-
-	private SeriexDB database = new SeriexDB("seriex", "seriexdb123", "seriex",
-			"79.110.234.147"); //TODO: get this values from a config file
-
 	@Override
 	public void onEnable() {
 		//TODO: for supporting /reload command we should register all online players at onEnable
-
 		loadedCorrectly = true;
 		try {
 			instance_ = of(this);
@@ -91,9 +82,6 @@ public class Seriex extends JavaPlugin {
 			loadedCorrectly = false;
 			e.printStackTrace();
 		}
-
-
-
 		/* maybe make similar thing for small areas like */
 		/* Area.create(x, y, z, x1, y2, z3).(p ->
 		{
@@ -140,12 +128,8 @@ public class Seriex extends JavaPlugin {
 	}
 
 	public static void main(String... args) throws Exception {
-		SeriexDB seriexDB = new SeriexDB("seriex", "seriexdb123", "seriex",
-				"79.110.234.147");
-
-		StructPlayerW structPlayerW = seriexDB.getPlayerW("slowcheet4h");
+		StructPlayer structPlayerW = database.getPlayerW("slowcheet4h");
 		out.println(structPlayerW);
-
 	}
 
 	public Thread primaryThread() {
