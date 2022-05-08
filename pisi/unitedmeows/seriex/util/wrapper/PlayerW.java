@@ -13,63 +13,31 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import cc.funkemunky.api.utils.Tuple;
 import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.database.structs.StructPlayerW;
 import pisi.unitedmeows.seriex.util.config.impl.server.PlayerConfig;
 import pisi.unitedmeows.yystal.clazz.HookClass;
+import pisi.unitedmeows.yystal.utils.Pair;
 
-public class User extends HookClass<Player> {
-	private final PlayerConfig playerConfig;
+public class PlayerW extends HookClass<Player> {
 
-	public User(final Player _player) {
+	private final StructPlayerW playerConfig;
+
+	public PlayerW(final Player _player) {
 		hooked = _player;
 		final String name = hooked.getName();
-		Seriex.get().logger().info("Creating files for %s for the database!", hooked.getName());
-		final Tuple<Boolean, Tuple<File, PlayerConfig>> userVariables = Seriex.get().fileManager().createUser(name);
-		final boolean isNew = userVariables.one;
-		playerConfig = userVariables.two.two;
-		final String ip = hooked.getAddress().getAddress().getHostAddress();
-		if (isNew) {
-			Seriex.get().logger().info("%s is new!", hooked.getName());
-			playerConfig.USERNAME.value(name);
-			playerConfig.TOKEN.value(generateUserToken(name));
-			playerConfig.FIRST_JOIN_DATE.value(System.currentTimeMillis());
-			playerConfig.FIRST_IP.value(ip);
-			playerConfig.IP_ADRESSES.value(ip);
-			playerConfig.PREMIUM_ACCOUNT.value(false /* ??? HOW THE FUCK YOU CAN GET IF AN ACCOUNT IS PREMIUM OR NOT (TODOH // TODO (fucking intellij)) */);
-			playerConfig.SELECTED_ANTICHEAT.value();
+
+		playerConfig = Seriex.get().database().getPlayerW(name);
+		if (playerConfig.isNew) {
+			Seriex.get().logger().info("Creating the database entries for %s", hooked.getName());
 		} else {
-			if (!hooked.getName().equals(playerConfig.USERNAME.value())) {
-				Seriex.get().logger().fatal("Player %s doesnt have the same username in the config file! [Player IGN %s , Config IGN %s]", hooked.getName(), hooked.getName(),
-							playerConfig.USERNAME.value());
-				hooked.kickPlayer(String.format("%s%nYour config file has an issue, please DM %s", Seriex.get().suffix, Seriex.get().ghostsDiscord));
-			}
+			Seriex.get().logger().info("%s isnt new!", hooked.getName());
 		}
-		Seriex.get().logger().info("%s isnt new!", hooked.getName());
-		IP_ADRESS: {
-			final List<String> adresses = playerConfig.getIPsAsList(); // gets adresses casted there so it looks good here
-			if (adresses == null || adresses.isEmpty()) {
-				final List<String> noAdressesSooo = new ArrayList<>();
-				noAdressesSooo.add(ip);
-				playerConfig.IP_ADRESSES.value(noAdressesSooo);
-			} else {
-				final Set<String> uniqueAdresses = new HashSet<>(); // make a hashset so we add all elements and remove duplicates
-				uniqueAdresses.add(ip);
-				for (int i = 0; i < adresses.size(); i++) {
-					final String tempAdress = adresses.get(i);
-					uniqueAdresses.add(tempAdress);
-				}
-				// now we have unique adresses, and we set the value.
-				playerConfig.IP_ADRESSES.value(new ArrayList<>(uniqueAdresses));
-			}
-		}
-		playerConfig.LAST_IP.value(ip);
-		playerConfig.LAST_JOIN_DATE.value(System.currentTimeMillis());
 	}
 
 	private String generateUserToken(final String name) {
 		final byte[] bytes = UUID.nameUUIDFromBytes(name.getBytes(UTF_8)).toString().getBytes(UTF_8);
-		return "0x2173" + DigestUtils.sha256Hex(bytes);
+		return "2173" + DigestUtils.sha256Hex(bytes);
 	}
 
 	public void cleanupUser(final boolean items) {

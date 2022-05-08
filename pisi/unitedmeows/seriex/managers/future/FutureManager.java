@@ -21,6 +21,7 @@ public class FutureManager implements ICleanup {
 			if (futures.get(i).hasSet()) {
 				futures.remove(i);
 				i--; // so we dont skip the next one
+				// iterators :DDDD
 			}
 		}
 	}

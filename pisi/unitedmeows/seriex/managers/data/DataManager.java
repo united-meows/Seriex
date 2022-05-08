@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.ICleanup;
-import pisi.unitedmeows.seriex.util.wrapper.User;
+import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 
 /**
  * @author ghost2173
@@ -24,11 +24,11 @@ public class DataManager implements ICleanup {
 	// AND using Player as keys CAUSES MEMORY LEAKS. Certainly we could use UUIDs but that makes us calculate
 	// the player every time we try to get Player from UUID. (see Bukkit.getPlayer(UUID))
 	// I dont know maybe I am thinking too much about useless things...
-	private final Map<Player, User> userMap = new HashMap<>();
+	private final Map<Player, PlayerW> userMap = new HashMap<>();
 
-	public User addUser(Player player) {
+	public PlayerW addUser(Player player) {
 		Seriex.get().logger().info("Added %s to the database!", player.getName());
-		return userMap.computeIfAbsent(player, User::new); // things slowcheet4h never learn
+		return userMap.computeIfAbsent(player, PlayerW::new); // things slowcheet4h never learn
 	}
 
 	public void removeUser(Player player) {
@@ -42,8 +42,8 @@ public class DataManager implements ICleanup {
 	 *          (could be optimized using basic ass for loops but this looks cooler)
 	 * 
 	 */
-	public void removeUser(User user) {
-		Optional<Player> player = userMap.entrySet().stream().filter((Entry<Player, User> entry) -> entry.getValue() == user).map(Entry::getKey).findAny();
+	public void removeUser(PlayerW user) {
+		Optional<Player> player = userMap.entrySet().stream().filter((Entry<Player, PlayerW> entry) -> entry.getValue() == user).map(Entry::getKey).findAny();
 		if (player.isPresent()) {
 			removeUser(player.get());
 		}

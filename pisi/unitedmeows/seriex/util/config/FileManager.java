@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 
-import cc.funkemunky.api.utils.Tuple;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.ICleanup;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
@@ -18,6 +17,7 @@ import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.parallel.Future;
+import pisi.unitedmeows.yystal.utils.Pair;
 
 public class FileManager implements ICleanup {
 	public static final String USERS = "users";
@@ -26,8 +26,8 @@ public class FileManager implements ICleanup {
 	public static final String SETTINGS = "settings";
 	public static final String EXTENSION = ".seriex";
 	public static final String PRIVATE = "#PRIVATE#";
-	private final Map<String, Tuple<File, Config>> fileVariablesMap = new HashMap<>();
-	private final Map<String, Tuple<File, PlayerConfig>> userFiles = new HashMap<>();
+	private final Map<String, Pair<File, Config>> fileVariablesMap = new HashMap<>();
+	private final Map<String, Pair<File, PlayerConfig>> userFiles = new HashMap<>();
 	public static File directory , saved;
 	public static boolean set;
 
@@ -64,19 +64,19 @@ public class FileManager implements ICleanup {
 
 	public Config getConfig(final String alias) {
 		if (!directory.equals(saved)) throw new SeriexException("This exception should NEVER throw, unless you or I fucked something up.");
-		return this.fileVariablesMap.get(alias).two;
+		return this.fileVariablesMap.get(alias).item2();
 	}
 
 	public File getFile(final String alias) {
 		if (!directory.equals(saved)) throw new SeriexException("This exception should NEVER throw, unless you or I fucked something up.");
-		return this.fileVariablesMap.get(alias).one;
+		return this.fileVariablesMap.get(alias).item1();
 	}
 
-	public Tuple<File, PlayerConfig> getUserFile(String name) {
+	public Pair<File, PlayerConfig> getUserFile(String name) {
 		return userFiles.get(name);
 	}
 
-	public Tuple<Boolean, Tuple<File, PlayerConfig>> createUser(String username) {
+	public Pair<Boolean, Pair<File, PlayerConfig>> createUser(String username) {
 		try {
 			Seriex.get().logger().info("Created PlayerConfig for %s for the database!", username);
 			File file = new File(String.format("%s/%s%s", getFile(USERS), username, EXTENSION));
@@ -84,9 +84,9 @@ public class FileManager implements ICleanup {
 			Seriex.get().logger().info("Created the file %s for %s for the database!", file.toPath().toString(), username);
 			boolean created = createFile("user_" + username, file, playerConfig);
 			Seriex.get().logger().info("%s!", created ? "The files have been succesfully created!" : "Files couldnt be created?");
-			Tuple<File, PlayerConfig> tuple = userFiles.computeIfAbsent(username, (String username_) -> new Tuple<>(file, playerConfig));
+			Pair<File, PlayerConfig> tuple = userFiles.computeIfAbsent(username, (String username_) -> new Pair<File, PlayerConfig>(file, playerConfig));
 			Seriex.get().logger().info("%s was put into the file cache!");
-			return new Tuple<>(created, tuple);
+			return new Pair<>(created, tuple);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -129,10 +129,10 @@ public class FileManager implements ICleanup {
 				}
 				config.load();
 			}
-			Tuple<File, Config> value = new Tuple<>(file, config);
+			Pair<File, Config> value = new Pair<>(file, config);
 			boolean noIssuesSoFar = true;
 			try {
-				Seriex.get().logger().debug("Tuple value of %s -> [%s, %s]", alias, value.one, value.two);
+				Seriex.get().logger().debug("Tuple value of %s -> [%s, %s]", alias, value.item1(), value.item2());
 				this.fileVariablesMap.put(alias, value);
 				Seriex.get().logger().debug("Ok now getting the value of %s", alias);
 				Seriex.get().logger().debug("Tuple value of %s -> [%s, %s]", alias, getFile(alias), getConfig(alias));

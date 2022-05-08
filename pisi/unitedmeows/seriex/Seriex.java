@@ -20,6 +20,8 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import com.electronwill.nightconfig.toml.TomlWriter;
 
 import pisi.unitedmeows.seriex.anticheat.Anticheat;
+import pisi.unitedmeows.seriex.database.SeriexDB;
+import pisi.unitedmeows.seriex.database.structs.StructPlayerW;
 import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
 import pisi.unitedmeows.seriex.managers.data.DataManager;
 import pisi.unitedmeows.seriex.managers.future.FutureManager;
@@ -30,6 +32,8 @@ import pisi.unitedmeows.seriex.util.lists.GlueList;
 import pisi.unitedmeows.seriex.util.logging.SLogger;
 import pisi.unitedmeows.seriex.util.yystal.FixedTaskPool;
 import pisi.unitedmeows.yystal.YYStal;
+import pisi.unitedmeows.yystal.sql.YSQLCommand;
+import pisi.unitedmeows.yystal.utils.CoID;
 
 public class Seriex extends JavaPlugin {
 	private static Optional<Seriex> instance_;
@@ -43,6 +47,9 @@ public class Seriex extends JavaPlugin {
 	private Thread primaryThread;
 	public String suffix = colorizeString("&7[&dSer&5iex&7]"); // TODO get this from server-config
 	public String ghostsDiscord = colorizeString("&dfemboy ghost&8#&72173");  // TODO get this from server-config
+
+	private SeriexDB database = new SeriexDB("seriex", "seriexdb123", "seriex",
+			"79.110.234.147"); // make the ip something like (db.seriex.software)
 
 	@Override
 	public void onEnable() {
@@ -104,29 +111,13 @@ public class Seriex extends JavaPlugin {
 	}
 
 	public static void main(String... args) throws Exception {
-		CommentedConfig config = CommentedConfig.inMemoryConcurrent();
-		setProperty("nightconfig.preserveInsertionOrder", "true");
-		List<String> adresses = new ArrayList<>();
-		for (int i = 10; i > 0; i--) {
-			Random r = new Random();
-			String randomIP = r.nextInt(256) + "." + r.nextInt(256) + "." + r.nextInt(256) + "." + r.nextInt(256);
-			adresses.add(randomIP);
-		}
-		config.set("general.alo", adresses);
-		System.out.println("Config: " + config);
-		List<String> object = config.get("general.alo");
-		object.forEach(System.out::println);
-		//		System.out.println("alo: " + object);
-		//		List<String> ips = getIPsAsList(config.get("general.alo"));
-		//		ips.forEach(System.out::println);
-		File configFile = new File("commentedConfig.toml");
-		TomlWriter writer = new TomlWriter();
-		writer.write(config, configFile, WritingMode.REPLACE);
-	}
+		System.out.println(CoID.generate());
+		SeriexDB seriexDB = new SeriexDB("seriex", "seriexdb123", "seriex",
+				"79.110.234.147");
 
-	enum kek {
-		ataturk,
-		hihiha
+		StructPlayerW structPlayerW = seriexDB.getPlayerW("slowcheet4h");
+		out.println(structPlayerW);
+
 	}
 
 	public Thread primaryThread() {
@@ -155,5 +146,9 @@ public class Seriex extends JavaPlugin {
 
 	public Set<Anticheat> antiCheats() {
 		return new HashSet<>(anticheats);
+	}
+
+	public SeriexDB database() {
+		return database;
 	}
 }
