@@ -46,7 +46,7 @@ public class Config {
 			}
 		}
 		catch (Exception e) {
-			Seriex.get().logger().info("Couldnt load %s`s default values?! %s", name, e.getMessage());
+			Seriex.logger().info("Couldnt load %s`s default values?! %s", name, e.getMessage());
 		}
 	}
 
@@ -65,7 +65,7 @@ public class Config {
 				}
 			}
 			catch (Exception e) {
-				Seriex.get().logger().info("Couldnt load %s fields! %s", name, e.getMessage());
+				Seriex.logger().info("Couldnt load %s fields! %s", name, e.getMessage());
 			}
 		}
 	}

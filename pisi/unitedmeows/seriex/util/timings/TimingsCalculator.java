@@ -11,7 +11,7 @@ public enum TimingsCalculator {
 		final long ms = System.currentTimeMillis();
 		func.accept(this);
 		try {
-			Seriex.get().logger().info(String.format("Loaded %s in %d ms!", name, (System.currentTimeMillis() - ms)));
+			Seriex.logger().info(String.format("Loaded %s in %d ms!", name, (System.currentTimeMillis() - ms)));
 		}
 		catch (Exception e) {
 			System.out.println(String.format("Loaded %s in %d ms!", name, (System.currentTimeMillis() - ms)));

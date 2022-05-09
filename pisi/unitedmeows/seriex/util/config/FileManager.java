@@ -78,14 +78,14 @@ public class FileManager implements ICleanup {
 
 	public Pair<Boolean, Pair<File, PlayerConfig>> createUser(String username) {
 		try {
-			Seriex.get().logger().info("Created PlayerConfig for %s for the database!", username);
+			Seriex.logger().info("Created PlayerConfig for %s for the database!", username);
 			File file = new File(String.format("%s/%s%s", getFile(USERS), username, EXTENSION));
 			PlayerConfig playerConfig = new PlayerConfig(username, file);
-			Seriex.get().logger().info("Created the file %s for %s for the database!", file.toPath().toString(), username);
+			Seriex.logger().info("Created the file %s for %s for the database!", file.toPath().toString(), username);
 			boolean created = createFile("user_" + username, file, playerConfig);
-			Seriex.get().logger().info("%s!", created ? "The files have been succesfully created!" : "Files couldnt be created?");
+			Seriex.logger().info("%s!", created ? "The files have been succesfully created!" : "Files couldnt be created?");
 			Pair<File, PlayerConfig> tuple = userFiles.computeIfAbsent(username, (String username_) -> new Pair<File, PlayerConfig>(file, playerConfig));
-			Seriex.get().logger().info("%s was put into the file cache!");
+			Seriex.logger().info("%s was put into the file cache!");
 			return new Pair<>(created, tuple);
 		}
 		catch (Exception e) {
@@ -96,17 +96,17 @@ public class FileManager implements ICleanup {
 
 	public void validateFile(File file, Config config) {
 		if (file == null) {
-			Seriex.get().logger().fatal("There is no file to validate.");
+			Seriex.logger().fatal("There is no file to validate.");
 		} else {
 			boolean isFileValid = true;
 			try {
 				isFileValid = Files.readAllBytes(file.toPath()).length != 0;
 			}
 			catch (Exception e) {
-				Seriex.get().logger().fatal("Couldnt validate file");
+				Seriex.logger().fatal("Couldnt validate file");
 			}
 			if (!isFileValid) {
-				Seriex.get().logger().info("File %s was not valid!", file.getName());
+				Seriex.logger().info("File %s was not valid!", file.getName());
 				config.loadDefaultValues();
 				config.save();
 				config.load();
@@ -117,10 +117,10 @@ public class FileManager implements ICleanup {
 	public boolean createFile(final String alias, final File file, Config config) {
 		try {
 			boolean isDirectory = "".equals(FilenameUtils.getExtension(file.getName()));
-			Seriex.get().logger().info("%s for %s (path %s, config %s)", String.format("Creating %s", isDirectory ? "directory" : "file"), alias, file.toPath().toAbsolutePath().toString(),
+			Seriex.logger().info("%s for %s (path %s, config %s)", String.format("Creating %s", isDirectory ? "directory" : "file"), alias, file.toPath().toAbsolutePath().toString(),
 						config == null ? "no config [directory]" : config.name());
 			boolean created = isDirectory ? file.mkdirs() : file.createNewFile();
-			Seriex.get().logger().info("%s for %s (path %s, config %s)",
+			Seriex.logger().info("%s for %s (path %s, config %s)",
 						created ? String.format("Created %s", isDirectory ? "directory" : "file") : String.format("Couldnt create %s", isDirectory ? "directory" : "file"), alias,
 						file.toPath().toAbsolutePath().toString(), config == null ? "no config [directory]" : config.name());
 			if (config != null) {
@@ -132,10 +132,10 @@ public class FileManager implements ICleanup {
 			Pair<File, Config> value = new Pair<>(file, config);
 			boolean noIssuesSoFar = true;
 			try {
-				Seriex.get().logger().debug("Tuple value of %s -> [%s, %s]", alias, value.item1(), value.item2());
+				Seriex.logger().debug("Tuple value of %s -> [%s, %s]", alias, value.item1(), value.item2());
 				this.fileVariablesMap.put(alias, value);
-				Seriex.get().logger().debug("Ok now getting the value of %s", alias);
-				Seriex.get().logger().debug("Tuple value of %s -> [%s, %s]", alias, getFile(alias), getConfig(alias));
+				Seriex.logger().debug("Ok now getting the value of %s", alias);
+				Seriex.logger().debug("Tuple value of %s -> [%s, %s]", alias, getFile(alias), getConfig(alias));
 			}
 			catch (Exception e) {
 				noIssuesSoFar = false;
@@ -146,7 +146,7 @@ public class FileManager implements ICleanup {
 					validateFile(file, config);
 				}
 			} else {
-				Seriex.get().logger().fatal("Couldnt ");
+				Seriex.logger().fatal("Couldnt ");
 			}
 			return created;
 		}

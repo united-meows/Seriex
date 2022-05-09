@@ -29,7 +29,7 @@ public class Anticheat {
 		this.name = name;
 		this.pluginName = pluginName;
 		dependantAnticheats.addAll(Arrays.asList(depends));
-		Seriex.get().logger().info("Registered Anticheat %s", name);
+		Seriex.logger().info("Registered Anticheat %s", name);
 		Seriex.get().antiCheats().add(this);
 	}
 

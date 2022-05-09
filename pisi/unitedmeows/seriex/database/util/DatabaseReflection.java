@@ -57,7 +57,7 @@ public class DatabaseReflection {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			Seriex.get().logger().fatal("DatabaseReflection gave an exception! (%s)", e.getMessage());
+			Seriex.logger().fatal("DatabaseReflection gave an exception! (%s)", e.getMessage());
 		}
 	}
 

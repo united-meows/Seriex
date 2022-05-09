@@ -23,7 +23,7 @@ public class Command {
     public static Command create(String... _triggers) {
         final Command command = new Command(_triggers);
         Seriex.get().commandSystem().registerCommand(command);
-        Seriex.get().logger().debug("Created %s command successfully.", Arrays.toString(command.triggers));
+        Seriex.logger().debug("Created %s command successfully.", Arrays.toString(command.triggers));
         return command;
     }
 

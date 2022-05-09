@@ -27,12 +27,12 @@ public class DataManager implements ICleanup {
 	private final Map<Player, PlayerW> userMap = new HashMap<>();
 
 	public PlayerW addUser(Player player) {
-		Seriex.get().logger().info("Added %s to the database!", player.getName());
+		Seriex.logger().info("Added %s to the database!", player.getName());
 		return userMap.computeIfAbsent(player, PlayerW::new); // things slowcheet4h never learn
 	}
 
 	public void removeUser(Player player) {
-		Seriex.get().logger().info("Removed %s from the database!", player.getName());
+		Seriex.logger().info("Removed %s from the database!", player.getName());
 		userMap.remove(player);
 	}
 

@@ -31,8 +31,8 @@ import pisi.unitedmeows.seriex.util.ICleanup;
 import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.lists.GlueList;
-import pisi.unitedmeows.seriex.util.logging.SLogger;
 import pisi.unitedmeows.yystal.YYStal;
+import pisi.unitedmeows.yystal.logger.impl.YLogger;
 
 public class Seriex extends JavaPlugin {
 	private static Optional<Seriex> instance_;
@@ -40,14 +40,14 @@ public class Seriex extends JavaPlugin {
 	private static FileManager fileManager;
 	private static DataManager dataManager;
 	private static FutureManager futureManager;
-	public static SeriexDB database = new SeriexDB("seriex", "seriexdb123", "seriex", "79.110.234.147"); //TODO: get this values from a config file
 	private static List<ICleanup> cleanupabbleObjects = new GlueList<>();
-	private SLogger logger = new SLogger(getClass());
+	private static YLogger logger = new YLogger(null, "Seriex").setTime(YLogger.Time.DAY_MONTH_YEAR_FULL).setColored(true);
 	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here so it can work async :D
 	private static boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
 	private Thread primaryThread;
 	public String suffix = colorizeString("&7[&dSer&5iex&7]"); // TODO get this from server-config
 	public String ghostsDiscord = colorizeString("&dfemboy ghost&8#&72173");  // TODO get this from server-config
+	public static SeriexDB database = new SeriexDB("seriex", "seriexdb123", "seriex", "79.110.234.147"); //TODO: get this values from a config file
 
 	@Override
 	public void onEnable() {
@@ -132,14 +132,14 @@ public class Seriex extends JavaPlugin {
 		YYStal.startWatcher();
 		StructPlayer structPlayerW = database.getPlayerW("tempUserkekw");
 		out.println(structPlayerW);
-		System.out.println("#1 " + YYStal.stopWatcher());
+		logger().fatal("#1 " + YYStal.stopWatcher());
 	}
 
 	public Thread primaryThread() {
 		return primaryThread;
 	}
 
-	public SLogger logger() {
+	public static YLogger logger() {
 		return logger;
 	}
 

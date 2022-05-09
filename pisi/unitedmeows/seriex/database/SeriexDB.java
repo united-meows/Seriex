@@ -45,17 +45,17 @@ public class SeriexDB extends YDatabaseClient {
 				Field field = clazz.getDeclaredField(name);
 				field.setAccessible(true);
 				Object value = query.get(0).get(field.getName());
-				if (value == null && fieldType.nullable) {
-					field.set(structPlayerW, value);
-				} else {
-					Seriex.get().logger().fatal("The value %s is not nullable and the value for %s in the database is null!", name, name);
+				if (value == null && !fieldType.nullable) {
+					Seriex.logger().fatal("The value %s is not nullable and the value for %s in the database is null!", name, name);
+					continue;
 				}
+				field.set(structPlayerW, value);
 			}
 			return structPlayerW;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			Seriex.get().logger().fatal("Couldnt get player from the database!");
+			Seriex.logger().fatal("Couldnt get player from the database!");
 			return null;
 		}
 	}

@@ -31,12 +31,12 @@ public class FutureManager implements ICleanup {
 		boolean done = true;
 		done = checkFutures(done);
 		while (!done) {
-			Seriex.get().logger().info("Waiting for futures to be finished.");
+			Seriex.logger().info("Waiting for futures to be finished.");
 			try {
 				Seriex.get().primaryThread().sleep(1L);
 			}
 			catch (InterruptedException e) {
-				Seriex.get().logger().info("Primary thread has been interrupted!!! %s", e.getMessage());
+				Seriex.logger().info("Primary thread has been interrupted!!! %s", e.getMessage());
 				Seriex.get().primaryThread().interrupt();
 			}
 			done = checkFutures(done);
