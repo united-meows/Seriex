@@ -6,22 +6,16 @@ import pisi.unitedmeows.seriex.database.util.annotation.Column;
 import pisi.unitedmeows.seriex.database.util.annotation.Struct;
 import pisi.unitedmeows.yystal.sql.YSQLCommand;
 
-@Struct(name = "player_settings")
-public class StructPlayerSettings implements IStruct {
+@Struct(name = "player_coin")
+public class StructPlayerCoin implements IStruct {
 	@Column
-	public int player_settings_id;
+	public int player_coin_id;
 	@Column
 	public int player_id;
 	@Column
-	public boolean guest;
+	public long player_coin_seed;
 	@Column
-	public boolean flags;
-	@Column
-	public boolean hunger;
-	@Column
-	public boolean fall_damage;
-	@Column
-	public String anticheat;
+	public String player_coin_wallet;
 
 	@Override
 	public String[] getColumns() {

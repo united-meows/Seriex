@@ -15,9 +15,9 @@ public class StructPlayerDiscord implements IStruct {
 	@Column
 	public long discord_id;
 	@Column
-	public long joinMS;
+	public String joinMS;
 	@Column
-	public long linkMS;
+	public String linkMS;
 	@Column
 	public String joinedAs;
 

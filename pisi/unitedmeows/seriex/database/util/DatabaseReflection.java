@@ -134,21 +134,31 @@ public class DatabaseReflection {
 		 * based on
 		 * https://www.w3schools.com/sql/sql_datatypes.asp
 		 */
-		STRING(String.class, "TEXT"),
-		BOOLEAN(boolean.class, "BOOLEAN"),
-		BYTE(byte.class, "TINYINT(10)"),
-		SHORT(short.class, "SMALLINT(10)"),
-		INT(int.class, "INT(10)"),
-		LONG(long.class, "BIGINT(10)"),
-		FLOAT(float.class, "FLOAT(24)"),
-		DOUBLE(double.class, "FLOAT(53)");
+		STRING(String.class, "TEXT", true),
+		BOOLEAN(boolean.class, "BOOLEAN", false),
+		BYTE(byte.class, "TINYINT(10)", false),
+		SHORT(short.class, "SMALLINT(10)", false),
+		INT(int.class, "INT(10)", false),
+		LONG(long.class, "BIGINT(10)", false),
+		FLOAT(float.class, "FLOAT(24)", false),
+		DOUBLE(double.class, "FLOAT(53)", false),
+		// these are here so you can make an Integer with a null value for example.
+		UNBOXED_BOOLEAN(Boolean.class, "BOOLEAN", true),
+		UNBOXED_BYTE(Byte.class, "TINYINT(10)", true),
+		UNBOXED_SHORT(Short.class, "SMALLINT(10)", true),
+		UNBOXED_INT(Integer.class, "INT(10)", true),
+		UNBOXED_LONG(Long.class, "BIGINT(10)", true),
+		UNBOXED_FLOAT(Float.class, "FLOAT(24)", true),
+		UNBOXED_DOUBLE(Double.class, "FLOAT(53)", true);
 
 		Class<?> type;
 		String mySQL;
+		public boolean nullable;
 
-		FieldType(Class<?> clazz, String mySQLType) {
+		FieldType(Class<?> clazz, String mySQLType, boolean nullable) {
 			this.type = clazz;
 			this.mySQL = mySQLType;
+			this.nullable = nullable;
 		}
 	}
 }

@@ -7,7 +7,16 @@ public class SLogger extends YLogger {
 		super(_clazz);
 		setPrefix("Seriex");
 		// idk if this will work update yystal but...
-		setColored(true);
+		/*
+		 * update:
+		 * doesnt work
+		 * Exception in thread "main" java.lang.NoSuchMethodError: org.fusesource.jansi.AnsiConsole.isInstalled()Z
+				at pisi.unitedmeows.yystal.logger.impl.YLogger.setColored(YLogger.java:215)
+				at pisi.unitedmeows.seriex.util.logging.SLogger.<init>(SLogger.java:10)
+				at pisi.unitedmeows.seriex.Seriex.<init>(Seriex.java:44)
+				at pisi.unitedmeows.seriex.Seriex.main(Seriex.java:130)
+		 */
+		setColored(false);
 	}
 
 	public void info(String message, Object... args) {

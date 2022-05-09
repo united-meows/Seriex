@@ -124,13 +124,13 @@ public class Seriex extends JavaPlugin {
 	}
 
 	public static Seriex get() {
-		return instance_.orElseThrow(() -> new SeriexException("Seriex has not been loaded correctly!"));
+		return instance_.orElseThrow(() -> new SeriexException("Seriex isnt loaded properly!"));
 	}
 
-	public static void main(String... args) throws Exception {
+	public static void main(String... args) {
 		DatabaseReflection.init();
 		YYStal.startWatcher();
-		StructPlayer structPlayerW = database.getPlayerW("slowcheet4h");
+		StructPlayer structPlayerW = database.getPlayerW("tempUserkekw");
 		out.println(structPlayerW);
 		System.out.println("#1 " + YYStal.stopWatcher());
 	}

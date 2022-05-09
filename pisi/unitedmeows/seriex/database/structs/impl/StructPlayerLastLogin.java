@@ -15,7 +15,7 @@ public class StructPlayerLastLogin implements IStruct {
 	@Column
 	public String ip_adress;
 	@Column
-	public long time;
+	public String date;
 
 	@Override
 	public String[] getColumns() {
