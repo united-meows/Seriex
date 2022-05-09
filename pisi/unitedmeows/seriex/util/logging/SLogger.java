@@ -6,8 +6,8 @@ public class SLogger extends YLogger {
 	public SLogger(Class<?> _clazz) {
 		super(_clazz);
 		setPrefix("Seriex");
-		//	setColored(true); we cant do this for now, Spigot already has JAnsi and we try to use a newer one so it clashes
-		// waiting for yystal update sadly
+		// idk if this will work update yystal but...
+		setColored(true);
 	}
 
 	public void info(String message, Object... args) {

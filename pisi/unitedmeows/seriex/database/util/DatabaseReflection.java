@@ -19,7 +19,6 @@ import pisi.unitedmeows.yystal.utils.Pair;
 
 public class DatabaseReflection {
 	/**
-	 * arithmonun selami var
 	 * <br>
 	 * how it works:
 	 * <br>
@@ -34,7 +33,8 @@ public class DatabaseReflection {
 	private static Map<Class<? extends IStruct>, Pair<String[], List<Pair<String, FieldType>>>> cache = new HashMap<>();
 	private static Map<Class<? extends IStruct>, String> tables = new HashMap<>();
 	private static Map<String, Pair<IStruct, Class<? extends IStruct>>> reverseTables = new HashMap<>();
-	static {
+
+	public static void init() {
 		try {
 			Reflections reflections = new Reflections("pisi.unitedmeows.seriex.database.structs.impl");
 			Set<Class<? extends IStruct>> classes = reflections.getSubTypesOf(IStruct.class);

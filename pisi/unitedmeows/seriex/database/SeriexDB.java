@@ -8,6 +8,7 @@ import pisi.unitedmeows.seriex.database.structs.IStruct;
 import pisi.unitedmeows.seriex.database.structs.impl.StructPlayer;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection.FieldType;
+import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.sql.YDatabaseClient;
 import pisi.unitedmeows.yystal.sql.YSQLCommand;
 import pisi.unitedmeows.yystal.utils.Pair;
@@ -27,6 +28,7 @@ public class SeriexDB extends YDatabaseClient {
 
 	public StructPlayer getPlayerW(YSQLCommand command) {
 		try {
+			YYStal.startWatcher();
 			Pair<IStruct, Class<? extends IStruct>> table = DatabaseReflection.getTable("player");
 			String[] columns = table.item1().getColumns();
 			List<Map<String, Object>> query = select(command, columns);

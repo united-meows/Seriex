@@ -23,6 +23,7 @@ import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.command.CommandSystem;
 import pisi.unitedmeows.seriex.database.SeriexDB;
 import pisi.unitedmeows.seriex.database.structs.impl.StructPlayer;
+import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
 import pisi.unitedmeows.seriex.managers.data.DataManager;
 import pisi.unitedmeows.seriex.managers.future.FutureManager;
@@ -31,7 +32,6 @@ import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.lists.GlueList;
 import pisi.unitedmeows.seriex.util.logging.SLogger;
-import pisi.unitedmeows.seriex.util.yystal.FixedTaskPool;
 import pisi.unitedmeows.yystal.YYStal;
 
 public class Seriex extends JavaPlugin {
@@ -57,7 +57,7 @@ public class Seriex extends JavaPlugin {
 			instance_ = of(this);
 			logger().info("Starting seriex...");
 			primaryThread = currentThread();
-			YYStal.setCurrentPool(new FixedTaskPool(3, 15));
+			GET.benchmark(temp -> DatabaseReflection.init(), "Database Reflection");
 			managers: {
 				setProperty("nightconfig.preserveInsertionOrder", "true");
 				FormatDetector.registerExtension("seriex", TomlFormat.instance());
@@ -128,8 +128,11 @@ public class Seriex extends JavaPlugin {
 	}
 
 	public static void main(String... args) throws Exception {
+		DatabaseReflection.init();
+		YYStal.startWatcher();
 		StructPlayer structPlayerW = database.getPlayerW("slowcheet4h");
 		out.println(structPlayerW);
+		System.out.println("#1 " + YYStal.stopWatcher());
 	}
 
 	public Thread primaryThread() {
