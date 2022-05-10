@@ -6,16 +6,16 @@ import pisi.unitedmeows.seriex.database.util.annotation.Column;
 import pisi.unitedmeows.seriex.database.util.annotation.Struct;
 import pisi.unitedmeows.yystal.sql.YSQLCommand;
 
-@Struct(name = "player_coin")
-public class StructPlayerCoin implements IStruct {
+@Struct(name = "player_wallet")
+public class StructPlayerWallet implements IStruct {
 	@Column
 	public int player_coin_id;
 	@Column
 	public int player_id;
 	@Column
-	public long player_coin_seed;
+	public int coins;
 	@Column
-	public String player_coin_wallet;
+	public String player_wallet;
 
 	@Override
 	public String[] getColumns() {

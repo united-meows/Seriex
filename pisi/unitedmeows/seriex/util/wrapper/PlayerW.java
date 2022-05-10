@@ -24,7 +24,7 @@ public class PlayerW extends HookClass<Player> {
 		final String name = hooked.getName();
 		/* TODO: create player database values on VERIFY */
 		/* ^^ ghost :DDD */
-		playerInfo = Seriex.get().database().getPlayerW(_player.getName());
+		playerInfo = Seriex.get().database().getPlayer(_player.getName());
 		/*TODO: maybe do this check on login event and pass the playerInfo on constructor? */
 		if (playerInfo == null) {
 			Seriex.logger().warn("Database values of player %s was missing! (maybe not verified?)", name);

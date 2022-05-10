@@ -2,7 +2,7 @@ package pisi.unitedmeows.seriex.coin;
 
 import java.util.List;
 
-import pisi.unitedmeows.seriex.database.structs.impl.StructPlayerCoin;
+import pisi.unitedmeows.seriex.database.structs.impl.StructPlayerWallet;
 
 // TODO @slowcheetah you can re-code if you want
 public class CoinHelper {
@@ -14,7 +14,7 @@ public class CoinHelper {
 		return null;
 	}
 
-	public List<ICoin> getCoinFromPlayer(StructPlayerCoin playerCoinFromDatabase) {
-		return getCoinsFromWallet(playerCoinFromDatabase.player_coin_wallet);
+	public List<ICoin> getCoinFromPlayer(StructPlayerWallet playerCoinFromDatabase) {
+		return getCoinsFromWallet(playerCoinFromDatabase.player_wallet);
 	}
 }

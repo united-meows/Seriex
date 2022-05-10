@@ -10,6 +10,7 @@ import java.util.Set;
 import org.reflections.Reflections;
 
 import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.database.SeriexDB;
 import pisi.unitedmeows.seriex.database.structs.IStruct;
 import pisi.unitedmeows.seriex.database.util.annotation.Column;
 import pisi.unitedmeows.seriex.database.util.annotation.Struct;
@@ -58,6 +59,49 @@ public class DatabaseReflection {
 		catch (Exception e) {
 			e.printStackTrace();
 			Seriex.logger().fatal("DatabaseReflection gave an exception! (%s)", e.getMessage());
+		}
+	}
+
+	public static <X> X get(String tableName, YSQLCommand command, SeriexDB db, X struct) {
+		try {
+			Pair<List<Map<String, Object>>, Class<? extends IStruct>> pair = DatabaseReflection.sendRequest(command, tableName, db);
+			List<Map<String, Object>> query = pair.item1();
+			if (query.isEmpty()) return null;
+			DatabaseReflection.setFields(query, pair.item2(), (IStruct) struct);
+			return struct;
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			Seriex.logger().fatal("Couldnt get data from the table %s from the database!", tableName);
+			return null;
+		}
+	}
+
+	private static Pair<List<Map<String, Object>>, Class<? extends IStruct>> sendRequest(YSQLCommand command, String tableName, SeriexDB db) {
+		Pair<IStruct, Class<? extends IStruct>> table = DatabaseReflection.getTable(tableName);
+		List<Map<String, Object>> query = db.select(command, table.item1().getColumns());
+		return new Pair<>(query, table.item2());
+	}
+
+	private static void setFields(List<Map<String, Object>> query, Class<? extends IStruct> clazz, IStruct struct) {
+		try {
+			List<Pair<String, FieldType>> list = DatabaseReflection.getColumnsFromClass(clazz).item2();
+			for (int i = 0; i < list.size(); i++) {
+				Pair<String, FieldType> item = list.get(i);
+				String name = item.item1();
+				FieldType fieldType = item.item2();
+				Field field = clazz.getDeclaredField(name);
+				field.setAccessible(true);
+				Object value = query.get(0).get(field.getName());
+				if (value == null && !fieldType.nullable) {
+					Seriex.logger().fatal("The value %s is not nullable and the value for %s in the database is null!", name, name);
+					continue;
+				}
+				field.set(struct, value);
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

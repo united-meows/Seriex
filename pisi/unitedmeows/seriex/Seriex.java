@@ -126,11 +126,23 @@ public class Seriex extends JavaPlugin {
 	public static Seriex get() {
 		return instance_.orElseThrow(() -> new SeriexException("Seriex isnt loaded properly!"));
 	}
+	//	public static VirtualThread<String> test = new VirtualThread<>("hello world", new VirtualTask<>(string -> {
+	//		for (int i = 0; i < 1_000_000; i++) {
+	//			string.replace("hello", "hello");
+	//		}
+	//		logger().info("#1");
+	//	}), new VirtualTask<>(string -> {
+	//		for (int i = 0; i < 2_000_000; i++) {
+	//			string.replace("hello", "hello");
+	//		}
+	//		logger().info("#2");
+	//	}));
 
 	public static void main(String... args) {
+		//		test.start();
 		DatabaseReflection.init();
 		YYStal.startWatcher();
-		StructPlayer structPlayerW = database.getPlayerW("tempUserkekw");
+		StructPlayer structPlayerW = database.getPlayer("tempUserkekw");
 		out.println(structPlayerW);
 		logger().debug("#1 " + YYStal.stopWatcher());
 	}
