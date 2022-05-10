@@ -3,14 +3,19 @@ package pisi.unitedmeows.seriex.managers.future;
 import java.util.List;
 
 import pisi.unitedmeows.seriex.Seriex;
-import pisi.unitedmeows.seriex.util.ICleanup;
+import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.lists.GlueList;
 import pisi.unitedmeows.yystal.parallel.Future;
 
 // note: you cant delete futures until they are done get real
-public class FutureManager implements ICleanup {
+public class FutureManager extends Manager {
 	private List<Future<?>> futures = new GlueList<>();
+
+	@Override
+	public void start(Seriex seriex) {
+		futures.clear();
+	}
 
 	public void addFuture(Future<?> future) {
 		futures.add(future);

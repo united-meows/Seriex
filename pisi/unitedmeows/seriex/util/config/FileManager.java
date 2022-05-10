@@ -1,27 +1,29 @@
 package pisi.unitedmeows.seriex.util.config;
 
 import static java.nio.charset.StandardCharsets.*;
+import static org.apache.commons.io.FilenameUtils.*;
+import static pisi.unitedmeows.seriex.Seriex.*;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.io.FilenameUtils;
-
 import pisi.unitedmeows.seriex.Seriex;
-import pisi.unitedmeows.seriex.util.ICleanup;
+import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.TranslationsConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.parallel.Future;
 import pisi.unitedmeows.yystal.utils.Pair;
 
 // TODO alo ghost refactor this code sucks ass
-public class FileManager implements ICleanup {
+public class FileManager extends Manager {
 	public static final String EMOTES = "global_emotes";
 	public static final String SETTINGS = "settings";
+	public static final String TRANSLATIONS = "translations";
 	public static final String EXTENSION = ".seriex";
 	public static final String PRIVATE = "#PRIVATE#";
 	private final Map<String, Pair<File, Config>> fileVariablesMap = new HashMap<>();
@@ -32,8 +34,10 @@ public class FileManager implements ICleanup {
 		this.directory = pluginDirectory;
 		if (!set) {
 			this.saved = pluginDirectory;
-			File file = new File(directory, SETTINGS + EXTENSION);
-			this.createFile(SETTINGS, file, new ServerConfig(file));
+			File settingsFile = new File(directory, SETTINGS + EXTENSION);
+			this.createFile(SETTINGS, settingsFile, new ServerConfig(settingsFile));
+			File translationsFile = new File(directory, TRANSLATIONS + EXTENSION);
+			this.createFile(TRANSLATIONS, translationsFile, new TranslationsConfig(translationsFile));
 			set = true;
 		}
 	}
@@ -67,17 +71,18 @@ public class FileManager implements ICleanup {
 
 	public void validateFile(File file, Config config) {
 		if (file == null) {
-			Seriex.logger().fatal("There is no file to validate.");
+			logger().fatal("There is no file to validate.");
 		} else {
 			boolean isFileValid = true;
 			try {
 				isFileValid = Files.readAllBytes(file.toPath()).length > 2;
 			}
 			catch (Exception e) {
-				Seriex.logger().fatal("Couldnt validate file");
+				e.printStackTrace();
+				logger().fatal("Couldnt validate file! (%s)", e.getMessage());
 			}
-			if (!isFileValid) {
-				Seriex.logger().info("File %s was not valid!", file.getName());
+			if (!isFileValid && !config.manual) {
+				logger().info("File %s was not valid!", file.getName());
 				config.loadDefaultValues();
 				config.save();
 				config.load();
@@ -87,11 +92,11 @@ public class FileManager implements ICleanup {
 
 	public boolean createFile(final String alias, final File file, Config config) {
 		try {
-			boolean isDirectory = "".equals(FilenameUtils.getExtension(file.getName()));
-			Seriex.logger().info("%s for %s (path %s, config %s)", String.format("Creating %s", isDirectory ? "directory" : "file"), alias, file.toPath().toAbsolutePath().toString(),
+			boolean isDirectory = "".equals(getExtension(file.getName()));
+			logger().info("%s for %s (path %s, config %s)", String.format("Creating %s", isDirectory ? "directory" : "file"), alias, file.toPath().toAbsolutePath().toString(),
 						config == null ? "no config [directory]" : config.name());
 			boolean created = isDirectory ? file.mkdirs() : file.createNewFile();
-			Seriex.logger().info("%s for %s (path %s, config %s)",
+			logger().info("%s for %s (path %s, config %s)",
 						created ? String.format("Created %s", isDirectory ? "directory" : "file") : String.format("Couldnt create %s", isDirectory ? "directory" : "file"), alias,
 						file.toPath().toAbsolutePath().toString(), config == null ? "no config [directory]" : config.name());
 			if (config != null) {
@@ -103,10 +108,9 @@ public class FileManager implements ICleanup {
 			Pair<File, Config> value = new Pair<>(file, config);
 			boolean noIssuesSoFar = true;
 			try {
-				Seriex.logger().debug("Tuple value of %s -> [%s, %s]", alias, value.item1(), value.item2());
+				logger().debug("Tuple value of %s -> [%s, %s]", alias, value.item1(), value.item2());
 				this.fileVariablesMap.put(alias, value);
-				Seriex.logger().debug("Ok now getting the value of %s", alias);
-				Seriex.logger().debug("Tuple value of %s -> [%s, %s]", alias, getFile(alias), getConfig(alias));
+				logger().debug("Ok now getting the value of %s -> [%s, %s]", alias, getFile(alias), getConfig(alias));
 			}
 			catch (Exception e) {
 				noIssuesSoFar = false;
@@ -117,7 +121,7 @@ public class FileManager implements ICleanup {
 					validateFile(file, config);
 				}
 			} else {
-				Seriex.logger().fatal("Couldnt validate %s (path: %s)", alias, file.toPath().toString());
+				logger().fatal("Couldnt validate %s (path: %s)", alias, file.toPath().toString());
 			}
 			return created;
 		}

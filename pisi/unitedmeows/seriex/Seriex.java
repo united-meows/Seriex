@@ -25,6 +25,7 @@ import pisi.unitedmeows.seriex.database.SeriexDB;
 import pisi.unitedmeows.seriex.database.structs.impl.StructPlayer;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
+import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.managers.data.DataManager;
 import pisi.unitedmeows.seriex.managers.future.FutureManager;
 import pisi.unitedmeows.seriex.util.ICleanup;
@@ -41,6 +42,7 @@ public class Seriex extends JavaPlugin {
 	private static DataManager dataManager;
 	private static FutureManager futureManager;
 	private static List<ICleanup> cleanupabbleObjects = new GlueList<>();
+	private static List<Manager> managers = new GlueList<>();
 	private static YLogger logger = new YLogger(null, "Seriex").setTime(YLogger.Time.DAY_MONTH_YEAR_FULL).setColored(true);
 	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here so it can work async :D
 	private static boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
@@ -52,6 +54,12 @@ public class Seriex extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		//TODO: for supporting /reload command we should register all online players at onEnable
+		/*
+		 * if(true) {
+		 * 	test.unsafeStart();
+		 * 	return;
+		 * }
+		 */
 		loadedCorrectly = true;
 		try {
 			instance_ = of(this);
@@ -63,10 +71,14 @@ public class Seriex extends JavaPlugin {
 				FormatDetector.registerExtension("seriex", TomlFormat.instance());
 				GET.benchmark(temp -> {
 					logger().info("Loading Managers...");
-					cleanupabbleObjects.add(fileManager = new FileManager(getDataFolder()));
-					cleanupabbleObjects.add(dataManager = new DataManager());
-					cleanupabbleObjects.add(futureManager = new FutureManager()); // this should be always last!
+					managers.add(fileManager = new FileManager(getDataFolder()));
+					managers.add(dataManager = new DataManager());
+					managers.add(futureManager = new FutureManager()); // this should be always last!
 				}, "Managers");
+				GET.benchmark(temp -> {
+					logger().info("Enabling Managers...");
+					managers.forEach((Manager manager) -> manager.start(get()));
+				}, "Enabled Managers");
 			}
 			async_stuff: {
 				// 🤞 🤞 🤞 🤞 🤞
@@ -126,20 +138,40 @@ public class Seriex extends JavaPlugin {
 	public static Seriex get() {
 		return instance_.orElseThrow(() -> new SeriexException("Seriex isnt loaded properly!"));
 	}
-	//	public static VirtualThread<String> test = new VirtualThread<>("hello world", new VirtualTask<>(string -> {
-	//		for (int i = 0; i < 1_000_000; i++) {
-	//			string.replace("hello", "hello");
+	//	public static ghost.virtualjava.VirtualThread<Seriex> test = new ghost.virtualjava.VirtualThread<>(get(), new VirtualTask<>((ghost.virtualjava.VirtualThread thread, Seriex seriex, ghost.virtualjava.VirtualTask... tasks) -> {
+	//		logger().debug("Enabled Seriex using VirtualThread!");
+	//		ghost.virtualjava.VirtualTask task = tasks[0]; // (TODOH) make it multi taskable? or something
+	//		if (task.isCompleted()) {
+	//			onDisable(); // ok spigot cries here find out why (TODOL)
+	//			logger().fatal("Disabling Seriex..."); // less go??
+	//			thread.parkOtherThreads(futureManager::isntDone); // this uses unsafe, spigot might cry
+	//			thread.dead(true); // kys thread LOL
+	//		} else {
+	//			thread.updateTask(task, seriex); // update task
+	//			thread.thankYouOracle((~Integer.MIN_VALUE & thread.aliveTicks) != 0); // allows us to call removeUsingUnsafe
+	//			if (task.updated()) {
+	//				task.run(thread.size() - 1); // look for the last task to check if we are still in queue
+	//				task.updated(false); // stop updating to call other tasks
+	//			}
 	//		}
-	//		logger().info("#1");
-	//	}), new VirtualTask<>(string -> {
-	//		for (int i = 0; i < 2_000_000; i++) {
-	//			string.replace("hello", "hello");
-	//		}
-	//		logger().info("#2");
-	//	}));
+	//	}).finish(thread -> thread::removeUsingUnsafe)).death(thread -> thread::interrupt).every(thread -> logger().fatal(thread.getUnsafe().ensureClassInitialized(seriex.getClass())))
+	//				.compat(false) /* fuck java >8 LOL */
+	//				.safe(true);
 
-	public static void main(String... args) {
-		//		test.start();
+	public static void main(String... args) throws NoSuchFieldException,SecurityException,IllegalArgumentException,IllegalAccessException {
+		//		sun.misc.Unsafe unsafe = null;
+		//		Field theUnsafe = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+		//		theUnsafe.setAccessible(true);
+		//		unsafe = (sun.misc.Unsafe) theUnsafe.get(null);
+		//		long l = unsafe.allocateMemory(512L);
+		//		try {
+		//			unsafe.putLong(l, Primitives.hash(1408390939117193108L, 515224124L));
+		//			byte ayoThePizzasHere = unsafe.getByte(l);
+		//			logger().fatal(String.format("%d", Primitives.unsignedByte(ayoThePizzasHere)));
+		//		}
+		//		finally {
+		//			unsafe.freeMemory(l);
+		//		}
 		DatabaseReflection.init();
 		YYStal.startWatcher();
 		StructPlayer structPlayerW = database.getPlayer("tempUserkekw");
