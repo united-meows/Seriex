@@ -12,22 +12,19 @@ import org.apache.commons.io.FilenameUtils;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.ICleanup;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
-import pisi.unitedmeows.seriex.util.config.impl.server.PlayerConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.parallel.Future;
 import pisi.unitedmeows.yystal.utils.Pair;
 
+// TODO alo ghost refactor this code sucks ass
 public class FileManager implements ICleanup {
-	public static final String USERS = "users";
-	public static final String SUB_USERS = "sub_users";
 	public static final String EMOTES = "global_emotes";
 	public static final String SETTINGS = "settings";
 	public static final String EXTENSION = ".seriex";
 	public static final String PRIVATE = "#PRIVATE#";
 	private final Map<String, Pair<File, Config>> fileVariablesMap = new HashMap<>();
-	private final Map<String, Pair<File, PlayerConfig>> userFiles = new HashMap<>();
 	public static File directory , saved;
 	public static boolean set;
 
@@ -35,10 +32,6 @@ public class FileManager implements ICleanup {
 		this.directory = pluginDirectory;
 		if (!set) {
 			this.saved = pluginDirectory;
-			//			TODO hypixel like emotes system
-			//			like sending <3 will make it this -> ♡ or ♥ idk LOL
-			//			this.createFile(EMOTES, new File(directory, EMOTES + EXTENSION), null);
-			this.createFile(USERS, new File(directory, USERS), null);
 			File file = new File(directory, SETTINGS + EXTENSION);
 			this.createFile(SETTINGS, file, new ServerConfig(file));
 			set = true;
@@ -72,35 +65,13 @@ public class FileManager implements ICleanup {
 		return this.fileVariablesMap.get(alias).item1();
 	}
 
-	public Pair<File, PlayerConfig> getUserFile(String name) {
-		return userFiles.get(name);
-	}
-
-	public Pair<Boolean, Pair<File, PlayerConfig>> createUser(String username) {
-		try {
-			Seriex.logger().info("Created PlayerConfig for %s for the database!", username);
-			File file = new File(String.format("%s/%s%s", getFile(USERS), username, EXTENSION));
-			PlayerConfig playerConfig = new PlayerConfig(username, file);
-			Seriex.logger().info("Created the file %s for %s for the database!", file.toPath().toString(), username);
-			boolean created = createFile("user_" + username, file, playerConfig);
-			Seriex.logger().info("%s!", created ? "The files have been succesfully created!" : "Files couldnt be created?");
-			Pair<File, PlayerConfig> tuple = userFiles.computeIfAbsent(username, (String username_) -> new Pair<File, PlayerConfig>(file, playerConfig));
-			Seriex.logger().info("%s was put into the file cache!");
-			return new Pair<>(created, tuple);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
 	public void validateFile(File file, Config config) {
 		if (file == null) {
 			Seriex.logger().fatal("There is no file to validate.");
 		} else {
 			boolean isFileValid = true;
 			try {
-				isFileValid = Files.readAllBytes(file.toPath()).length != 0;
+				isFileValid = Files.readAllBytes(file.toPath()).length > 2;
 			}
 			catch (Exception e) {
 				Seriex.logger().fatal("Couldnt validate file");
@@ -146,7 +117,7 @@ public class FileManager implements ICleanup {
 					validateFile(file, config);
 				}
 			} else {
-				Seriex.logger().fatal("Couldnt ");
+				Seriex.logger().fatal("Couldnt validate %s (path: %s)", alias, file.toPath().toString());
 			}
 			return created;
 		}

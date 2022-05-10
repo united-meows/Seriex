@@ -33,14 +33,15 @@ public class Config {
 		set.set(string, get.get(string));
 	}
 
-	protected void internalDefaultValues(Class<? extends Config> clazz) {
+	protected void internalDefaultValues(Object o) {
 		try {
 			// 🤞 🤞 🤞 🤞 hope this works in java 8 above
-			Field[] fields = clazz.getFields();
+			Field[] fields = ((Class<? extends Config>) o.getClass()).getDeclaredFields();
 			for (int i = 0; i < fields.length; i++) {
 				Field field = fields[i];
+				field.setAccessible(true);
 				if (field.getAnnotation(ConfigField.class) != null) {
-					ConfigValue fieldValue = (ConfigValue) field.get(ConfigValue.class);
+					ConfigValue fieldValue = (ConfigValue) field.get(o);
 					setValue(fieldValue.key(), fieldValue.value());
 				}
 			}
@@ -50,14 +51,15 @@ public class Config {
 		}
 	}
 
-	protected void internalLoad(Class<? extends Config> clazz) {
+	protected void internalLoad(Object o) {
 		try (FileConfig fileConfig = FileConfig.of(toWrite)) {
 			fileConfig.load(); // this is blocking, could kill async loading...
 			try {
 				// 🤞 🤞 🤞 🤞 hope this works in java 8 above
-				Field[] fields = clazz.getFields();
+				Field[] fields = ((Class<? extends Config>) o.getClass()).getDeclaredFields();
 				for (int i = 0; i < fields.length; i++) {
 					Field field = fields[i];
+					field.setAccessible(true);
 					if (field.getAnnotation(ConfigField.class) != null) {
 						ConfigValue fieldValue = (ConfigValue) field.get(ConfigValue.class);
 						getAndSet(fileConfig, config, fieldValue.key());
