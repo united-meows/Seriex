@@ -1,6 +1,6 @@
 package pisi.unitedmeows.seriex.util.wrapper;
 
-import java.util.List;
+import java.util.regex.Pattern;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -12,22 +12,12 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.structs.impl.StructPlayer;
-import pisi.unitedmeows.seriex.database.structs.impl.StructPlayerSettings;
-import pisi.unitedmeows.seriex.util.MaintainersUtil;
-import pisi.unitedmeows.seriex.util.lists.GlueList;
 import pisi.unitedmeows.yystal.clazz.HookClass;
 import pisi.unitedmeows.yystal.utils.CoID;
 
 public class PlayerW extends HookClass<Player> {
-	private static List<String> guestNames;
+	private static final Pattern pattern = Pattern.compile("Player[0-9]{1,4}");
 	private final StructPlayer playerInfo;
-	private StructPlayerSettings playerSettings;
-	static {
-		guestNames = new GlueList<>();
-		for (int i = 0; i < 1001; i++) {
-			guestNames.add(String.format("Player%s", i));
-		}
-	}
 
 	public PlayerW(final Player _player) {
 		hooked = _player;
@@ -98,12 +88,13 @@ public class PlayerW extends HookClass<Player> {
 	}
 
 	public boolean isGuest() {
-		return guestNames.contains(playerInfo.username);
+		return pattern.matcher(hooked.getName()).matches();
 	}
 
 	public String getIp() {
-		if (MaintainersUtil.isMaintainer(hooked.getName())) // ...
-			return hooked.getUniqueId().hashCode() + ".0.0.0";
+		//		if (MaintainersUtil.isMaintainer(hooked.getName()))
+		//			return hooked.getUniqueId().hashCode() + ".0.0.0";
+		// no get real @slowcheet4h
 		return hooked.getAddress().getHostName();
 	}
 

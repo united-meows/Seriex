@@ -132,7 +132,7 @@ public class Seriex extends JavaPlugin {
 		YYStal.startWatcher();
 		StructPlayer structPlayerW = database.getPlayerW("tempUserkekw");
 		out.println(structPlayerW);
-		logger().fatal("#1 " + YYStal.stopWatcher());
+		logger().debug("#1 " + YYStal.stopWatcher());
 	}
 
 	public Thread primaryThread() {
