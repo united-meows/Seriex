@@ -7,22 +7,22 @@ import static org.bukkit.Bukkit.*;
 import static pisi.unitedmeows.seriex.util.timings.TimingsCalculator.*;
 import static pisi.unitedmeows.yystal.parallel.Async.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.io.File;
+import java.util.*;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.FormatDetector;
+import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.toml.TomlFormat;
+import com.electronwill.nightconfig.toml.TomlWriter;
 
 import pisi.unitedmeows.seriex.anticheat.Anticheat;
 import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.command.CommandSystem;
 import pisi.unitedmeows.seriex.database.SeriexDB;
-import pisi.unitedmeows.seriex.database.structs.impl.StructPlayer;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
 import pisi.unitedmeows.seriex.managers.Manager;
@@ -32,7 +32,6 @@ import pisi.unitedmeows.seriex.util.ICleanup;
 import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.lists.GlueList;
-import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.logger.impl.YLogger;
 
 public class Seriex extends JavaPlugin {
@@ -172,11 +171,32 @@ public class Seriex extends JavaPlugin {
 		//		finally {
 		//			unsafe.freeMemory(l);
 		//		}
-		DatabaseReflection.init();
-		YYStal.startWatcher();
-		StructPlayer structPlayerW = database.getPlayer("tempUserkekw");
-		out.println(structPlayerW);
-		logger().debug("#1 " + YYStal.stopWatcher());
+		//		DatabaseReflection.init();
+		//		YYStal.startWatcher();
+		//		StructPlayer structPlayerW = database.getPlayer("tempUserkekw");
+		//		out.println(structPlayerW);
+		//		logger().debug("#1 " + YYStal.stopWatcher());
+		CommentedConfig config = CommentedConfig.inMemoryConcurrent();
+		setProperty("nightconfig.preserveInsertionOrder", "true");
+		List<String> adresses = new ArrayList<>();
+		for (int i = 10; i > 0; i--) {
+			adresses.add("seriex.example_permission" + i);
+		}
+		config.set("hey", true);
+		config.set("ADMIN.internal", "admin");
+		config.set("ADMIN.shortcut", "seriex.admin");
+		config.set("ADMIN.coolName", "&7[&cAdmin&7]");
+		config.set("ADMIN.permissions", adresses);
+		config.set("HELPER.internal", "helper");
+		config.set("HELPER.shortcut", "seriex.helper");
+		config.set("HELPER.coolName", "&7[&dHelper&7]");
+		config.set("HELPER.permissions", adresses);
+		System.out.println("Config: " + config);
+		Object object = config.get("ADMIN");
+		System.out.println(object);
+		File configFile = new File("commentedConfig.toml");
+		TomlWriter writer = new TomlWriter();
+		writer.write(config, configFile, WritingMode.REPLACE);
 	}
 
 	public Thread primaryThread() {
