@@ -5,7 +5,7 @@ import java.io.File;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
 
-public class BannedActionsConfig extends Config {
+public class BanActionsConfig extends Config {
 	private ConfigValue DISABLE_LOGIN = new ConfigValue(this, "disable_login", true);
 	private ConfigValue DISABLE_DISCORD = new ConfigValue(this, "disable_discord_actions", true); // disables messaging on discord etc joining vc`s etc...
 	// disable login makes all of the below useless
@@ -21,8 +21,8 @@ public class BannedActionsConfig extends Config {
 	// send invalid block change
 	// to crash the game
 
-	public BannedActionsConfig(File toWrite) {
-		super("BannedActions");
+	public BanActionsConfig(File toWrite) {
+		super("BanActions");
 		this.toWrite = toWrite;
 	}
 

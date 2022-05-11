@@ -11,9 +11,7 @@ import java.util.Map;
 
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
-import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
-import pisi.unitedmeows.seriex.util.config.impl.server.TranslationsConfig;
-import pisi.unitedmeows.seriex.util.config.impl.server.WorldConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.*;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.parallel.Future;
@@ -23,6 +21,9 @@ import pisi.unitedmeows.yystal.utils.Pair;
 public class FileManager extends Manager {
 	public static final String EMOTES = "global_emotes";
 	public static final String SETTINGS = "settings";
+	public static final String BAN_ACTIONS = "banActions";
+	public static final String RANKS = "ranks";
+	public static final String MAINTAINERS = "maintainers";
 	public static final String WORLD = "world_";
 	public static final String TRANSLATIONS = "translations";
 	public static final String EXTENSION = ".seriex";
@@ -35,13 +36,17 @@ public class FileManager extends Manager {
 		this.directory = pluginDirectory;
 		if (!set) {
 			this.saved = pluginDirectory;
-			get().getServer().getWorlds().forEach(world -> 
-						this.createFile(String.format("%s%s", WORLD, world.getName()), 
-						new File(String.format("%s/worlds", directory)),
-						new WorldConfig(world.getName(), EXTENSION, directory)));
 			File settingsFile = new File(directory, SETTINGS + EXTENSION);
-			this.createFile(SETTINGS, settingsFile, new ServerConfig(settingsFile));
 			File translationsFile = new File(directory, TRANSLATIONS + EXTENSION);
+			File banActionsFile = new File(directory, BAN_ACTIONS + EXTENSION);
+			File maintainersFile = new File(directory, MAINTAINERS + EXTENSION);
+			File ranksFile = new File(directory, RANKS + EXTENSION);
+			get().getServer().getWorlds().forEach(
+						world -> this.createFile(String.format("%s%s", WORLD, world.getName()), new File(String.format("%s/worlds", directory)), new WorldConfig(world.getName(), EXTENSION, directory)));
+			this.createFile(BAN_ACTIONS, banActionsFile, new BanActionsConfig(banActionsFile));
+			this.createFile(RANKS, ranksFile, new RanksConfig(ranksFile));
+			this.createFile(MAINTAINERS, maintainersFile, new MaintainersConfig(maintainersFile));
+			this.createFile(SETTINGS, settingsFile, new ServerConfig(settingsFile));
 			this.createFile(TRANSLATIONS, translationsFile, new TranslationsConfig(translationsFile));
 			set = true;
 		}
