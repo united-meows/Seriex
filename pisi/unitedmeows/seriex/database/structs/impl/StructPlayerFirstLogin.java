@@ -26,4 +26,9 @@ public class StructPlayerFirstLogin implements IStruct {
 	public YSQLCommand[] setColumns() {
 		return DatabaseReflection.setAndGetColumns(this.getClass());
 	}
+
+	@Override
+	public String toString() {
+		return String.format("StructPlayerFirstLogin [player_first_login_id=%s, player_id=%s, ip_adress=%s, date=%s]", player_first_login_id, player_id, ip_adress, date);
+	}
 }

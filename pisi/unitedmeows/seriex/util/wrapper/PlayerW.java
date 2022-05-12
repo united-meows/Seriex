@@ -12,32 +12,35 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.structs.impl.StructPlayer;
+import pisi.unitedmeows.seriex.database.structs.impl.StructPlayerSettings;
 import pisi.unitedmeows.yystal.clazz.HookClass;
 import pisi.unitedmeows.yystal.utils.CoID;
 
 public class PlayerW extends HookClass<Player> {
 	private static final Pattern pattern = Pattern.compile("Player[0-9]{1,4}");
 	private final StructPlayer playerInfo;
+	private StructPlayerSettings playerSettings;
 
 	public PlayerW(final Player _player) {
 		hooked = _player;
 		final String name = hooked.getName();
 		/* TODO: create player database values on VERIFY */
 		/* ^^ ghost :DDD */
+		// says the one who did nothing where is violentcat & discordbot you fucking retard?
 		playerInfo = Seriex.get().database().getPlayer(_player.getName());
-		/*TODO: maybe do this check on login event and pass the playerInfo on constructor? */
+		/*TODO: maybe do this check on login event and pass the playerInfo on constructor? yes yes bro */
 		if (playerInfo == null) {
 			Seriex.logger().warn("Database values of player %s was missing! (maybe not verified?)", name);
 			_player.kickPlayer(ChatColor.YELLOW + "Please verify :DDDD or your db values are corrupted" /* @ghost make this cool */);
 		}
 		/* tries to retrieve player's settings if not exists creates new one */
-		//		playerSettings = Seriex.get().database().getPlayerSetting(playerInfo.player_id);
-		//		if (playerSettings == null) {
-		//			Seriex.logger().warn("The player %s does not have Settings row on database (maybe first login?)", name);
-		//			playerSettings = new StructPlayerSettings();
-		//			playerSettings.player_id = playerInfo.player_id;
-		//			Seriex.get().database().createPlayerSettings(playerSettings);
-		//		}
+		playerSettings = Seriex.get().database().getPlayerSettings(playerInfo.player_id);
+		if (playerSettings == null) {
+			Seriex.logger().warn("The player %s does not have Settings row on database (maybe first login?)", name);
+			playerSettings = new StructPlayerSettings();
+			playerSettings.player_id = playerInfo.player_id;
+			Seriex.get().database().createStruct(playerSettings, playerSettings.getClass());
+		}
 	}
 
 	private String generateUserToken(final String name) {

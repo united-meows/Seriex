@@ -4,25 +4,26 @@ import static java.lang.System.*;
 import static java.lang.Thread.*;
 import static java.util.Optional.*;
 import static org.bukkit.Bukkit.*;
+import static pisi.unitedmeows.seriex.util.config.FileManager.*;
 import static pisi.unitedmeows.seriex.util.timings.TimingsCalculator.*;
 import static pisi.unitedmeows.yystal.parallel.Async.*;
 
-import java.io.File;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.FormatDetector;
-import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.toml.TomlFormat;
-import com.electronwill.nightconfig.toml.TomlWriter;
 
 import pisi.unitedmeows.seriex.anticheat.Anticheat;
 import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.command.CommandSystem;
 import pisi.unitedmeows.seriex.database.SeriexDB;
+import pisi.unitedmeows.seriex.database.structs.impl.StructPlayer;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
 import pisi.unitedmeows.seriex.managers.Manager;
@@ -32,6 +33,7 @@ import pisi.unitedmeows.seriex.util.ICleanup;
 import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.lists.GlueList;
+import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.logger.impl.YLogger;
 
 public class Seriex extends JavaPlugin {
@@ -40,15 +42,13 @@ public class Seriex extends JavaPlugin {
 	private static FileManager fileManager;
 	private static DataManager dataManager;
 	private static FutureManager futureManager;
+	private static SeriexDB database;
 	private static List<ICleanup> cleanupabbleObjects = new GlueList<>();
 	private static List<Manager> managers = new GlueList<>();
 	private static YLogger logger = new YLogger(null, "Seriex").setTime(YLogger.Time.DAY_MONTH_YEAR_FULL).setColored(true);
 	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here so it can work async :D
 	private static boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
 	private Thread primaryThread;
-	public String suffix = colorizeString("&7[&dSer&5iex&7]"); // TODO get this from server-config
-	public String ghostsDiscord = colorizeString("&dfemboy ghost&8#&72173");  // TODO get this from server-config
-	public static SeriexDB database = new SeriexDB("seriex", "seriexdb123", "seriex", "79.110.234.147"); //TODO: get this values from a config file
 
 	@Override
 	public void onEnable() {
@@ -72,6 +72,14 @@ public class Seriex extends JavaPlugin {
 					logger().info("Loading Managers...");
 					managers.add(fileManager = new FileManager(getDataFolder()));
 					managers.add(dataManager = new DataManager());
+					// @DISABLE_FORMATTING
+					cleanupabbleObjects.add(database = new SeriexDB(
+								fileManager.getConfig(SETTINGS).getValue("database.username"),
+								fileManager.getConfig(SETTINGS).getValue("database.password"),
+								fileManager.getConfig(SETTINGS).getValue("database.name"),
+								fileManager.getConfig(SETTINGS).getValue("database.host"),
+								fileManager.getConfig(SETTINGS).getValue("database.port")));
+					// @ENABLE_FORMATTING
 					managers.add(futureManager = new FutureManager()); // this should be always last!
 				}, "Managers");
 				GET.benchmark(temp -> {
@@ -120,7 +128,7 @@ public class Seriex extends JavaPlugin {
 		List<Player> tempPlayers = new GlueList<>(getOnlinePlayers());
 		for (int i = 0; i < tempPlayers.size(); i++) {
 			Player player = tempPlayers.get(i);
-			player.kickPlayer(suffix + "\n" + "Restarting the server...");
+			player.kickPlayer(getSuffix() + "\n" + "Restarting the server...");
 		}
 		for (int i = 0; i < cleanupabbleObjects.size(); i++) {
 			ICleanup cleanup = cleanupabbleObjects.get(i);
@@ -171,32 +179,32 @@ public class Seriex extends JavaPlugin {
 		//		finally {
 		//			unsafe.freeMemory(l);
 		//		}
-		//		DatabaseReflection.init();
-		//		YYStal.startWatcher();
-		//		StructPlayer structPlayerW = database.getPlayer("tempUserkekw");
-		//		out.println(structPlayerW);
-		//		logger().debug("#1 " + YYStal.stopWatcher());
-		CommentedConfig config = CommentedConfig.inMemoryConcurrent();
-		setProperty("nightconfig.preserveInsertionOrder", "true");
-		List<String> adresses = new ArrayList<>();
-		for (int i = 10; i > 0; i--) {
-			adresses.add("seriex.example_permission" + i);
-		}
-		config.set("hey", true);
-		config.set("ADMIN.internal", "admin");
-		config.set("ADMIN.shortcut", "seriex.admin");
-		config.set("ADMIN.coolName", "&7[&cAdmin&7]");
-		config.set("ADMIN.permissions", adresses);
-		config.set("HELPER.internal", "helper");
-		config.set("HELPER.shortcut", "seriex.helper");
-		config.set("HELPER.coolName", "&7[&dHelper&7]");
-		config.set("HELPER.permissions", adresses);
-		System.out.println("Config: " + config);
-		Object object = config.get("ADMIN");
-		System.out.println(object);
-		File configFile = new File("commentedConfig.toml");
-		TomlWriter writer = new TomlWriter();
-		writer.write(config, configFile, WritingMode.REPLACE);
+		//		CommentedConfig config = CommentedConfig.inMemoryConcurrent();
+		//		setProperty("nightconfig.preserveInsertionOrder", "true");
+		//		List<String> adresses = new ArrayList<>();
+		//		for (int i = 10; i > 0; i--) {
+		//			adresses.add("seriex.example_permission" + i);
+		//		}
+		//		config.set("hey", true);
+		//		config.set("ADMIN.internal", "admin");
+		//		config.set("ADMIN.shortcut", "seriex.admin");
+		//		config.set("ADMIN.coolName", "&7[&cAdmin&7]");
+		//		config.set("ADMIN.permissions", adresses);
+		//		config.set("HELPER.internal", "helper");
+		//		config.set("HELPER.shortcut", "seriex.helper");
+		//		config.set("HELPER.coolName", "&7[&dHelper&7]");
+		//		config.set("HELPER.permissions", adresses);
+		//		System.out.println("Config: " + config);
+		//		Object object = config.get("ADMIN");
+		//		System.out.println(object);
+		//		File configFile = new File("commentedConfig.toml");
+		//		TomlWriter writer = new TomlWriter();
+		//		writer.write(config, configFile, WritingMode.REPLACE);
+		DatabaseReflection.init();
+		YYStal.startWatcher();
+		StructPlayer structPlayerW = database.getPlayer("tempUserkekw");
+		out.println(structPlayerW);
+		logger().debug("#1 " + YYStal.stopWatcher());
 	}
 
 	public Thread primaryThread() {
@@ -225,6 +233,10 @@ public class Seriex extends JavaPlugin {
 
 	public Set<Anticheat> antiCheats() {
 		return new HashSet<>(anticheats);
+	}
+
+	public String getSuffix() {
+		return fileManager.getConfig(fileManager.SETTINGS).getValue("server.msg_suffix");
 	}
 
 	public SeriexDB database() {

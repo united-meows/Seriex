@@ -12,7 +12,7 @@ import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
 // TODO implement
 public class WorldConfig extends Config {
 	@ConfigField
-	private ConfigValue WORLD_TPYE = new ConfigValue(this, "world.type", NULL);
+	public ConfigValue WORLD_TPYE = new ConfigValue(this, "world.type", NULL);
 
 	public WorldConfig(String worldName, String extension, File toWrite) {
 		super(format("WorldConfig_%s", worldName));

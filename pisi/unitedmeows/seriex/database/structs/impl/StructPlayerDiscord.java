@@ -30,4 +30,10 @@ public class StructPlayerDiscord implements IStruct {
 	public YSQLCommand[] setColumns() {
 		return DatabaseReflection.setAndGetColumns(this.getClass());
 	}
+
+	@Override
+	public String toString() {
+		return String.format("StructPlayerDiscord [player_discord_id=%s, player_id=%s, discord_id=%s, joinMS=%s, linkMS=%s, joinedAs=%s]", player_discord_id, player_id, discord_id, joinMS, linkMS,
+					joinedAs);
+	}
 }

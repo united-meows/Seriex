@@ -17,6 +17,7 @@ import pisi.unitedmeows.seriex.database.util.annotation.Struct;
 import pisi.unitedmeows.seriex.util.lists.GlueList;
 import pisi.unitedmeows.yystal.sql.YSQLCommand;
 import pisi.unitedmeows.yystal.utils.Pair;
+import pisi.unitedmeows.yystal.utils.kThread;
 
 public class DatabaseReflection {
 	/**
@@ -49,10 +50,10 @@ public class DatabaseReflection {
 				String name = column.name();
 				tables.put(clazz, name);
 				reverseTables.put(name, new Pair<>(clazz.newInstance(), clazz));
-				Seriex.database.execute(create(clazz));
+				Seriex.get().database().execute(create(clazz));
 				YSQLCommand[] commands = setAndGetColumns(clazz);
 				for (int i = 0; i < commands.length; i++) {
-					Seriex.database.execute(commands[i]);
+					Seriex.get().database().execute(commands[i]);
 				}
 			}
 		}
@@ -78,7 +79,7 @@ public class DatabaseReflection {
 	}
 
 	private static Pair<List<Map<String, Object>>, Class<? extends IStruct>> sendRequest(YSQLCommand command, String tableName, SeriexDB db) {
-		Pair<IStruct, Class<? extends IStruct>> table = DatabaseReflection.getTable(tableName);
+		Pair<IStruct, Class<? extends IStruct>> table = DatabaseReflection.getReverseTable(tableName);
 		List<Map<String, Object>> query = db.select(command, table.item1().getColumns());
 		return new Pair<>(query, table.item2());
 	}
@@ -169,8 +170,12 @@ public class DatabaseReflection {
 		return null;
 	}
 
-	public static Pair<IStruct, Class<? extends IStruct>> getTable(String name) {
+	public static Pair<IStruct, Class<? extends IStruct>> getReverseTable(String name) {
 		return reverseTables.get(name);
+	}
+
+	public static String getTable(Class<? extends IStruct> clazz) {
+		return tables.get(clazz);
 	}
 
 	public enum FieldType {
@@ -204,5 +209,13 @@ public class DatabaseReflection {
 			this.mySQL = mySQLType;
 			this.nullable = nullable;
 		}
+	}
+
+	public static void cleanup() {
+		cache.clear();
+		tables.clear();
+		reverseTables.clear();
+		Seriex.get().logger().info("Waiting 200 ms for DatabaseReflection to clean up properly.");
+		kThread.sleep(200L);
 	}
 }

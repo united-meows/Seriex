@@ -26,4 +26,9 @@ public class StructPlayerWallet implements IStruct {
 	public YSQLCommand[] setColumns() {
 		return DatabaseReflection.setAndGetColumns(this.getClass());
 	}
+
+	@Override
+	public String toString() {
+		return String.format("StructPlayerWallet [player_coin_id=%s, player_id=%s, coins=%s, player_wallet=%s]", player_coin_id, player_id, coins, player_wallet);
+	}
 }

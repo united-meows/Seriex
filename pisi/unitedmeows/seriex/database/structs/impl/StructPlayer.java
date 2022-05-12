@@ -35,9 +35,6 @@ public class StructPlayer implements IStruct {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("StructPlayer [player_id=").append(player_id).append(", api_access=").append(api_access).append(", username=").append(username).append(", password=").append(password)
-					.append(", token=").append(token).append(", gAuth=").append(gAuth).append(", salt=").append(salt).append("]");
-		return builder.toString();
+		return String.format("StructPlayer [player_id=%s, api_access=%s, username=%s, password=%s, token=%s, gAuth=%s, salt=%s]", player_id, api_access, username, password, token, gAuth, salt);
 	}
 }
