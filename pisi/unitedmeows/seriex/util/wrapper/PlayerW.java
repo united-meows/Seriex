@@ -32,6 +32,7 @@ public class PlayerW extends HookClass<Player> {
 		if (playerInfo == null) {
 			Seriex.logger().warn("Database values of player %s was missing! (maybe not verified?)", name);
 			_player.kickPlayer(ChatColor.YELLOW + "Please verify :DDDD or your db values are corrupted" /* @ghost make this cool */);
+			return; // bug fix
 		}
 		/* tries to retrieve player's settings if not exists creates new one */
 		playerSettings = Seriex.get().database().getPlayerSettings(playerInfo.player_id);
@@ -39,7 +40,7 @@ public class PlayerW extends HookClass<Player> {
 			Seriex.logger().warn("The player %s does not have Settings row on database (maybe first login?)", name);
 			playerSettings = new StructPlayerSettings();
 			playerSettings.player_id = playerInfo.player_id;
-			Seriex.get().database().createStruct(playerSettings, playerSettings.getClass());
+			Seriex.get().database().createStruct(playerSettings);
 		}
 	}
 

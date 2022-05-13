@@ -52,7 +52,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 		return DatabaseReflection.get("player_wallet", command, this, new StructPlayerWallet());
 	}
 
-	public boolean createStruct(IStruct struct, Class<? extends IStruct> clazz) {
+	public boolean createStruct(IStruct struct) {
 		//  	based on
 		//		return execute(new YSQLCommand(
 		//				    "INSERT INTO player_settings "
@@ -64,6 +64,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 		//               .putBool(playerSettings.ENABLE_FALLDAMAGE)
 		//               .putString(playerSettings.ANTICHEAT));
 		try {
+			Class<? extends IStruct> clazz = struct.getClass();
 			StringBuilder builder = new StringBuilder(String.format("INSERT INTO %s", DatabaseReflection.getTable(clazz)));
 			// INSERT INTO player
 			builder.append("(");
