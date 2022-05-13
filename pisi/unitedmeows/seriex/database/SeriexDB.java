@@ -99,7 +99,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 			}
 			// INSERT INTO player(player_id, api_access, username, password, token, gAuth, salt)
 			// VALUES(1, 31, "probablyThisDoesntwork", "pass", "tokenqwe", "gAuthEX", "saltEx")
-			return false;
+			return execute(new YSQLCommand(builder.toString()));
 		}
 		catch (Exception e) {
 			e.printStackTrace();
