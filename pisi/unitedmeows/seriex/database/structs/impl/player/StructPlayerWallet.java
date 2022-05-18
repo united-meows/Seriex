@@ -1,4 +1,4 @@
-package pisi.unitedmeows.seriex.database.structs.impl;
+package pisi.unitedmeows.seriex.database.structs.impl.player;
 
 import pisi.unitedmeows.seriex.database.structs.IStruct;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;

@@ -1,4 +1,4 @@
-package pisi.unitedmeows.seriex.database.structs.impl;
+package pisi.unitedmeows.seriex.database.structs.impl.player;
 
 import pisi.unitedmeows.seriex.database.structs.IStruct;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
@@ -6,22 +6,22 @@ import pisi.unitedmeows.seriex.database.util.annotation.Column;
 import pisi.unitedmeows.seriex.database.util.annotation.Struct;
 import pisi.unitedmeows.yystal.sql.YSQLCommand;
 
-@Struct(name = "player_settings")
-public class StructPlayerSettings implements IStruct {
-	@Column
-	public int player_settings_id;
+@Struct(name = "player")
+public class StructPlayer implements IStruct {
 	@Column
 	public int player_id;
 	@Column
-	public boolean guest;
+	public int api_access;
 	@Column
-	public boolean flags;
+	public String username;
 	@Column
-	public boolean hunger;
+	public String password;
 	@Column
-	public boolean fall_damage;
+	public String token;
 	@Column
-	public String anticheat;
+	public String gAuth;
+	@Column
+	public String salt;
 
 	@Override
 	public String[] getColumns() {
@@ -31,5 +31,10 @@ public class StructPlayerSettings implements IStruct {
 	@Override
 	public YSQLCommand[] setColumns() {
 		return DatabaseReflection.setAndGetColumns(this.getClass());
+	}
+
+	@Override
+	public String toString() {
+		return String.format("StructPlayer [player_id=%s, api_access=%s, username=%s, password=%s, token=%s, gAuth=%s, salt=%s]", player_id, api_access, username, password, token, gAuth, salt);
 	}
 }

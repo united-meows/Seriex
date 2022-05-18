@@ -1,4 +1,4 @@
-package pisi.unitedmeows.seriex.database.structs.impl;
+package pisi.unitedmeows.seriex.database.structs.impl.areas;
 
 import pisi.unitedmeows.seriex.database.structs.IStruct;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
@@ -6,10 +6,10 @@ import pisi.unitedmeows.seriex.database.util.annotation.Column;
 import pisi.unitedmeows.seriex.database.util.annotation.Struct;
 import pisi.unitedmeows.yystal.sql.YSQLCommand;
 
-@Struct(name = "player")
-public class StructPlayer implements IStruct {
+@Struct(name = "area")
+public class StructArea implements IStruct {
 	@Column
-	public int player_id;
+	public int area_id;
 	@Column
 	public int api_access;
 	@Column
@@ -31,10 +31,5 @@ public class StructPlayer implements IStruct {
 	@Override
 	public YSQLCommand[] setColumns() {
 		return DatabaseReflection.setAndGetColumns(this.getClass());
-	}
-
-	@Override
-	public String toString() {
-		return String.format("StructPlayer [player_id=%s, api_access=%s, username=%s, password=%s, token=%s, gAuth=%s, salt=%s]", player_id, api_access, username, password, token, gAuth, salt);
 	}
 }

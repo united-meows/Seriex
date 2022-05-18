@@ -7,6 +7,7 @@ import java.util.Map;
 
 import pisi.unitedmeows.seriex.database.structs.IStruct;
 import pisi.unitedmeows.seriex.database.structs.impl.*;
+import pisi.unitedmeows.seriex.database.structs.impl.player.*;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection.FieldType;
 import pisi.unitedmeows.seriex.util.ICleanup;

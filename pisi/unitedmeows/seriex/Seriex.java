@@ -23,7 +23,7 @@ import pisi.unitedmeows.seriex.anticheat.Anticheat;
 import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.command.CommandSystem;
 import pisi.unitedmeows.seriex.database.SeriexDB;
-import pisi.unitedmeows.seriex.database.structs.impl.StructPlayer;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
 import pisi.unitedmeows.seriex.managers.Manager;

@@ -11,8 +11,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import pisi.unitedmeows.seriex.Seriex;
-import pisi.unitedmeows.seriex.database.structs.impl.StructPlayer;
-import pisi.unitedmeows.seriex.database.structs.impl.StructPlayerSettings;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerSettings;
 import pisi.unitedmeows.yystal.clazz.HookClass;
 import pisi.unitedmeows.yystal.utils.CoID;
 
