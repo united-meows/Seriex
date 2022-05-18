@@ -29,7 +29,7 @@
    + [NightConfig (TOML)]
    + [HamsterAPI]
    + [Javaasist]
-   + [JDA] (will probably get replaced with [violentcat]
+   + [JDA] (will probably get replaced with [violentcat])
    + [ProtocolLib]
    + [Reflections]
    + Spigot 1.8.8 (Custom JAnsi build, just replace JAnsi in spigot with latest JAnsi)
