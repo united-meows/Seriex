@@ -15,7 +15,7 @@
     
   # Things done so far
    - [x] Player database
-   - [x] Make most of the codebase async compatible in the future.
+   - [x] Make most of the codebase async compatible for the future.
    - [ ] Actual good & fast config handler
    - [ ] Add areas
    - [ ] Add mini-games
