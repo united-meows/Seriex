@@ -26,7 +26,7 @@
    + [yystal]
    + [pisiEventAPI] 
    + [Atlas]
-   + [NightConfig (TOML))
+   + [NightConfig (TOML)]
    + [HamsterAPI]
    + [Javaasist]
    + [JDA] (will probably get replaced with [violentcat]
