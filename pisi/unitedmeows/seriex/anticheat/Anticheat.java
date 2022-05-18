@@ -21,6 +21,7 @@ import pisi.unitedmeows.seriex.Seriex;
  * VANILLA,
  */
 public class Anticheat {
+
 	volatile String name;
 	volatile String pluginName;
 	List<String> dependantAnticheats = new CopyOnWriteArrayList<>();

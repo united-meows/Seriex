@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import pisi.unitedmeows.seriex.Seriex;
 
 public enum TimingsCalculator {
+
 	GET;
 
 	public void benchmark(final Consumer<TimingsCalculator> func, final String name) {

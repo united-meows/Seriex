@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import pisi.unitedmeows.seriex.database.structs.IStruct;
-import pisi.unitedmeows.seriex.database.structs.impl.*;
 import pisi.unitedmeows.seriex.database.structs.impl.player.*;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection.FieldType;
@@ -17,6 +16,7 @@ import pisi.unitedmeows.yystal.sql.YSQLCommand;
 import pisi.unitedmeows.yystal.utils.Pair;
 
 public class SeriexDB extends YDatabaseClient implements ICleanup {
+
 	public SeriexDB(String username, String password, String database, String host, int port) {
 		super(username, password, database, host, port);
 	}

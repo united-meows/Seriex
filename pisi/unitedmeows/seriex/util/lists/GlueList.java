@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.*;
 
 public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializable {
+
 	private static final long serialVersionUID = 4629641037522698945L;
 	transient Node<T> first;
 	transient Node<T> last;
@@ -430,6 +431,7 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 	}
 
 	private class Itr implements Iterator<T> {
+
 		Node<T> node = first;
 		int i = 0;// inner-array index
 		int j = 0;// total index -> cursor
@@ -500,6 +502,7 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 	}
 
 	private class ListItr extends Itr implements ListIterator<T> {
+
 		public ListItr(final int index) {
 			node = index == size ? last : getNode(index);
 			j = index;
@@ -629,6 +632,7 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 	}
 
 	static class Node<T> {
+
 		Node<T> pre;
 		Node<T> next;
 		int listSize;

@@ -6,6 +6,7 @@ import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
 
 public class BanActionsConfig extends Config {
+
 	public ConfigValue DISABLE_LOGIN = new ConfigValue(this, "disable_login", true);
 	public ConfigValue DISABLE_DISCORD = new ConfigValue(this, "disable_discord_actions", true); // disables messaging on discord etc joining vc`s etc...
 	// disable login makes all of the below useless

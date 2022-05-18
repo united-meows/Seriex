@@ -19,6 +19,7 @@ import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
  * @apiNote Not thread-safe.
  */
 public class DataManager extends Manager {
+
 	// TODOL -> Investigate # maybe IdentityHashMap has better performance and for more stability?
 	// Also we could use LinkedHashMap for removeEldestEntry to remove memory leaks maybe...
 	// AND using Player as keys CAUSES MEMORY LEAKS. Certainly we could use UUIDs but that makes us calculate

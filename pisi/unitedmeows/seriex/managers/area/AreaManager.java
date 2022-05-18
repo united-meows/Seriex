@@ -14,6 +14,7 @@ import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.lists.GlueList;
 
 public class AreaManager extends Manager implements Listener {
+
 	public List<Area> areaList = new GlueList<>();
 
 	@Override

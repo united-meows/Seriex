@@ -8,6 +8,7 @@ import pisi.unitedmeows.yystal.sql.YSQLCommand;
 
 @Struct(name = "player_last_login")
 public class StructPlayerLastLogin implements IStruct {
+
 	@Column
 	public int player_last_login_id;
 	@Column

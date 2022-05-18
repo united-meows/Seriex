@@ -19,6 +19,7 @@ import pisi.unitedmeows.yystal.utils.Pair;
 
 // TODO alo ghost refactor this code sucks ass
 public class FileManager extends Manager {
+
 	public static final String EMOTES = "global_emotes";
 	public static final String SETTINGS = "settings";
 	public static final String BAN_ACTIONS = "banActions";

@@ -3,6 +3,7 @@ package pisi.unitedmeows.seriex.util.math;
 import org.bukkit.Location;
 
 public class AxisBB {
+
 	public double minX;
 	public double minY;
 	public double minZ;

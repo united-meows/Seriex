@@ -20,5 +20,6 @@ import java.lang.annotation.Target;
  *              if somehow it doesnt have any name for some reason default is "empty"
  */
 public @interface Column {
+
 	String name() default "empty";
 }

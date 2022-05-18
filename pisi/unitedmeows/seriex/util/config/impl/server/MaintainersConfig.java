@@ -9,6 +9,7 @@ import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
 import pisi.unitedmeows.seriex.util.lists.GlueList;
 
 public class MaintainersConfig extends Config {
+
 	private static List<String> defaultMaintainers = new GlueList<>();
 	@ConfigField
 	public ConfigValue MAINTAINERS = new ConfigValue(this, "maintainers", defaultMaintainers);

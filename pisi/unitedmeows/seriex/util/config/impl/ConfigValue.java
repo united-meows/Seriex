@@ -4,6 +4,7 @@ package pisi.unitedmeows.seriex.util.config.impl;
  * @apiNote keys are TOML keys.
  */
 public class ConfigValue {
+
 	private String key;
 	private Object value;
 	private Config base;

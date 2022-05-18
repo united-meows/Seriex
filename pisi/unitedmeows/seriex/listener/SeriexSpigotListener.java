@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import pisi.unitedmeows.seriex.Seriex;
 
 public class SeriexSpigotListener implements Listener {
+
 	@EventHandler(priority = EventPriority.LOW)
 	public void onJoin(final PlayerJoinEvent event) {
 		Seriex.logger().info("%s joined the server!", event.getPlayer().getName());

@@ -5,6 +5,7 @@ import java.io.File;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
 
 public class TranslationsConfig extends Config {
+
 	public TranslationsConfig(File toWrite) {
 		super("Translations", true);
 		this.toWrite = toWrite;

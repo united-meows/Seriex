@@ -17,6 +17,7 @@ import pisi.unitedmeows.yystal.clazz.HookClass;
 import pisi.unitedmeows.yystal.utils.CoID;
 
 public class PlayerW extends HookClass<Player> {
+
 	private static final Pattern pattern = Pattern.compile("Player[0-9]{1,4}");
 	private final StructPlayer playerInfo;
 	private StructPlayerSettings playerSettings;
@@ -56,6 +57,7 @@ public class PlayerW extends HookClass<Player> {
 		hooked.setSaturation(12.8F);
 		hooked.setMaximumNoDamageTicks(20);
 		new BukkitRunnable() {
+
 			@Override
 			public void run() {
 				hooked.setFireTicks(0);
@@ -82,6 +84,7 @@ public class PlayerW extends HookClass<Player> {
 				hooked.updateInventory();
 			} else if (i > 0) {
 				new BukkitRunnable() {
+
 					@Override
 					public void run() {
 						hooked.updateInventory();

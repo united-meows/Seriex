@@ -10,6 +10,7 @@ import pisi.unitedmeows.seriex.util.config.impl.ConfigField;
 import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
 
 public class ServerConfig extends Config {
+
 	@ConfigField
 	public ConfigValue GUILD_ID = new ConfigValue(this, "discord.guild_id", "824637279824773231");
 	@ConfigField

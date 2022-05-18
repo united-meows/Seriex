@@ -12,6 +12,7 @@ import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.toml.TomlWriter;
 
 public class Config {
+
 	protected String name;
 	protected File toWrite;
 	protected CommentedConfig config;

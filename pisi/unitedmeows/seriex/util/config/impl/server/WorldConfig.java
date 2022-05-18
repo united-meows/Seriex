@@ -11,6 +11,7 @@ import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
 
 // TODO implement
 public class WorldConfig extends Config {
+
 	@ConfigField
 	public ConfigValue WORLD_TPYE = new ConfigValue(this, "world.type", NULL);
 

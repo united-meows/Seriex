@@ -20,6 +20,7 @@ import pisi.unitedmeows.yystal.utils.Pair;
 import pisi.unitedmeows.yystal.utils.kThread;
 
 public class DatabaseReflection {
+
 	/**
 	 * <br>
 	 * how it works:
@@ -179,6 +180,7 @@ public class DatabaseReflection {
 	}
 
 	public enum FieldType {
+
 		/*
 		 * based on
 		 * https://www.w3schools.com/sql/sql_datatypes.asp

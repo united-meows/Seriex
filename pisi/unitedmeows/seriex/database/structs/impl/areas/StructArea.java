@@ -8,20 +8,23 @@ import pisi.unitedmeows.yystal.sql.YSQLCommand;
 
 @Struct(name = "area")
 public class StructArea implements IStruct {
+
 	@Column
 	public int area_id;
 	@Column
-	public int api_access;
+	public String area_coid;
 	@Column
-	public String username;
+	public double area_minX;
 	@Column
-	public String password;
+	public double area_minY;
 	@Column
-	public String token;
+	public double area_minZ;
 	@Column
-	public String gAuth;
+	public double area_maxX;
 	@Column
-	public String salt;
+	public double area_maxY;
+	@Column
+	public double area_maxZ;
 
 	@Override
 	public String[] getColumns() {

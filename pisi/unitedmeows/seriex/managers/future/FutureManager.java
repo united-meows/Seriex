@@ -10,6 +10,7 @@ import pisi.unitedmeows.yystal.parallel.Future;
 
 // note: you cant delete futures until they are done get real
 public class FutureManager extends Manager {
+
 	private List<Future<?>> futures = new GlueList<>();
 
 	@Override

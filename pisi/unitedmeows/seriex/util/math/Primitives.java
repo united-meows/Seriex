@@ -1,6 +1,7 @@
 package pisi.unitedmeows.seriex.util.math;
 
 public class Primitives {
+
 	public static long unsignedInt(int i) {
 		return i & 0xFFFFFFFFL;
 	}

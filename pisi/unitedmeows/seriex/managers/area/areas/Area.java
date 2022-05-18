@@ -9,6 +9,7 @@ import pisi.unitedmeows.seriex.util.math.AxisBB;
 import pisi.unitedmeows.yystal.utils.CoID;
 
 public class Area {
+
 	public AxisBB axis;
 	public CoID coID;
 	public List<Player> playersInArea = new GlueList<>();

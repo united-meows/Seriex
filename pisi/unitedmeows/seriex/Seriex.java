@@ -37,6 +37,7 @@ import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.logger.impl.YLogger;
 
 public class Seriex extends JavaPlugin {
+
 	private static Optional<Seriex> instance_;
 	private CommandSystem commandSystem;
 	private static FileManager fileManager;

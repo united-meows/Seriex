@@ -8,6 +8,7 @@ import pisi.unitedmeows.yystal.sql.YSQLCommand;
 
 @Struct(name = "player_wallet")
 public class StructPlayerWallet implements IStruct {
+
 	@Column
 	public int player_coin_id;
 	@Column
