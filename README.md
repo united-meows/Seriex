@@ -1,5 +1,5 @@
 # Seriex
-  Official plugin of [Seriex] (site isnt done yet & havent loaded backups)
+  Official plugin of [Seriex] (website isnt done yet & havent loaded backups)
   
   # Contributing
   Create a branch & pull request.
