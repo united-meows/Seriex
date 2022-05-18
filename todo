@@ -1,12 +1,10 @@
 
 make spawn work for minigame spawns, not seriex spawn. (suggestion by V3NOM)
 
-update yystal so we remove pisi.unitedmeows.seriex.util.yystal.FixedTaskPool
-
 maybe make a toml config file for CONSTANTS texts like KICK MESSAGES, VERIFY MESSAGES
-and add Language support (only for server messages
+and add Language support (only for server messages)
 
-/party system ????????????????????
+/party system ???????????????????? # for what?
 
-c17 seriex api?
-and seriex website api
+c17 seriex api? # no
+and seriex website api # maybe
