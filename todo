@@ -14,3 +14,4 @@ and seriex website api # maybe
 
 
 # refactor filemanager
+replace reflections & javaasist with https://github.com/EsotericSoftware/reflectasm or https://github.com/classgraph/classgraph 
