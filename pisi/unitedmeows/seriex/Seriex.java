@@ -29,6 +29,8 @@ import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.managers.data.DataManager;
 import pisi.unitedmeows.seriex.managers.future.FutureManager;
+import pisi.unitedmeows.seriex.managers.sign.SignManager;
+import pisi.unitedmeows.seriex.sign.SignCommand;
 import pisi.unitedmeows.seriex.util.ICleanup;
 import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.config.FileManager;
@@ -43,6 +45,7 @@ public class Seriex extends JavaPlugin {
 	private static FileManager fileManager;
 	private static DataManager dataManager;
 	private static FutureManager futureManager;
+	private static SignManager signManager;
 	private static SeriexDB database;
 	private static List<ICleanup> cleanupabbleObjects = new GlueList<>();
 	private static List<Manager> managers = new GlueList<>();
@@ -66,6 +69,9 @@ public class Seriex extends JavaPlugin {
 			logger().info("Starting seriex...");
 			primaryThread = currentThread();
 			managers: {
+				signManager = new SignManager();
+				managers.add(signManager);
+
 				setProperty("nightconfig.preserveInsertionOrder", "true");
 				FormatDetector.registerExtension("seriex", TomlFormat.instance());
 				GET.benchmark(temp -> {
@@ -121,6 +127,15 @@ public class Seriex extends JavaPlugin {
 				executeInfo.playerW().getHooked().sendRawMessage(var1 + " " + var2);
 			});
 		}
+
+		{
+			SignManager.create("spawn pig").onRight((player, sign) -> {
+
+			}).tick((sign) -> {
+
+			}, 20);
+		}
+
 		super.onEnable();
 	}
 
@@ -241,6 +256,10 @@ public class Seriex extends JavaPlugin {
 	public String getSuffix() {
 		Config config = fileManager.getConfig(fileManager.SETTINGS);
 		return config.getValue("server.msg_suffix", config.config);
+	}
+
+	public SignManager signManager() {
+		return signManager;
 	}
 
 	public SeriexDB database() {
