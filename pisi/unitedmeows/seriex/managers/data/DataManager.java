@@ -29,6 +29,7 @@ public class DataManager extends Manager {
 
 	@Override
 	public void start(Seriex seriex) {
+		userMap.clear(); // a bug fix for when the server crashes
 		seriex.get().getServer().getOnlinePlayers().forEach(this::addUser);
 	}
 

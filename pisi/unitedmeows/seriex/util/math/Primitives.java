@@ -30,10 +30,10 @@ public class Primitives {
 		v0 ^= Long.rotateRight(((v0 + v2) * k0) + v3, 37) * k1;
 		v1 ^= Long.rotateRight(((v1 + v3) * k1) + v2, 37) * k0;
 		h += v0 ^ v1;
-		return finalize(h);
+		return finalizeHash(h);
 	}
 
-	private static long finalize(long h) {
+	private static long finalizeHash(long h) {
 		h ^= Long.rotateRight(h, 28);
 		h *= k0;
 		h ^= Long.rotateRight(h, 29);

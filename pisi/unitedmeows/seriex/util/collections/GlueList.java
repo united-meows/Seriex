@@ -1,4 +1,4 @@
-package pisi.unitedmeows.seriex.util.lists;
+package pisi.unitedmeows.seriex.util.collections;
 
 import static java.lang.Math.*;
 

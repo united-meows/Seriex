@@ -3,16 +3,15 @@ package pisi.unitedmeows.seriex.util.config.impl.server;
 import java.io.File;
 import java.util.List;
 
+import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.config.impl.ConfigField;
 import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
-import pisi.unitedmeows.seriex.util.lists.GlueList;
 
 public class MaintainersConfig extends Config {
-
 	private static List<String> defaultMaintainers = new GlueList<>();
 	@ConfigField
-	public ConfigValue MAINTAINERS = new ConfigValue(this, "maintainers", defaultMaintainers);
+	public ConfigValue<List<String>> MAINTAINERS = new ConfigValue(this, "maintainers", defaultMaintainers);
 
 	public MaintainersConfig(File toWrite) {
 		super("Maintainers");

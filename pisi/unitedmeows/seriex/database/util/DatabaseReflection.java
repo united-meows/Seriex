@@ -2,10 +2,7 @@ package pisi.unitedmeows.seriex.database.util;
 
 import java.lang.reflect.Field;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.reflections.Reflections;
 
@@ -14,13 +11,13 @@ import pisi.unitedmeows.seriex.database.SeriexDB;
 import pisi.unitedmeows.seriex.database.structs.IStruct;
 import pisi.unitedmeows.seriex.database.util.annotation.Column;
 import pisi.unitedmeows.seriex.database.util.annotation.Struct;
-import pisi.unitedmeows.seriex.util.lists.GlueList;
+import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.yystal.sql.YSQLCommand;
 import pisi.unitedmeows.yystal.utils.Pair;
 import pisi.unitedmeows.yystal.utils.kThread;
 
+// dont touch this code, its black magic
 public class DatabaseReflection {
-
 	/**
 	 * <br>
 	 * how it works:
@@ -37,7 +34,7 @@ public class DatabaseReflection {
 	private static Map<Class<? extends IStruct>, String> tables = new HashMap<>();
 	private static Map<String, Pair<IStruct, Class<? extends IStruct>>> reverseTables = new HashMap<>();
 
-	public static void init() {
+	public static void init(SeriexDB db) {
 		try {
 			Reflections reflections = new Reflections("pisi.unitedmeows.seriex.database.structs.impl");
 			Set<Class<? extends IStruct>> classes = reflections.getSubTypesOf(IStruct.class);
@@ -50,11 +47,27 @@ public class DatabaseReflection {
 				Struct column = clazz.getAnnotation(Struct.class);
 				String name = column.name();
 				tables.put(clazz, name);
-				reverseTables.put(name, new Pair<>(clazz.newInstance(), clazz));
-				Seriex.get().database().execute(create(clazz));
+				IStruct newInstance = clazz.newInstance();
+				reverseTables.put(name, new Pair<>(newInstance, clazz));
+				db.execute(create(clazz));
+				List<String> currentColumns = Arrays.asList(newInstance.getColumns());
+				List<String> dbColumns = dbColumns(name, db);
+				List<String> uncommon = new ArrayList<>();
+				for (String s : currentColumns) {
+					if (!dbColumns.contains(s)) {
+						uncommon.add(s);
+					}
+				}
+				for (String s : dbColumns) {
+					if (!currentColumns.contains(s)) {
+						uncommon.add(s);
+					}
+				}
+				System.out.println(name + " " + uncommon);
+				uncommon.forEach((String column_) -> db.execute(remove(name, column_)));
 				YSQLCommand[] commands = setAndGetColumns(clazz);
 				for (int i = 0; i < commands.length; i++) {
-					Seriex.get().database().execute(commands[i]);
+					db.execute(commands[i]);
 				}
 			}
 		}
@@ -62,6 +75,16 @@ public class DatabaseReflection {
 			e.printStackTrace();
 			Seriex.logger().fatal("DatabaseReflection gave an exception! (%s)", e.getMessage());
 		}
+	}
+
+	public static List<String> dbColumns(String string, SeriexDB db) {
+		List<Map<String, Object>> select = db.select(new YSQLCommand("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=^").putString(string), "TABLE_CATALOG", "TABLE_SCHEMA", "TABLE_NAME",
+					"COLUMN_NAME");
+		List<String> strings = new GlueList<>();
+		for (int i = 0; i < select.size(); i++) {
+			strings.add((String) select.get(i).get("COLUMN_NAME"));
+		}
+		return strings;
 	}
 
 	public static <X> X get(String tableName, YSQLCommand command, SeriexDB db, X struct) {
@@ -81,8 +104,7 @@ public class DatabaseReflection {
 
 	private static Pair<List<Map<String, Object>>, Class<? extends IStruct>> sendRequest(YSQLCommand command, String tableName, SeriexDB db) {
 		Pair<IStruct, Class<? extends IStruct>> table = DatabaseReflection.getReverseTable(tableName);
-		List<Map<String, Object>> query = db.select(command, table.item1().getColumns());
-		return new Pair<>(query, table.item2());
+		return new Pair<>(db.select(command, table.item1().getColumns()), table.item2());
 	}
 
 	private static void setFields(List<Map<String, Object>> query, Class<? extends IStruct> clazz, IStruct struct) {
@@ -167,8 +189,8 @@ public class DatabaseReflection {
 		return new YSQLCommand(builder.toString());
 	}
 
-	public static YSQLCommand remove() {
-		return null;
+	public static YSQLCommand remove(String tableName, String columnName) {
+		return new YSQLCommand(String.format("ALTER TABLE %s DROP COLUMN %s;", tableName, columnName));
 	}
 
 	public static Pair<IStruct, Class<? extends IStruct>> getReverseTable(String name) {
@@ -180,7 +202,6 @@ public class DatabaseReflection {
 	}
 
 	public enum FieldType {
-
 		/*
 		 * based on
 		 * https://www.w3schools.com/sql/sql_datatypes.asp
@@ -189,7 +210,7 @@ public class DatabaseReflection {
 		BOOLEAN(boolean.class, "BOOLEAN", false),
 		BYTE(byte.class, "TINYINT(10)", false),
 		SHORT(short.class, "SMALLINT(10)", false),
-		INT(int.class, "INT(10)", false),
+		INT(int.class, "INT", false),
 		LONG(long.class, "BIGINT(10)", false),
 		FLOAT(float.class, "FLOAT(24)", false),
 		DOUBLE(double.class, "FLOAT(53)", false),
@@ -197,7 +218,7 @@ public class DatabaseReflection {
 		UNBOXED_BOOLEAN(Boolean.class, "BOOLEAN", true),
 		UNBOXED_BYTE(Byte.class, "TINYINT(10)", true),
 		UNBOXED_SHORT(Short.class, "SMALLINT(10)", true),
-		UNBOXED_INT(Integer.class, "INT(10)", true),
+		UNBOXED_INT(Integer.class, "INT", true),
 		UNBOXED_LONG(Long.class, "BIGINT(10)", true),
 		UNBOXED_FLOAT(Float.class, "FLOAT(24)", true),
 		UNBOXED_DOUBLE(Double.class, "FLOAT(53)", true);

@@ -1,15 +1,16 @@
 package pisi.unitedmeows.seriex.util.config.impl;
 
+import com.electronwill.nightconfig.core.CommentedConfig;
+
 /**
  * @apiNote keys are TOML keys.
  */
-public class ConfigValue {
-
+public class ConfigValue<X> {
 	private String key;
 	private Object value;
 	private Config base;
 
-	public ConfigValue(Config config, String key, Object value) {
+	public ConfigValue(Config config, String key, X value) {
 		this.key = key;
 		this.value = value;
 		this.base = config;
@@ -19,13 +20,13 @@ public class ConfigValue {
 		return key;
 	}
 
-	public Object value() {
-		return value;
+	public X value() {
+		return (X) value;
 	}
 
-	public ConfigValue value(Object value) {
+	public ConfigValue<X> value(X value, CommentedConfig config) {
 		this.value = value;
-		base.setValue(this.key, this.value);
+		base.setValue(this.key, this.value, config);
 		base.save();
 		return this;
 	}

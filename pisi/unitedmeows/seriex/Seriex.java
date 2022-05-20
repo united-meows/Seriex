@@ -30,14 +30,14 @@ import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.managers.data.DataManager;
 import pisi.unitedmeows.seriex.managers.future.FutureManager;
 import pisi.unitedmeows.seriex.util.ICleanup;
+import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.config.FileManager;
+import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
-import pisi.unitedmeows.seriex.util.lists.GlueList;
 import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.logger.impl.YLogger;
 
 public class Seriex extends JavaPlugin {
-
 	private static Optional<Seriex> instance_;
 	private CommandSystem commandSystem;
 	private static FileManager fileManager;
@@ -65,7 +65,6 @@ public class Seriex extends JavaPlugin {
 			instance_ = of(this);
 			logger().info("Starting seriex...");
 			primaryThread = currentThread();
-			GET.benchmark(temp -> DatabaseReflection.init(), "Database Reflection");
 			managers: {
 				setProperty("nightconfig.preserveInsertionOrder", "true");
 				FormatDetector.registerExtension("seriex", TomlFormat.instance());
@@ -74,15 +73,17 @@ public class Seriex extends JavaPlugin {
 					managers.add(fileManager = new FileManager(getDataFolder()));
 					managers.add(dataManager = new DataManager());
 					// @DISABLE_FORMATTING
+					Config config = fileManager.getConfig(SETTINGS);
 					cleanupabbleObjects.add(database = new SeriexDB(
-								fileManager.getConfig(SETTINGS).getValue("database.username"),
-								fileManager.getConfig(SETTINGS).getValue("database.password"),
-								fileManager.getConfig(SETTINGS).getValue("database.name"),
-								fileManager.getConfig(SETTINGS).getValue("database.host"),
-								fileManager.getConfig(SETTINGS).getValue("database.port")));
+								config.getValue("database.username", config.config),
+								config.getValue("database.password", config.config),
+								config.getValue("database.name", config.config),
+								config.getValue("database.host", config.config),
+								config.getValue("database.port", config.config)));
 					// @ENABLE_FORMATTING
 					managers.add(futureManager = new FutureManager()); // this should be always last!
 				}, "Managers");
+				GET.benchmark(temp -> DatabaseReflection.init(database), "Database Reflection");
 				GET.benchmark(temp -> {
 					logger().info("Enabling Managers...");
 					managers.forEach((Manager manager) -> manager.start(get()));
@@ -201,9 +202,10 @@ public class Seriex extends JavaPlugin {
 		//		File configFile = new File("commentedConfig.toml");
 		//		TomlWriter writer = new TomlWriter();
 		//		writer.write(config, configFile, WritingMode.REPLACE);
-		DatabaseReflection.init();
+		SeriexDB seriexDB = new SeriexDB("seriex", "seriexdb123", "seriex", "79.110.234.147", 3306);
+		DatabaseReflection.init(seriexDB);
 		YYStal.startWatcher();
-		StructPlayer structPlayerW = database.getPlayer("tempUserkekw");
+		StructPlayer structPlayerW = seriexDB.getPlayer("tempUserkekw");
 		out.println(structPlayerW);
 		logger().debug("#1 " + YYStal.stopWatcher());
 	}
@@ -237,7 +239,8 @@ public class Seriex extends JavaPlugin {
 	}
 
 	public String getSuffix() {
-		return fileManager.getConfig(fileManager.SETTINGS).getValue("server.msg_suffix");
+		Config config = fileManager.getConfig(fileManager.SETTINGS);
+		return config.getValue("server.msg_suffix", config.config);
 	}
 
 	public SeriexDB database() {

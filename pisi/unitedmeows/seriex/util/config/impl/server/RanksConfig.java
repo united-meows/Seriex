@@ -12,7 +12,6 @@ import pisi.unitedmeows.seriex.util.config.impl.Config;
  * permissions = ["essentials.fly", "ataturk.permission1", "hello_i_am_a_permission.doCringe"]
  */
 public class RanksConfig extends Config {
-
 	public RanksConfig(File toWrite) {
 		super("Ranks", true);
 		this.toWrite = toWrite;

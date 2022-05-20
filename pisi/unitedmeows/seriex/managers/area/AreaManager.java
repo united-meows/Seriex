@@ -10,11 +10,10 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.managers.area.areas.Area;
+import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
-import pisi.unitedmeows.seriex.util.lists.GlueList;
 
 public class AreaManager extends Manager implements Listener {
-
 	public List<Area> areaList = new GlueList<>();
 
 	@Override
@@ -26,8 +25,8 @@ public class AreaManager extends Manager implements Listener {
 	public void onPlayerMove(PlayerMoveEvent event) {
 		for (int i = 0; i < areaList.size(); i++) {
 			Area area = areaList.get(i);
-			boolean prevInside = area.axis.isLocInside(event.getFrom());
-			boolean nowInside = area.axis.isLocInside(event.getTo());
+			boolean prevInside = area.limits().isLocInside(event.getFrom());
+			boolean nowInside = area.limits().isLocInside(event.getTo());
 			Player player = event.getPlayer();
 			if (!prevInside && nowInside) {
 				area.enter(player);
@@ -35,7 +34,7 @@ public class AreaManager extends Manager implements Listener {
 				area.leave(player);
 			}
 			if (nowInside) {
-				area.playersInArea.add(player);
+				area.playersInArea().add(player);
 			}
 		}
 	}

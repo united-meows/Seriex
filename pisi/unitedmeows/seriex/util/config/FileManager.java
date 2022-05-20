@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.World;
+
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.config.impl.server.*;
@@ -17,9 +19,7 @@ import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.parallel.Future;
 import pisi.unitedmeows.yystal.utils.Pair;
 
-// TODO alo ghost refactor this code sucks ass
 public class FileManager extends Manager {
-
 	public static final String EMOTES = "global_emotes";
 	public static final String SETTINGS = "settings";
 	public static final String BAN_ACTIONS = "banActions";
@@ -42,8 +42,8 @@ public class FileManager extends Manager {
 			File banActionsFile = new File(directory, BAN_ACTIONS + EXTENSION);
 			File maintainersFile = new File(directory, MAINTAINERS + EXTENSION);
 			File ranksFile = new File(directory, RANKS + EXTENSION);
-			get().getServer().getWorlds().forEach(
-						world -> this.createFile(String.format("%s%s", WORLD, world.getName()), new File(String.format("%s/worlds", directory)), new WorldConfig(world.getName(), EXTENSION, directory)));
+			File worldFile = new File(directory, WORLD);
+			this.createFile(WORLD, worldFile, new WorldConfig(worldFile, EXTENSION, get().getServer().getWorlds().stream().toArray(World[]::new)));
 			this.createFile(BAN_ACTIONS, banActionsFile, new BanActionsConfig(banActionsFile));
 			this.createFile(RANKS, ranksFile, new RanksConfig(ranksFile));
 			this.createFile(MAINTAINERS, maintainersFile, new MaintainersConfig(maintainersFile));

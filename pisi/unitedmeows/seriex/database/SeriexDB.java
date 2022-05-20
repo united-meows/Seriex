@@ -16,7 +16,6 @@ import pisi.unitedmeows.yystal.sql.YSQLCommand;
 import pisi.unitedmeows.yystal.utils.Pair;
 
 public class SeriexDB extends YDatabaseClient implements ICleanup {
-
 	public SeriexDB(String username, String password, String database, String host, int port) {
 		super(username, password, database, host, port);
 	}

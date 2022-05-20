@@ -6,15 +6,14 @@ import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
 
 public class BanActionsConfig extends Config {
-
-	public ConfigValue DISABLE_LOGIN = new ConfigValue(this, "disable_login", true);
-	public ConfigValue DISABLE_DISCORD = new ConfigValue(this, "disable_discord_actions", true); // disables messaging on discord etc joining vc`s etc...
+	public ConfigValue<Boolean> DISABLE_LOGIN = new ConfigValue<>(this, "disable_login", true);
+	public ConfigValue<Boolean> DISABLE_DISCORD = new ConfigValue<>(this, "disable_discord_actions", true); // disables messaging on discord etc joining vc`s etc...
 	// disable login makes all of the below useless
-	public ConfigValue ANNOUNCE_IP_ON_JOIN = new ConfigValue(this, "announce_ip_on_join", false);
-	public ConfigValue DISABLE_COMMANDS = new ConfigValue(this, "disable_cmd", true); // disables every command 
-	public ConfigValue DISABLE_CHAT = new ConfigValue(this, "disable_chat", true);
-	public ConfigValue DISABLE_MOVEMENT = new ConfigValue(this, "disable_movement", true); // pretty ez to understand
-	public ConfigValue CRASH_GAME = new ConfigValue(this, "crash_game", true);
+	public ConfigValue<Boolean> ANNOUNCE_IP_ON_JOIN = new ConfigValue<>(this, "announce_ip_on_join", false);
+	public ConfigValue<Boolean> DISABLE_COMMANDS = new ConfigValue<>(this, "disable_cmd", true); // disables every command 
+	public ConfigValue<Boolean> DISABLE_CHAT = new ConfigValue<>(this, "disable_chat", true);
+	public ConfigValue<Boolean> DISABLE_MOVEMENT = new ConfigValue<>(this, "disable_movement", true); // pretty ez to understand
+	public ConfigValue<Boolean> CRASH_GAME = new ConfigValue<>(this, "crash_game", true);
 	// how it works is we send:
 	// an invalid C0F packet
 	// an invalid explosion packet
