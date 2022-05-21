@@ -39,6 +39,7 @@
    + [Reflections]
    + Spigot 1.8.8 (Custom JAnsi build, just replace JAnsi in spigot with latest JAnsi)
    + [Vault]
+   + [Caffeine]
 
 
 [Seriex]: https://seriex.software
@@ -53,3 +54,5 @@
 [ProtocolLib]: https://github.com/dmulloy2/ProtocolLib
 [Reflections]: https://github.com/ronmamo/reflections
 [violentcat]: https://github.com/united-meows/violentcat
+[Caffeine]: https://github.com/ben-manes/caffeine
+
