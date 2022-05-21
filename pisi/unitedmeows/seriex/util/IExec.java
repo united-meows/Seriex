@@ -1,4 +1,4 @@
-package pisi.unitedmeows.seriex.sign;
+package pisi.unitedmeows.seriex.util;
 
 @FunctionalInterface
 public interface IExec {

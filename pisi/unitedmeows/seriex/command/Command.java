@@ -88,6 +88,11 @@ public class Command {
 		return this;
 	}
 
+	public Command executeAutoComplete(PlayerW playerW, String input, String lastToken) {
+		autoComplete.apply(new AutoCompleteInfo(playerW, input, lastToken));
+		return this;
+	}
+
 	public Command onAutoComplete(Function<AutoCompleteInfo, String> _autoComplete) {
 		autoComplete = _autoComplete;
 		return this;
@@ -105,14 +110,20 @@ public class Command {
 
 		private PlayerW playerW;
 		private String input;
+		private String lastToken;
 
-		public AutoCompleteInfo(PlayerW _playerw, String _input) {
+		public AutoCompleteInfo(PlayerW _playerw, String _input, String _lastToken) {
 			playerW = _playerw;
 			input = _input;
+			lastToken = _lastToken;
 		}
 
 		public PlayerW playerW() {
 			return playerW;
+		}
+
+		public String lastToken() {
+			return lastToken;
 		}
 
 		public String input() {

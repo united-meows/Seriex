@@ -8,11 +8,9 @@ import static pisi.unitedmeows.seriex.util.config.FileManager.*;
 import static pisi.unitedmeows.seriex.util.timings.TimingsCalculator.*;
 import static pisi.unitedmeows.yystal.parallel.Async.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -27,6 +25,7 @@ import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
 import pisi.unitedmeows.seriex.managers.Manager;
+import pisi.unitedmeows.seriex.managers.area.AreaManager;
 import pisi.unitedmeows.seriex.managers.data.DataManager;
 import pisi.unitedmeows.seriex.managers.future.FutureManager;
 import pisi.unitedmeows.seriex.managers.sign.SignManager;
@@ -36,6 +35,7 @@ import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
+import pisi.unitedmeows.seriex.util.math.AxisBB;
 import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.logger.impl.YLogger;
 
@@ -109,14 +109,6 @@ public class Seriex extends JavaPlugin {
 			loadedCorrectly = false;
 			e.printStackTrace();
 		}
-		/* maybe make similar thing for small areas like */
-		/* Area.create(x, y, z, x1, y2, z3).(p ->
-		{
-			p.heal(5)
-		}) ;
-		 regenerates heal when player is inside (runs on every tick)
-		 and events like onEnter() onLeave()
-		 */
 		/* commands */
 		/* :DDD don't delete this @ghost */
 		{
@@ -128,14 +120,44 @@ public class Seriex extends JavaPlugin {
 			});
 		}
 
+		/* sign manager */
 		{
 			SignManager.create("spawn pig").onRight((player, sign) -> {
 
+				final Sign block = (Sign) sign.global().getIfPresent("current_sign");
+				int cooldown = (int) sign.session(block).getOrDefault("cooldown", 0);
+				if (cooldown == 0) {
+					// do
+
+					sign.session(block).put("cooldown", 5);
+				}
+
 			}).tick((sign) -> {
 
-			}, 20);
-		}
+				for (Map<String, Object> map : sign.session().asMap().values()) {
+					int cooldown = (int) map.getOrDefault("cooldown", -1);
+					if (cooldown > 0) {
+						map.put("cooldown", cooldown - 1);
+					}
+				}
 
+			}, 20);
+
+		}
+		/* basic areas */
+		/*	AreaManager.createArea(null)
+				.onEnter(p -> {
+
+				})
+				.onLeave(p -> {
+
+				})
+				.tick((area) -> {
+						area.playersInArea().forEach(x-> {
+						x.sendRawMessage("hello world :D");
+					});
+				}, 20);
+*/
 		super.onEnable();
 	}
 
@@ -162,61 +184,9 @@ public class Seriex extends JavaPlugin {
 	public static Seriex get() {
 		return instance_.orElseThrow(() -> new SeriexException("Seriex isnt loaded properly!"));
 	}
-	//	public static ghost.virtualjava.VirtualThread<Seriex> test = new ghost.virtualjava.VirtualThread<>(get(), new VirtualTask<>((ghost.virtualjava.VirtualThread thread, Seriex seriex, ghost.virtualjava.VirtualTask... tasks) -> {
-	//		logger().debug("Enabled Seriex using VirtualThread!");
-	//		ghost.virtualjava.VirtualTask task = tasks[0]; // (TODOH) make it multi taskable? or something
-	//		if (task.isCompleted()) {
-	//			onDisable(); // ok spigot cries here find out why (TODOL)
-	//			logger().fatal("Disabling Seriex..."); // less go??
-	//			thread.parkOtherThreads(futureManager::isntDone); // this uses unsafe, spigot might cry
-	//			thread.dead(true); // kys thread LOL
-	//		} else {
-	//			thread.updateTask(task, seriex); // update task
-	//			thread.thankYouOracle((~Integer.MIN_VALUE & thread.aliveTicks) != 0); // allows us to call removeUsingUnsafe
-	//			if (task.updated()) {
-	//				task.run(thread.size() - 1); // look for the last task to check if we are still in queue
-	//				task.updated(false); // stop updating to call other tasks
-	//			}
-	//		}
-	//	}).finish(thread -> thread::removeUsingUnsafe)).death(thread -> thread::interrupt).every(thread -> logger().fatal(thread.getUnsafe().ensureClassInitialized(seriex.getClass())))
-	//				.compat(false) /* fuck java >8 LOL */
-	//				.safe(true);
 
 	public static void main(String... args) throws NoSuchFieldException,SecurityException,IllegalArgumentException,IllegalAccessException {
-		//		sun.misc.Unsafe unsafe = null;
-		//		Field theUnsafe = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
-		//		theUnsafe.setAccessible(true);
-		//		unsafe = (sun.misc.Unsafe) theUnsafe.get(null);
-		//		long l = unsafe.allocateMemory(512L);
-		//		try {
-		//			unsafe.putLong(l, Primitives.hash(1408390939117193108L, 515224124L));
-		//			byte ayoThePizzasHere = unsafe.getByte(l);
-		//			logger().fatal(String.format("%d", Primitives.unsignedByte(ayoThePizzasHere)));
-		//		}
-		//		finally {
-		//			unsafe.freeMemory(l);
-		//		}
-		//		CommentedConfig config = CommentedConfig.inMemoryConcurrent();
-		//		setProperty("nightconfig.preserveInsertionOrder", "true");
-		//		List<String> adresses = new ArrayList<>();
-		//		for (int i = 10; i > 0; i--) {
-		//			adresses.add("seriex.example_permission" + i);
-		//		}
-		//		config.set("hey", true);
-		//		config.set("ADMIN.internal", "admin");
-		//		config.set("ADMIN.shortcut", "seriex.admin");
-		//		config.set("ADMIN.coolName", "&7[&cAdmin&7]");
-		//		config.set("ADMIN.permissions", adresses);
-		//		config.set("HELPER.internal", "helper");
-		//		config.set("HELPER.shortcut", "seriex.helper");
-		//		config.set("HELPER.coolName", "&7[&dHelper&7]");
-		//		config.set("HELPER.permissions", adresses);
-		//		System.out.println("Config: " + config);
-		//		Object object = config.get("ADMIN");
-		//		System.out.println(object);
-		//		File configFile = new File("commentedConfig.toml");
-		//		TomlWriter writer = new TomlWriter();
-		//		writer.write(config, configFile, WritingMode.REPLACE);
+
 		SeriexDB seriexDB = new SeriexDB("seriex", "seriexdb123", "seriex", "79.110.234.147", 3306);
 		DatabaseReflection.init(seriexDB);
 		YYStal.startWatcher();

@@ -10,8 +10,10 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.managers.area.areas.Area;
+import pisi.unitedmeows.seriex.managers.area.areas.BasicArea;
 import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
+import pisi.unitedmeows.seriex.util.math.AxisBB;
 
 public class AreaManager extends Manager implements Listener {
 	public List<Area> areaList = new GlueList<>();
@@ -19,6 +21,12 @@ public class AreaManager extends Manager implements Listener {
 	@Override
 	public void start(Seriex seriex) {
 		areaList.forEach(Area::enable);
+	}
+
+	public BasicArea createArea(AxisBB limits) {
+		final BasicArea basicArea = new BasicArea(limits);
+		areaList.add(basicArea);
+		return basicArea;
 	}
 
 	@EventHandler

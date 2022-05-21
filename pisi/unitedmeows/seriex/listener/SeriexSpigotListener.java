@@ -9,6 +9,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.*;
 
 import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.managers.sign.SignManager;
 import pisi.unitedmeows.seriex.sign.SignCommand;
 
@@ -18,6 +19,15 @@ public class SeriexSpigotListener implements Listener {
 	public void onJoin(final PlayerJoinEvent event) {
 		Seriex.logger().info("%s joined the server!", event.getPlayer().getName());
 		Seriex.get().dataManager().addUser(event.getPlayer());
+	}
+
+	@EventHandler(priority = EventPriority.LOW)
+	public void onAutoComplete(PlayerChatTabCompleteEvent event) {
+		final Command cmd = Seriex.get().commandSystem().commandFromFull(event.getChatMessage());
+		if (cmd != null) {
+			cmd.executeAutoComplete(Seriex.get().dataManager().addUser(event.getPlayer()), event.getChatMessage(),
+					event.getLastToken());
+		}
 	}
 
 	@EventHandler(priority = EventPriority.LOW)
@@ -33,7 +43,7 @@ public class SeriexSpigotListener implements Listener {
 						line1 = line1.substring(0, line1.length() - 1);
 						for (SignCommand signCommand : Seriex.get().signManager().signCommands()) {
 							if (signCommand.trigger().equalsIgnoreCase(line1)) {
-								signCommand.runRight(Seriex.get().dataManager().addUser(interactEvent.getPlayer()));
+								signCommand.runRight(Seriex.get().dataManager().addUser(interactEvent.getPlayer()), sign);
 								break;
 							}
 
@@ -53,7 +63,7 @@ public class SeriexSpigotListener implements Listener {
 						line1 = line1.substring(0, line1.length() - 1);
 						for (SignCommand signCommand : Seriex.get().signManager().signCommands()) {
 							if (signCommand.trigger().equalsIgnoreCase(line1)) {
-								signCommand.runLeft(Seriex.get().dataManager().addUser(interactEvent.getPlayer()));
+								signCommand.runLeft(Seriex.get().dataManager().addUser(interactEvent.getPlayer()), sign);
 								break;
 							}
 
