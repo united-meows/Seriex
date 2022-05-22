@@ -2,5 +2,5 @@ package pisi.unitedmeows.seriex.util;
 
 @FunctionalInterface
 public interface IExec {
-    void run();
+	void run();  // alperen was here
 }

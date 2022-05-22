@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.bukkit.entity.Player;
 
-import pisi.unitedmeows.seriex.managers.area.areas.base.SpawnArea;
 import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.math.AxisBB;
 
@@ -52,9 +51,5 @@ public class Area {
 
 	public boolean isInArea(Player player) {
 		return playersInArea.contains(player);
-	}
-
-	public boolean isSpawnArea() {
-		return parentArea instanceof SpawnArea;
 	}
 }

@@ -11,7 +11,7 @@ import org.bukkit.event.player.*;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.managers.sign.SignManager;
-import pisi.unitedmeows.seriex.sign.SignCommand;
+import pisi.unitedmeows.seriex.managers.sign.impl.SignCommand;
 
 public class SeriexSpigotListener implements Listener {
 

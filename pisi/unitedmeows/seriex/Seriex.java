@@ -25,17 +25,15 @@ import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
 import pisi.unitedmeows.seriex.managers.Manager;
-import pisi.unitedmeows.seriex.managers.area.AreaManager;
 import pisi.unitedmeows.seriex.managers.data.DataManager;
 import pisi.unitedmeows.seriex.managers.future.FutureManager;
 import pisi.unitedmeows.seriex.managers.sign.SignManager;
-import pisi.unitedmeows.seriex.sign.SignCommand;
 import pisi.unitedmeows.seriex.util.ICleanup;
 import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
-import pisi.unitedmeows.seriex.util.math.AxisBB;
+import pisi.unitedmeows.seriex.util.suggestion.WordList;
 import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.logger.impl.YLogger;
 
@@ -65,13 +63,13 @@ public class Seriex extends JavaPlugin {
 		 */
 		loadedCorrectly = true;
 		try {
+			WordList.read();
 			instance_ = of(this);
 			logger().info("Starting seriex...");
 			primaryThread = currentThread();
 			managers: {
 				signManager = new SignManager();
 				managers.add(signManager);
-
 				setProperty("nightconfig.preserveInsertionOrder", "true");
 				FormatDetector.registerExtension("seriex", TomlFormat.instance());
 				GET.benchmark(temp -> {
@@ -119,45 +117,38 @@ public class Seriex extends JavaPlugin {
 				executeInfo.playerW().getHooked().sendRawMessage(var1 + " " + var2);
 			});
 		}
-
 		/* sign manager */
 		{
 			SignManager.create("spawn pig").onRight((player, sign) -> {
-
 				final Sign block = (Sign) sign.global().getIfPresent("current_sign");
 				int cooldown = (int) sign.session(block).getOrDefault("cooldown", 0);
 				if (cooldown == 0) {
 					// do
-
 					sign.session(block).put("cooldown", 5);
 				}
-
-			}).tick((sign) -> {
-
+			}).tick(sign -> {
 				for (Map<String, Object> map : sign.session().asMap().values()) {
 					int cooldown = (int) map.getOrDefault("cooldown", -1);
 					if (cooldown > 0) {
 						map.put("cooldown", cooldown - 1);
 					}
 				}
-
 			}, 20);
-
 		}
 		/* basic areas */
 		/*	AreaManager.createArea(null)
 				.onEnter(p -> {
-
+		
 				})
 				.onLeave(p -> {
-
+		
 				})
 				.tick((area) -> {
 						area.playersInArea().forEach(x-> {
 						x.sendRawMessage("hello world :D");
 					});
 				}, 20);
-*/
+		*/
 		super.onEnable();
 	}
 
@@ -186,7 +177,6 @@ public class Seriex extends JavaPlugin {
 	}
 
 	public static void main(String... args) throws NoSuchFieldException,SecurityException,IllegalArgumentException,IllegalAccessException {
-
 		SeriexDB seriexDB = new SeriexDB("seriex", "seriexdb123", "seriex", "79.110.234.147", 3306);
 		DatabaseReflection.init(seriexDB);
 		YYStal.startWatcher();
