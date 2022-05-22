@@ -26,11 +26,12 @@ public class WordList {
 
 	public static void main(String... args) {
 		read();
-		Suggester suggester = new Suggester(LOWERCASE_WORDS.get("tr-TR"));
+		Suggester suggester = new Suggester(LOWERCASE_WORDS.get("tr"));
 		TimingsCalculator.GET.benchmark(func -> {
-			suggester.suggestions("merhqba", 10).forEach(Seriex.logger()::fatal);
+			String str = "şempaze";
+			suggester.suggestions(str, 50).forEach(Seriex.logger()::fatal);
 			Seriex.logger().fatal("------");
-			suggester.autocomplete("merha", 3).forEach(Seriex.logger()::fatal);
+			suggester.autocomplete(str, 3).forEach(Seriex.logger()::fatal);
 		}, "Suggestions");
 	}
 
@@ -161,7 +162,7 @@ public class WordList {
 		String PATH_TO_WRITE = "";
 		try (Stream<Path> paths = Files.walk(Paths.get(PATH_TO_BOOKS))) {
 			long ms = System.currentTimeMillis();
-			Locale trlocale = Locale.forLanguageTag("tr-TR"); // the language tag
+			Locale trlocale = Locale.forLanguageTag("tr"); // the language tag
 			StringBuilder generalBuilder = new StringBuilder();
 			Map<String, Integer> freqMap = new HashMap<>();
 			paths.filter(f -> f.toFile().isFile()).forEach(pathString -> {

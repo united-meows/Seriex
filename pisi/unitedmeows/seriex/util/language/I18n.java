@@ -1,4 +1,4 @@
-package pisi.unitedmeows.seriex.util.translation;
+package pisi.unitedmeows.seriex.util.language;
 
 import static pisi.unitedmeows.seriex.Seriex.*;
 import static pisi.unitedmeows.seriex.util.config.FileManager.*;
