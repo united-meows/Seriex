@@ -37,11 +37,15 @@ public class DiscordBot {
 	private static final Map<String, Role> verifiedRole = new HashMap<>();
 
 	public static void main(String[] args) throws LoginException {
-		JDABuilder builder = JDABuilder.createDefault(System.getProperty("token"));
+		new DiscordBot(System.getProperty("token"));
+	}
+
+	public DiscordBot(String token) throws LoginException {
+		JDABuilder builder = JDABuilder.createDefault(token);
 		builder.disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE);
-		builder.setBulkDeleteSplittingEnabled(false);
-		builder.setCompression(Compression.NONE);
-		builder.setActivity(Activity.watching("merhaba!"));
+		builder.setBulkDeleteSplittingEnabled(true); // what this 1.0
+		builder.setCompression(Compression.NONE); // what this 2.0
+		builder.setActivity(Activity.watching("merhaba!")); // TODO %s online | %s registered users
 		builder.addEventListeners(new ListenerAdapter() {
 			@Override
 			public void onReady(ReadyEvent event) {
@@ -110,9 +114,8 @@ public class DiscordBot {
 					event.getChannel().sendMessageEmbeds(builder.build()).setActionRow(alo).queue();
 				}
 				if ("$create_language".equals(event.getMessage().getContentRaw())) {
-					event.getChannel().sendMessage("> Select your language(s)").queue(completeMessage -> {
-						Arrays.stream(Languages.values()).forEach(lang -> completeMessage.addReaction(lang.unicode()).queue());
-					});
+					event.getChannel().sendMessage("> Select your language(s)")
+								.queue(completeMessage -> Arrays.stream(Languages.values()).forEach(lang -> completeMessage.addReaction(lang.unicode()).queue()));
 				}
 				super.onMessageReceived(event);
 			}
@@ -214,8 +217,6 @@ public class DiscordBot {
 		});
 		builder.build();
 	}
-
-	public DiscordBot(String token) {}
 
 	public void onEnable() {}
 }
