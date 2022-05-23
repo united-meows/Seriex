@@ -13,9 +13,6 @@
     
   leave a `// TODO: reason` so we can check it out.
   If you are not lazy, summarizing the pull request is very welcome.
-  
-  ![lol](https://b.catgirlsare.sexy/y1IvTcA9Vyzs.png)
-
 
   
   # Things done so far
