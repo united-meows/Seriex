@@ -25,31 +25,44 @@
     
    # Libraries required
    The libraries we use:
-   + [yystal]
-   + [pisiEventAPI] 
-   + [Atlas]
+   + [AnvilGUI]
+   + [Atlas] 
+   + [Caffeine]
    + [NightConfig (TOML)]
    + [HamsterAPI]
    + [Javaasist]
-   + [JDA] (will probably get replaced with [violentcat])
+   + [JDA]
+   + [pisiEventAPI]
    + [ProtocolLib]
    + [Reflections]
+   + [SmartInvs]
    + Spigot 1.8.8 (Custom JAnsi build, just replace JAnsi in spigot with latest JAnsi)
    + [Vault]
-   + [Caffeine]
+   + [yystal]
 
 
-[Seriex]: https://seriex.software
-[yystal]: https://github.com/united-meows/yystal
-[pisiEventAPI]: https://github.com/slowcheet4h/pisiEventAPI
+
+[AnvilGUI]: https://github.com/WesJD/AnvilGUI
 [Atlas]: https://github.com/funkemunky/Atlas
+[Caffeine]: https://github.com/ben-manes/caffeine
+[NightConfig (TOML)]: https://github.com/TheElectronWill/Night-Config
 [HamsterAPI]: https://github.com/2lstudios-mc/HamsterAPI
 [Javaasist]: https://github.com/jboss-javassist/javassist
 [JDA]: https://github.com/DV8FromTheWorld/JDA
-[Vault]: https://github.com/MilkBowl/Vault
-[NightConfig (TOML)]: https://github.com/TheElectronWill/Night-Config
+
+[pisiEventAPI]: https://github.com/slowcheet4h/pisiEventAPI
 [ProtocolLib]: https://github.com/dmulloy2/ProtocolLib
 [Reflections]: https://github.com/ronmamo/reflections
+[SmartInvs]: https://github.com/MinusKube/SmartInvs
+
+[Vault]: https://github.com/MilkBowl/Vault
+[yystal]: https://github.com/united-meows/yystal
+
+[Seriex]: https://seriex.software
+
+[Multiverse-Core]: https://github.com/Multiverse/Multiverse-Core
 [violentcat]: https://github.com/united-meows/violentcat
-[Caffeine]: https://github.com/ben-manes/caffeine
+
+
+
 
