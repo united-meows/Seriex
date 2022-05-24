@@ -1,16 +1,18 @@
 package pisi.unitedmeows.seriex.discord;
 
+import static pisi.unitedmeows.seriex.Seriex.*;
+
 import java.awt.Color;
 import java.util.*;
 
 import javax.security.auth.login.LoginException;
 
+import org.bukkit.entity.Player;
+
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.UserSnowflake;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -28,37 +30,45 @@ import net.dv8tion.jda.api.interactions.modals.ModalMapping;
 import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.managers.Manager;
+import pisi.unitedmeows.seriex.util.config.FileManager;
+import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
+import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.language.Languages;
+import pisi.unitedmeows.yystal.parallel.Async;
+import pisi.unitedmeows.yystal.parallel.Promise;
 
-public class DiscordBot {
+public class DiscordBot extends Manager {
 	private static final Color DISCORD_BOT_COLOR = new Color(8281781);
 	private static final Color VERIFIED_MEMBER_COLOR = new Color(42, 106, 209);
 	private static final Map<String, Map<Languages, Role>> roleCache = new HashMap<>();
 	private static final Map<String, Role> verifiedRole = new HashMap<>();
+	private static final Queue<MessageEmbed> serverChatMessages = new ArrayDeque<>();
+	private JDA jda;
+	private Promise sendPromise;
 
-	public static void main(String[] args) throws LoginException {
-		new DiscordBot(System.getProperty("token"));
-	}
-
-	public DiscordBot(String token) throws LoginException {
-		JDABuilder builder = JDABuilder.createDefault(token);
+	public DiscordBot(FileManager manager) throws LoginException {
+		DiscordConfig discordConfig = (DiscordConfig) manager.getConfig(manager.DISCORD);
+		ServerConfig serverConfig = (ServerConfig) manager.getConfig(manager.SERVER);
+		JDABuilder builder = JDABuilder.createDefault(discordConfig.BOT_TOKEN.value());
 		builder.disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE);
-		builder.setBulkDeleteSplittingEnabled(true); // what this 1.0
-		builder.setCompression(Compression.NONE); // what this 2.0
-		builder.setActivity(Activity.watching("merhaba!")); // TODO %s online | %s registered users
+		builder.setBulkDeleteSplittingEnabled(true);
+		builder.setCompression(Compression.NONE);
+		builder.setActivity(Activity.of(discordConfig.ACTIVITY_TYPE.value(), discordConfig.ACTIVITY_MESSAGE.value(), discordConfig.ACTIVITY_URL.value()));
 		builder.addEventListeners(new ListenerAdapter() {
 			@Override
 			public void onReady(ReadyEvent event) {
-				Seriex.logger().debug("SeriexBot is ready!");
+				logger().debug("SeriexBot is ready!");
 				event.getJDA().getGuilds().forEach((Guild guild) -> {
 					Map<Languages, Role> map = new HashMap<>();
 					verified_role: {
 						List<Role> verified = guild.getRolesByName("verified", false);
 						if (verified == null || verified.isEmpty()) {
-							Seriex.logger().info("Created verified role verified for the guild %s!", guild.getName());
+							logger().info("Created verified role verified for the guild %s!", guild.getName());
 							guild.createRole().setColor(VERIFIED_MEMBER_COLOR).setMentionable(true).setName("verified").queue();
 						} else {
-							Seriex.logger().info("Created cache for the role verified in the guild %s!", guild.getName());
+							logger().info("Created cache for the role verified in the guild %s!", guild.getName());
 							roleCache.put(guild.getId(), map);
 						}
 					}
@@ -66,10 +76,10 @@ public class DiscordBot {
 						Arrays.stream(Languages.values()).forEach(language -> {
 							List<Role> rolesByName = guild.getRolesByName(language.name(), false);
 							if (rolesByName == null || rolesByName.isEmpty()) {
-								Seriex.logger().info("Created language role %s for the guild %s!", language.name(), guild.getName());
+								logger().info("Created language role %s for the guild %s!", language.name(), guild.getName());
 								guild.createRole().setColor(-1).setMentionable(false).setName(language.name()).queue();
 							} else {
-								Seriex.logger().info("Created cache for the role %s in the guild %s!", language.name(), guild.getName());
+								logger().info("Created cache for the role %s in the guild %s!", language.name(), guild.getName());
 								Role value = rolesByName.stream().findFirst().get();
 								map.put(language, value);
 								roleCache.put(guild.getId(), map);
@@ -77,14 +87,21 @@ public class DiscordBot {
 						});
 					}
 				});
+				sendPromise = Async.async_loop(() -> {
+					MessageEmbed embed = serverChatMessages.poll();
+					event.getJDA().getGuilds().forEach((Guild guild) -> {
+						guild.getTextChannelById(discordConfig.ID_SERVER_CHAT.value()).sendMessageEmbeds(embed);
+					});
+				}, 1000);
 				super.onReady(event);
 			}
 
 			@Override
 			public void onMessageReceived(MessageReceivedEvent event) {
+				if (!Objects.equals(event.getGuild().getId(), discordConfig.ID_GUILD.value())) return;
 				if ("$create_register".equals(event.getMessage().getContentRaw())) {
 					EmbedBuilder builder = new EmbedBuilder();
-					builder.setImage("https://cdn.discordapp.com/attachments/977943419366289410/977956507633221722/efsane_banner.png?size=4096");
+					builder.setImage(discordConfig.BANNER.value());
 					builder.addField("> ```NOTICE```", "By registering, you accept " + "__**our TOS, Discord`s TOS and our rules**__.", true);
 					StringBuilder ruleBuilder = new StringBuilder();
 					// @DISABLE_FORMATTING
@@ -103,13 +120,13 @@ public class DiscordBot {
 					});
 					builder.addField("> ```RULES```", ruleBuilder.toString(), false);
 					builder.addField("",
-								String.format("After registering please head to <#%s> to select your language(s))!", event.getGuild().getTextChannelsByName("language-selection", false).get(0).getId()),
+								String.format("After registering please head to <#%s> to select your language(s))!", event.getGuild().getTextChannelById(discordConfig.ID_LANGUAGE_CHANNEL.value()).getId()),
 								false);
 					builder.setColor(DISCORD_BOT_COLOR);
 					builder.setTitle("Welcome to Seriex!");
 					List<ItemComponent> alo = new ArrayList<>();
 					alo.add(Button.primary("register", "Click to register!"));
-					alo.add(Button.link("https://seriex.software/tos.txt", "Seriex TOS"));
+					alo.add(Button.link(serverConfig.SERVER_WEBSITE.value() + "/tos.txt", "Seriex TOS"));
 					alo.add(Button.link("https://discord.com/terms", "Discord TOS"));
 					event.getChannel().sendMessageEmbeds(builder.build()).setActionRow(alo).queue();
 				}
@@ -122,7 +139,8 @@ public class DiscordBot {
 
 			@Override
 			public void onMessageReactionAdd(MessageReactionAddEvent event) {
-				if (Objects.equals(event.getChannel().getId(), event.getGuild().getTextChannelsByName("language-selection", false).get(0).getId())) {
+				if (!Objects.equals(event.getGuild().getId(), discordConfig.ID_GUILD.value())) return;
+				if (Objects.equals(event.getChannel().getId(), event.getGuild().getTextChannelById(discordConfig.ID_LANGUAGE_CHANNEL.value()).getId())) {
 					String emoteName = event.getReactionEmote().getName();
 					Languages foundLang = null;
 					for (Languages language : Languages.values()) {
@@ -135,7 +153,7 @@ public class DiscordBot {
 						Map<Languages, Role> map = roleCache.get(event.getGuild().getId());
 						Role role = map.get(foundLang);
 						event.getGuild().addRoleToMember(UserSnowflake.fromId(event.getUserId()), role).queue();
-						Seriex.logger().info("Added role %s to the member %s!", role.getName(), event.getMember().getUser().getAsTag());
+						logger().info("Added role %s to the member %s!", role.getName(), event.getMember().getUser().getAsTag());
 					}
 				}
 				super.onMessageReactionAdd(event);
@@ -143,7 +161,8 @@ public class DiscordBot {
 
 			@Override
 			public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
-				if (Objects.equals(event.getChannel().getId(), event.getGuild().getTextChannelsByName("language-selection", false).get(0).getId())) {
+				if (!Objects.equals(event.getGuild().getId(), discordConfig.ID_GUILD.value())) return;
+				if (Objects.equals(event.getChannel().getId(), event.getGuild().getTextChannelById(discordConfig.ID_LANGUAGE_CHANNEL.value()).getId())) {
 					String emoteName = event.getReactionEmote().getName();
 					Languages foundLang = null;
 					for (Languages language : Languages.values()) {
@@ -159,10 +178,10 @@ public class DiscordBot {
 						UserSnowflake fromId = UserSnowflake.fromId(userId);
 						event.getGuild().removeRoleFromMember(fromId, role).queue();
 						try {
-							Seriex.logger().info("Removed role %s from the member %s!", role.getName(), event.getMember().getUser().getAsTag());
+							logger().info("Removed role %s from the member %s!", role.getName(), event.getMember().getUser().getAsTag());
 						}
 						catch (Exception e) {
-							Seriex.logger().info("Removed role %s from the member %s (id)!", role.getName(), userId);
+							logger().info("Removed role %s from the member %s (id)!", role.getName(), userId);
 						}
 					}
 				}
@@ -171,6 +190,7 @@ public class DiscordBot {
 
 			@Override
 			public void onButtonInteraction(ButtonInteractionEvent event) {
+				if (!Objects.equals(event.getGuild().getId(), discordConfig.ID_GUILD.value())) return;
 				if ("register".equals(event.getComponentId())) {
 					// @DISABLE_FORMATTING
 					TextInput subject = TextInput
@@ -199,13 +219,14 @@ public class DiscordBot {
 
 			@Override
 			public void onModalInteraction(ModalInteractionEvent event) {
+				if (!Objects.equals(event.getGuild().getId(), discordConfig.ID_GUILD.value())) return;
 				if ("verify_panel".equals(event.getModalId())) {
 					Optional<ModalMapping> optional_username = event.getInteraction().getValues().stream().filter(modalMapping -> "username".equals(modalMapping.getId())).findAny();
 					if (optional_username.isPresent()) {
 						String username = optional_username.get().getAsString();
 						event.reply(String.format("Registered as %s!", username)).setEphemeral(true).queue();
 						// max ghost zekası
-						event.getGuild().getTextChannelsByName("register_logs", false).get(0).sendMessage(
+						event.getGuild().getTextChannelById(discordConfig.ID_REGISTER_LOGS.value()).sendMessage(
 									String.format("%s#%s (%s) registered as %s", event.getMember().getEffectiveName(), event.getMember().getUser().getDiscriminator(), event.getMember().getId(), username))
 									.queue();
 					} else {
@@ -215,8 +236,31 @@ public class DiscordBot {
 				super.onModalInteraction(event);
 			}
 		});
-		builder.build();
+		jda = builder.build();
 	}
 
-	public void onEnable() {}
+	public void addMessageToQueue(Player sender, String message) {
+		EmbedBuilder builder = new EmbedBuilder();
+		builder.setColor(DISCORD_BOT_COLOR);
+		String name = sender.getName();
+		builder.setThumbnail(String.format("https://mc-heads.net/avatar/%s", name));
+		builder.addField(name, message, true);
+		serverChatMessages.add(builder.build());
+	}
+
+	@Override
+	public void start(Seriex seriex) {
+		FileManager fileManager = seriex.get().fileManager();
+		try {
+			seriex.discordBot(new DiscordBot(fileManager));
+		}
+		catch (LoginException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void cleanup() throws SeriexException {
+		sendPromise.stop();
+	}
 }

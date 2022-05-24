@@ -38,11 +38,10 @@ public class AreaManager extends Manager implements Listener {
 			Player player = event.getPlayer();
 			if (!prevInside && nowInside) {
 				area.enter(player);
+				area.playersInArea().add(player);
 			} else if (prevInside && !nowInside) {
 				area.leave(player);
-			}
-			if (nowInside) {
-				area.playersInArea().add(player);
+				area.playersInArea().remove(player);
 			}
 		}
 	}

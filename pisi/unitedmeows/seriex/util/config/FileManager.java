@@ -21,12 +21,14 @@ import pisi.unitedmeows.yystal.utils.Pair;
 
 public class FileManager extends Manager {
 	public static final String EMOTES = "global_emotes";
-	public static final String SETTINGS = "settings";
+	public static final String SERVER = "server";
 	public static final String BAN_ACTIONS = "banActions";
 	public static final String RANKS = "ranks";
 	public static final String MAINTAINERS = "maintainers";
-	public static final String WORLD = "world_";
+	public static final String WORLD = "world";
 	public static final String TRANSLATIONS = "translations";
+	public static final String DATABASE = "database";
+	public static final String DISCORD = "discord";
 	public static final String EXTENSION = ".seriex";
 	public static final String PRIVATE = "#PRIVATE#";
 	private final Map<String, Pair<File, Config>> fileVariablesMap = new HashMap<>();
@@ -37,17 +39,21 @@ public class FileManager extends Manager {
 		this.directory = pluginDirectory;
 		if (!set) {
 			this.saved = pluginDirectory;
-			File settingsFile = new File(directory, SETTINGS + EXTENSION);
+			File settingsFile = new File(directory, SERVER + EXTENSION);
 			File translationsFile = new File(directory, TRANSLATIONS + EXTENSION);
 			File banActionsFile = new File(directory, BAN_ACTIONS + EXTENSION);
 			File maintainersFile = new File(directory, MAINTAINERS + EXTENSION);
 			File ranksFile = new File(directory, RANKS + EXTENSION);
+			File databaseFile = new File(directory, DATABASE + EXTENSION);
+			File discordFile = new File(directory, DISCORD + EXTENSION);
 			File worldFile = new File(directory, WORLD);
 			this.createFile(WORLD, worldFile, new WorldConfig(worldFile, EXTENSION, get().getServer().getWorlds().stream().toArray(World[]::new)));
+			this.createFile(DISCORD, discordFile, new DiscordConfig(banActionsFile));
+			this.createFile(DATABASE, databaseFile, new DatabaseConfig(banActionsFile));
 			this.createFile(BAN_ACTIONS, banActionsFile, new BanActionsConfig(banActionsFile));
 			this.createFile(RANKS, ranksFile, new RanksConfig(ranksFile));
 			this.createFile(MAINTAINERS, maintainersFile, new MaintainersConfig(maintainersFile));
-			this.createFile(SETTINGS, settingsFile, new ServerConfig(settingsFile));
+			this.createFile(SERVER, settingsFile, new ServerConfig(settingsFile));
 			this.createFile(TRANSLATIONS, translationsFile, new TranslationsConfig(translationsFile));
 			set = true;
 		}

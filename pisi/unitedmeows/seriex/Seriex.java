@@ -21,8 +21,8 @@ import pisi.unitedmeows.seriex.anticheat.Anticheat;
 import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.command.CommandSystem;
 import pisi.unitedmeows.seriex.database.SeriexDB;
-import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
+import pisi.unitedmeows.seriex.discord.DiscordBot;
 import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.managers.data.DataManager;
@@ -31,10 +31,10 @@ import pisi.unitedmeows.seriex.managers.sign.SignManager;
 import pisi.unitedmeows.seriex.util.ICleanup;
 import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.config.FileManager;
-import pisi.unitedmeows.seriex.util.config.impl.Config;
+import pisi.unitedmeows.seriex.util.config.impl.server.DatabaseConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.suggestion.WordList;
-import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.logger.impl.YLogger;
 
 public class Seriex extends JavaPlugin {
@@ -45,6 +45,7 @@ public class Seriex extends JavaPlugin {
 	private static FutureManager futureManager;
 	private static SignManager signManager;
 	private static SeriexDB database;
+	private static DiscordBot discordBot;
 	private static List<ICleanup> cleanupabbleObjects = new GlueList<>();
 	private static List<Manager> managers = new GlueList<>();
 	private static YLogger logger = new YLogger(null, "Seriex").setTime(YLogger.Time.DAY_MONTH_YEAR_FULL).setColored(true);
@@ -77,13 +78,13 @@ public class Seriex extends JavaPlugin {
 					managers.add(fileManager = new FileManager(getDataFolder()));
 					managers.add(dataManager = new DataManager());
 					// @DISABLE_FORMATTING
-					Config config = fileManager.getConfig(SETTINGS);
+					DatabaseConfig config = (DatabaseConfig) fileManager.getConfig(DATABASE);
 					cleanupabbleObjects.add(database = new SeriexDB(
-								config.getValue("database.username", config.config),
-								config.getValue("database.password", config.config),
-								config.getValue("database.name", config.config),
-								config.getValue("database.host", config.config),
-								config.getValue("database.port", config.config)));
+								config.DATABASE_USERNAME.value(),
+								config.DATABASE_PASSWORD.value(),
+								config.DATABASE_NAME.value(),
+								config.DATABASE_HOST.value(),
+								config.DATABASE_PORT.value()));
 					// @ENABLE_FORMATTING
 					managers.add(futureManager = new FutureManager()); // this should be always last!
 				}, "Managers");
@@ -109,7 +110,7 @@ public class Seriex extends JavaPlugin {
 		}
 		/* commands */
 		/* :DDD don't delete this @ghost */
-		{
+		commands: {
 			Command.create("cat", "kedi", "deneme").inputs("var1", "var2").onRun(executeInfo -> {
 				executeInfo.playerW().getHooked().sendRawMessage("Command has executed");
 				final String var1 = executeInfo.arguments().get("var1");
@@ -176,15 +177,6 @@ public class Seriex extends JavaPlugin {
 		return instance_.orElseThrow(() -> new SeriexException("Seriex isnt loaded properly!"));
 	}
 
-	public static void main(String... args) throws NoSuchFieldException,SecurityException,IllegalArgumentException,IllegalAccessException {
-		SeriexDB seriexDB = new SeriexDB("seriex", "seriexdb123", "seriex", "79.110.234.147", 3306);
-		DatabaseReflection.init(seriexDB);
-		YYStal.startWatcher();
-		StructPlayer structPlayerW = seriexDB.getPlayer("tempUserkekw");
-		out.println(structPlayerW);
-		logger().debug("#1 " + YYStal.stopWatcher());
-	}
-
 	public Thread primaryThread() {
 		return primaryThread;
 	}
@@ -213,9 +205,14 @@ public class Seriex extends JavaPlugin {
 		return new HashSet<>(anticheats);
 	}
 
-	public String getSuffix() {
-		Config config = fileManager.getConfig(fileManager.SETTINGS);
-		return config.getValue("server.msg_suffix", config.config);
+	public Player sendMessage(Player player, String message, Object... args) {
+		player.sendMessage(colorizeString(String.format("%s &7%s %s", getSuffix(), message, args)));
+		return player;
+	}
+
+	private String getSuffix() {
+		ServerConfig config = (ServerConfig) fileManager.getConfig(fileManager.SERVER);
+		return config.MESSAGE_SUFFIX.value();
 	}
 
 	public SignManager signManager() {
@@ -224,6 +221,15 @@ public class Seriex extends JavaPlugin {
 
 	public SeriexDB database() {
 		return database;
+	}
+
+	public Seriex discordBot(DiscordBot discordBot) {
+		this.discordBot = discordBot;
+		return this;
+	}
+
+	public DiscordBot discordBot() {
+		return discordBot;
 	}
 
 	public CommandSystem commandSystem() {

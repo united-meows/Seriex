@@ -17,7 +17,6 @@ import pisi.unitedmeows.yystal.clazz.HookClass;
 import pisi.unitedmeows.yystal.utils.CoID;
 
 public class PlayerW extends HookClass<Player> {
-
 	private static final Pattern pattern = Pattern.compile("Player[0-9]{1,4}");
 	private final StructPlayer playerInfo;
 	private StructPlayerSettings playerSettings;
@@ -57,7 +56,6 @@ public class PlayerW extends HookClass<Player> {
 		hooked.setSaturation(12.8F);
 		hooked.setMaximumNoDamageTicks(20);
 		new BukkitRunnable() {
-
 			@Override
 			public void run() {
 				hooked.setFireTicks(0);
@@ -84,7 +82,6 @@ public class PlayerW extends HookClass<Player> {
 				hooked.updateInventory();
 			} else if (i > 0) {
 				new BukkitRunnable() {
-
 					@Override
 					public void run() {
 						hooked.updateInventory();
@@ -115,19 +112,21 @@ public class PlayerW extends HookClass<Player> {
 		final String ip = input.replace('.', ':');
 		final String[] splitIp = ip.split(":");
 		final StringBuilder finalIp = new StringBuilder();
-		boolean allah = false;
+		boolean first = false;
+		int maskAmount = 3;
 		for (int i = 0; i < splitIp.length; i++) {
-			if (i < splitIp.length - 2) { // example based on ip = 127.0.0.1 masks half of the ip 127.0.x.x
-													// if you want to mask to the first dot
-													// make the 2 -> 3
-													// after that ip`s will look like 127.x.x.x
+			if (i < splitIp.length - maskAmount) {
+				// example based on ip = 127.0.0.1, maskAmount 2 masks half of the ip 127.0.x.x
+				// if you want to mask to the first dot
+				// make the 2 -> 3
+				// after that ip`s will look like 127.x.x.x
 				finalIp.append(splitIp[i] + ".");
 			} else {
 				for (int j = 0; j < splitIp[i].length(); j++) {
 					if (j == 0) {
-						if (!allah) {
+						if (!first) {
 							finalIp.append(maskChar);
-							allah = true;
+							first = true;
 						} else {
 							finalIp.append("." + maskChar);
 						}

@@ -14,8 +14,6 @@ import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 
 import pisi.unitedmeows.seriex.Seriex;
-import pisi.unitedmeows.seriex.util.suggestion.suggesters.Suggester;
-import pisi.unitedmeows.seriex.util.timings.TimingsCalculator;
 
 public class WordList {
 	private static final Pattern RESOURCE_PATTERN = Pattern.compile(".*");
@@ -23,18 +21,6 @@ public class WordList {
 	public static Map<String, Set<String>> LOWERCASE_WORDS = new HashMap<>();
 	public static Map<String, Integer> FREQUENCY = new HashMap<>();
 	private static Set<String> strings = new HashSet<>();
-
-	public static void main(String... args) {
-		read();
-		Suggester suggester = new Suggester(LOWERCASE_WORDS.get("tr"));
-		TimingsCalculator.GET.benchmark(func -> {
-			String str = "şempaze";
-			suggester.suggestions(str, 50).forEach(Seriex.logger()::fatal);
-			Seriex.logger().fatal("------");
-			suggester.autocomplete(str, 3).forEach(Seriex.logger()::fatal);
-		}, "Suggestions");
-	}
-
 	static int totalWords = 0;
 
 	public static void read() {

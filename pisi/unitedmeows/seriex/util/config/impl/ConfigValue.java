@@ -21,7 +21,7 @@ public class ConfigValue<X> {
 	}
 
 	public X value() {
-		return (X) value;
+		return base.getValue(key, base.config);
 	}
 
 	public ConfigValue<X> value(X value, CommentedConfig config) {

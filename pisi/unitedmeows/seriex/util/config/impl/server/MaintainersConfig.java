@@ -11,7 +11,7 @@ import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
 public class MaintainersConfig extends Config {
 	private static List<String> defaultMaintainers = new GlueList<>();
 	@ConfigField
-	public ConfigValue<List<String>> MAINTAINERS = new ConfigValue(this, "maintainers", defaultMaintainers);
+	public ConfigValue<List<String>> MAINTAINERS = new ConfigValue<>(this, "maintainers", defaultMaintainers);
 
 	public MaintainersConfig(File toWrite) {
 		super("Maintainers");
