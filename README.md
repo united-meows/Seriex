@@ -33,6 +33,7 @@
    + [Javaasist]
    + [JDA]
    + [pisiEventAPI]
+   + [pispigot]
    + [ProtocolLib]
    + [Reflections]
    + [SmartInvs]
@@ -50,6 +51,7 @@
 [Javaasist]: https://github.com/jboss-javassist/javassist
 [JDA]: https://github.com/DV8FromTheWorld/JDA
 
+[pispigot]: https://github.com/united-meows/pispigot
 [pisiEventAPI]: https://github.com/slowcheet4h/pisiEventAPI
 [ProtocolLib]: https://github.com/dmulloy2/ProtocolLib
 [Reflections]: https://github.com/ronmamo/reflections
