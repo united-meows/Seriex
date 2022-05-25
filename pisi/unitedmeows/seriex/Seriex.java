@@ -18,6 +18,7 @@ import com.electronwill.nightconfig.core.file.FormatDetector;
 import com.electronwill.nightconfig.toml.TomlFormat;
 
 import pisi.unitedmeows.seriex.anticheat.Anticheat;
+import pisi.unitedmeows.seriex.auth.AuthListener;
 import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.command.CommandSystem;
 import pisi.unitedmeows.seriex.database.SeriexDB;
@@ -46,6 +47,7 @@ public class Seriex extends JavaPlugin {
 	private static SignManager signManager;
 	private static SeriexDB database;
 	private static DiscordBot discordBot;
+	private static AuthListener authListener;
 	private static List<ICleanup> cleanupabbleObjects = new GlueList<>();
 	private static List<Manager> managers = new GlueList<>();
 	private static YLogger logger = new YLogger(null, "Seriex").setTime(YLogger.Time.DAY_MONTH_YEAR_FULL).setColored(true);
@@ -70,11 +72,14 @@ public class Seriex extends JavaPlugin {
 			primaryThread = currentThread();
 			managers: {
 				signManager = new SignManager();
-				managers.add(signManager);
+				authListener = new AuthListener();
 				setProperty("nightconfig.preserveInsertionOrder", "true");
 				FormatDetector.registerExtension("seriex", TomlFormat.instance());
 				GET.benchmark(temp -> {
 					logger().info("Loading Managers...");
+					// TODO: Add logger info for every manager (like Loading Signmanager...)
+					managers.add(signManager);
+					managers.add(authListener);
 					managers.add(fileManager = new FileManager(getDataFolder()));
 					managers.add(dataManager = new DataManager());
 					// @DISABLE_FORMATTING
