@@ -1,7 +1,10 @@
 package pisi.unitedmeows.seriex.util.wrapper;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
+import net.minecraft.server.v1_8_R3.IAttribute;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
@@ -13,16 +16,37 @@ import org.bukkit.scheduler.BukkitRunnable;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerSettings;
+import pisi.unitedmeows.seriex.util.MaintainersUtil;
+import pisi.unitedmeows.seriex.util.placeholder.IAttributeHolder;
+import pisi.unitedmeows.seriex.util.placeholder.IPlaceHolder;
+import pisi.unitedmeows.seriex.util.placeholder.RegisterAttribute;
 import pisi.unitedmeows.yystal.clazz.HookClass;
+import pisi.unitedmeows.yystal.hook.YString;
 import pisi.unitedmeows.yystal.utils.CoID;
 
 public class PlayerW extends HookClass<Player> {
+
 	private static final Pattern pattern = Pattern.compile("Player[0-9]{1,4}");
-	private final StructPlayer playerInfo;
+	private StructPlayer playerInfo;
 	private StructPlayerSettings playerSettings;
+
+	private HashMap<String, IAttributeHolder> attributeHolders;
+
+	@RegisterAttribute(name = "name")
+	private IAttributeHolder nameAtr = () -> hooked.getName();
+
+	@RegisterAttribute(name = "id")
+	private IAttributeHolder idAtr = () -> String.valueOf(playerInfo.player_id);
+
+	@RegisterAttribute(name = "token")
+	private IAttributeHolder tokenAtr = () -> playerInfo.token;
+
+	@RegisterAttribute(name = "world")
+	private IAttributeHolder worldAtr = () -> getHooked().getWorld().getName();
 
 	public PlayerW(final Player _player) {
 		hooked = _player;
+
 		final String name = hooked.getName();
 		/* TODO: create player database values on VERIFY */
 		/* ^^ ghost :DDD */
@@ -42,6 +66,38 @@ public class PlayerW extends HookClass<Player> {
 			playerSettings.player_id = playerInfo.player_id;
 			Seriex.get().database().createStruct(playerSettings);
 		}
+
+		attributeHolders = new HashMap<>();
+		registerAttributes();
+	}
+
+	private void registerAttributes() {
+		for (Field field : getClass().getDeclaredFields()) {
+			if (field.getType() == IAttributeHolder.class) {
+				if (!field.isAccessible()) {
+					try {
+						field.setAccessible(true);
+					} catch (Exception ex) { ex.printStackTrace(); }
+				}
+
+				if (field.isAnnotationPresent(RegisterAttribute.class)) {
+					final RegisterAttribute registerAttribute = field.getAnnotation(RegisterAttribute.class);
+					try {
+						attributeHolders.put(registerAttribute.name(), (IAttributeHolder) field.get(this));
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+
+	public String attribute(String name) {
+		IAttributeHolder attributeHolder = attributeHolders.getOrDefault(name, null);
+		if (attributeHolder != null)
+			return attributeHolder.compute();
+
+		return YString.EMPTY_R;
 	}
 
 	private String generateUserToken(final String name) {
@@ -96,9 +152,10 @@ public class PlayerW extends HookClass<Player> {
 	}
 
 	public String getIp() {
-		//		if (MaintainersUtil.isMaintainer(hooked.getName()))
-		//			return hooked.getUniqueId().hashCode() + ".0.0.0";
-		// no get real @slowcheet4h
+		if (MaintainersUtil.isMaintainer(hooked.getName()))
+			return hooked.getUniqueId().hashCode() + ".0.0.0";
+
+		// im real
 		return hooked.getAddress().getHostName();
 	}
 
