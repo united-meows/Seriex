@@ -21,7 +21,7 @@
    - [ ] Actual good & fast config handler
    - [ ] Add areas
    - [ ] Add mini-games
-   - [ ] Maybe gradle/maven?
+   - [ ] Maybe gradle/maven? (never)
     
    # Libraries required
    The libraries we use:
