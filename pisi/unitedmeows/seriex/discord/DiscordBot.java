@@ -30,12 +30,14 @@ import net.dv8tion.jda.api.interactions.modals.ModalMapping;
 import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.language.Languages;
+import pisi.unitedmeows.seriex.util.math.Hashing;
 import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.parallel.Promise;
 
@@ -222,10 +224,22 @@ public class DiscordBot extends Manager {
 				if (!Objects.equals(event.getGuild().getId(), discordConfig.ID_GUILD.value())) return;
 				if ("verify_panel".equals(event.getModalId())) {
 					Optional<ModalMapping> optional_username = event.getInteraction().getValues().stream().filter(modalMapping -> "username".equals(modalMapping.getId())).findAny();
-					if (optional_username.isPresent()) {
+					Optional<ModalMapping> optional_password = event.getInteraction().getValues().stream().filter(modalMapping -> "password".equals(modalMapping.getId())).findAny();
+					if (optional_username.isPresent() && optional_password.isPresent()) {
+						// @slowcheet4h
+						// does db create again if the player exists?
 						String username = optional_username.get().getAsString();
+						String password = optional_password.get().getAsString();
+						StructPlayer structPlayer = new StructPlayer();
+						structPlayer.username = username;
+						structPlayer.salt = Hashing.randomString(16);
+						structPlayer.password = Hashing.hashedString(structPlayer.salt + password);
+						boolean created = Seriex.get().database().createStruct(structPlayer);
+						if (!created) {
+							event.reply("Couldnt register!").setEphemeral(true).queue();
+							return;
+						}
 						event.reply(String.format("Registered as %s!", username)).setEphemeral(true).queue();
-						// max ghost zekası
 						event.getGuild().getTextChannelById(discordConfig.ID_REGISTER_LOGS.value()).sendMessage(
 									String.format("%s#%s (%s) registered as %s", event.getMember().getEffectiveName(), event.getMember().getUser().getDiscriminator(), event.getMember().getId(), username))
 									.queue();

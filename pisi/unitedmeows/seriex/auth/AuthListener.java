@@ -19,7 +19,6 @@ import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 
 public class AuthListener extends Manager implements org.bukkit.event.Listener {
-
 	private Map<PlayerW, Authentication> playerMap = new HashMap<>();
 
 	@Override
@@ -32,10 +31,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		final PlayerW playerW = Seriex.get().dataManager().addUser(event.getPlayer());
 		final Authentication authentication = new Authentication(playerW);
 		authentication.start();
-
-
 		playerMap.put(playerW, authentication);
-
 		Pispigot.playerSystem(event.getPlayer()).subscribeAll(this);
 	}
 
@@ -51,7 +47,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 
 	@Override
 	public void cleanup() throws SeriexException {
-		playerMap.forEach((k, v) -> v.close());
+		playerMap.forEach((PlayerW k, Authentication v) -> v.close());
 		playerMap.clear();
 	}
 
