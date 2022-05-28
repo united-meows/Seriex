@@ -1,12 +1,15 @@
-package pisi.unitedmeows.seriex.managers.area.areas;
+package pisi.unitedmeows.seriex.managers.area.areas.base;
 
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import com.electronwill.nightconfig.core.CommentedConfig;
+
 import pisi.unitedmeows.seriex.Seriex;
-import pisi.unitedmeows.seriex.util.math.AxisBB;
+import pisi.unitedmeows.seriex.managers.area.areas.Area;
+import pisi.unitedmeows.seriex.util.config.impl.server.AreaConfig;
 
 public class BasicArea extends Area {
 	private Consumer<Player> onEnter;
@@ -15,8 +18,8 @@ public class BasicArea extends Area {
 	private BasicArea instance;
 	private int runnableId = -1;
 
-	public BasicArea(AxisBB limits) {
-		super(limits, null);
+	public BasicArea(AreaConfig areaConfig, CommentedConfig commentedConfig, Category fCategory) {
+		super(areaConfig, commentedConfig, fCategory);
 		instance = this;
 	}
 

@@ -12,6 +12,7 @@ import java.util.Map;
 import org.bukkit.World;
 
 import pisi.unitedmeows.seriex.managers.Manager;
+import pisi.unitedmeows.seriex.managers.area.areas.Area;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.config.impl.server.*;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
@@ -26,6 +27,7 @@ public class FileManager extends Manager {
 	public static final String RANKS = "ranks";
 	public static final String MAINTAINERS = "maintainers";
 	public static final String WORLD = "world";
+	public static final String AREAS = "areas";
 	public static final String TRANSLATIONS = "translations";
 	public static final String DATABASE = "database";
 	public static final String DISCORD = "discord";
@@ -46,8 +48,10 @@ public class FileManager extends Manager {
 			File ranksFile = new File(directory, RANKS + EXTENSION);
 			File databaseFile = new File(directory, DATABASE + EXTENSION);
 			File discordFile = new File(directory, DISCORD + EXTENSION);
-			File worldFile = new File(directory, WORLD);
-			this.createFile(WORLD, worldFile, new WorldConfig(worldFile, EXTENSION, get().getServer().getWorlds().stream().toArray(World[]::new)));
+			File worldDirectory = new File(directory, WORLD);
+			File areasDirectory = new File(directory, WORLD);
+			this.createFile(WORLD, worldDirectory, new WorldConfig(worldDirectory, EXTENSION, get().getServer().getWorlds().stream().toArray(World[]::new)));
+			this.createFile(AREAS, areasDirectory, new AreaConfig(areasDirectory, EXTENSION, get().areaManager().areaList.stream().toArray(Area[]::new)));
 			this.createFile(DISCORD, discordFile, new DiscordConfig(banActionsFile));
 			this.createFile(DATABASE, databaseFile, new DatabaseConfig(banActionsFile));
 			this.createFile(BAN_ACTIONS, banActionsFile, new BanActionsConfig(banActionsFile));

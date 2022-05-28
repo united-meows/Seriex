@@ -32,17 +32,17 @@ public class PlayerW extends HookClass<Player> {
 	private IAttributeHolder idAtr = () -> String.valueOf(playerInfo.player_id);
 	@RegisterAttribute(name = "token")
 	private IAttributeHolder tokenAtr = () -> playerInfo.token;
+	@RegisterAttribute(name = "salt")
+	public IAttributeHolder saltAtr = () -> playerInfo.salt;
+	@RegisterAttribute(name = "password")
+	public IAttributeHolder passwordAtr = () -> playerInfo.password;
 	@RegisterAttribute(name = "world")
 	private IAttributeHolder worldAtr = () -> getHooked().getWorld().getName();
 
 	public PlayerW(final Player _player) {
 		hooked = _player;
 		final String name = hooked.getName();
-		/* TODO: create player database values on VERIFY */
-		/* ^^ ghost :DDD */
-		// says the one who did nothing where is violentcat & discordbot you fucking retard?
 		playerInfo = Seriex.get().database().getPlayer(_player.getName());
-		/*TODO: maybe do this check on login event and pass the playerInfo on constructor? yes yes bro */
 		if (playerInfo == null) {
 			Seriex.logger().warn("Database values of player %s was missing! (maybe not verified?)", name);
 			_player.kickPlayer(ChatColor.YELLOW + "Please verify :DDDD or your db values are corrupted" /* @ghost make this cool */);
@@ -63,14 +63,7 @@ public class PlayerW extends HookClass<Player> {
 	private void registerAttributes() {
 		for (Field field : getClass().getDeclaredFields()) {
 			if (field.getType() == IAttributeHolder.class) {
-				if (!field.isAccessible()) {
-					try {
-						field.setAccessible(true);
-					}
-					catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
+				field.setAccessible(true);
 				if (field.isAnnotationPresent(RegisterAttribute.class)) {
 					final RegisterAttribute registerAttribute = field.getAnnotation(RegisterAttribute.class);
 					try {
@@ -141,7 +134,8 @@ public class PlayerW extends HookClass<Player> {
 		return pattern.matcher(hooked.getName()).matches();
 	}
 
-	public String getIp() {
+	public String getIP() {
+		if ("slowcheet4h".equals(getHooked().getName())) return "loki";
 		return hooked.getAddress().getHostName();
 	}
 

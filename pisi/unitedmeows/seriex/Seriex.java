@@ -10,12 +10,15 @@ import static pisi.unitedmeows.yystal.parallel.Async.*;
 
 import java.util.*;
 
+import org.bukkit.Bukkit;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.electronwill.nightconfig.core.file.FormatDetector;
 import com.electronwill.nightconfig.toml.TomlFormat;
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
 import pisi.unitedmeows.seriex.anticheat.Anticheat;
 import pisi.unitedmeows.seriex.auth.AuthListener;
@@ -26,6 +29,7 @@ import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.discord.DiscordBot;
 import pisi.unitedmeows.seriex.listener.SeriexSpigotListener;
 import pisi.unitedmeows.seriex.managers.Manager;
+import pisi.unitedmeows.seriex.managers.area.AreaManager;
 import pisi.unitedmeows.seriex.managers.data.DataManager;
 import pisi.unitedmeows.seriex.managers.future.FutureManager;
 import pisi.unitedmeows.seriex.managers.sign.SignManager;
@@ -48,12 +52,15 @@ public class Seriex extends JavaPlugin {
 	private static SeriexDB database;
 	private static DiscordBot discordBot;
 	private static AuthListener authListener;
+	private static AreaManager areaManager;
 	private static List<ICleanup> cleanupabbleObjects = new GlueList<>();
 	private static List<Manager> managers = new GlueList<>();
+	private static List<Listener> listeners = new GlueList<>();
 	private static YLogger logger = new YLogger(null, "Seriex").setTime(YLogger.Time.DAY_MONTH_YEAR_FULL).setColored(true);
 	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here so it can work async :D
 	private static boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
 	private Thread primaryThread;
+	private WorldEditPlugin worldEdit;
 
 	@Override
 	public void onEnable() {
@@ -93,6 +100,7 @@ public class Seriex extends JavaPlugin {
 					// @ENABLE_FORMATTING
 					managers.add(futureManager = new FutureManager()); // this should be always last!
 				}, "Managers");
+				worldEdit = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
 				GET.benchmark(temp -> DatabaseReflection.init(database), "Database Reflection");
 				GET.benchmark(temp -> {
 					logger().info("Enabling Managers...");
@@ -106,7 +114,12 @@ public class Seriex extends JavaPlugin {
 			}
 			listeners: {
 				logger().info("Registering listeners...");
-				getPluginManager().registerEvents(new SeriexSpigotListener(), this);
+				listeners.add(new SeriexSpigotListener());
+				AreaManager areaManager = new AreaManager();
+				this.areaManager = areaManager;
+				listeners.add(areaManager);
+				listeners.addAll(areaManager.areaList);
+				listeners.forEach(listener -> getPluginManager().registerEvents(listener, this));
 			}
 		}
 		catch (Exception e) {
@@ -239,5 +252,13 @@ public class Seriex extends JavaPlugin {
 
 	public CommandSystem commandSystem() {
 		return commandSystem;
+	}
+
+	public WorldEditPlugin worldEdit() {
+		return worldEdit;
+	}
+
+	public AreaManager areaManager() {
+		return areaManager;
 	}
 }

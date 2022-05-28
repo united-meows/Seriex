@@ -226,15 +226,13 @@ public class DiscordBot extends Manager {
 					Optional<ModalMapping> optional_username = event.getInteraction().getValues().stream().filter(modalMapping -> "username".equals(modalMapping.getId())).findAny();
 					Optional<ModalMapping> optional_password = event.getInteraction().getValues().stream().filter(modalMapping -> "password".equals(modalMapping.getId())).findAny();
 					if (optional_username.isPresent() && optional_password.isPresent()) {
-						// @slowcheet4h
-						// does db create again if the player exists?
 						String username = optional_username.get().getAsString();
 						String password = optional_password.get().getAsString();
 						StructPlayer structPlayer = new StructPlayer();
 						structPlayer.username = username;
-						structPlayer.salt = Hashing.randomString(16);
+						structPlayer.salt = Hashing.randomString(8);
 						structPlayer.password = Hashing.hashedString(structPlayer.salt + password);
-						boolean created = Seriex.get().database().createStruct(structPlayer);
+						boolean created = Seriex.get().database().createStruct(structPlayer, "WHERE NOT EXISTS (SELECT * FROM %s WHERE username='username')");
 						if (!created) {
 							event.reply("Couldnt register!").setEphemeral(true).queue();
 							return;

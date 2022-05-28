@@ -52,7 +52,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 		return DatabaseReflection.get("player_wallet", command, this, new StructPlayerWallet());
 	}
 
-	public boolean createStruct(IStruct struct) {
+	public boolean createStruct(IStruct struct, String... extraCommands) {
 		//  	based on
 		//		return execute(new YSQLCommand(
 		//				    "INSERT INTO player_settings "
@@ -65,7 +65,8 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 		//               .putString(playerSettings.ANTICHEAT));
 		try {
 			Class<? extends IStruct> clazz = struct.getClass();
-			StringBuilder builder = new StringBuilder(String.format("INSERT INTO %s", DatabaseReflection.getTable(clazz)));
+			String table = DatabaseReflection.getTable(clazz);
+			StringBuilder builder = new StringBuilder(String.format("INSERT INTO %s", table));
 			// INSERT INTO player
 			builder.append("(");
 			// INSERT INTO player(
@@ -100,6 +101,10 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 			}
 			// INSERT INTO player(player_id, api_access, username, password, token, gAuth, salt)
 			// VALUES(1, 31, "probablyThisDoesntwork", "pass", "tokenqwe", "gAuthEX", "saltEx")
+			// WHERE NOT EXISTS (SELECT * FROM player WHERE username='username')
+			if (extraCommands.length != 0) {
+				builder.append(String.format(extraCommands[0], table));
+			}
 			return execute(new YSQLCommand(builder.toString()));
 		}
 		catch (Exception e) {

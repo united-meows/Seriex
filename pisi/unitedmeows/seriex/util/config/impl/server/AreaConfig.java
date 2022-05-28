@@ -1,0 +1,57 @@
+package pisi.unitedmeows.seriex.util.config.impl.server;
+
+import static com.electronwill.nightconfig.core.CommentedConfig.*;
+
+import java.io.File;
+import java.util.Arrays;
+
+import pisi.unitedmeows.seriex.managers.area.areas.Area;
+import pisi.unitedmeows.seriex.util.config.impl.Config;
+import pisi.unitedmeows.seriex.util.config.impl.ConfigField;
+import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
+import pisi.unitedmeows.yystal.utils.Pair;
+
+public class AreaConfig extends Config {
+	@ConfigField
+	public ConfigValue<String> area_name = new ConfigValue<>(this, "name", "");
+	@ConfigField
+	public ConfigValue<String> area_base = new ConfigValue<>(this, "base", "");
+	@ConfigField
+	public ConfigValue<Area.Category> area_category = new ConfigValue<>(this, "category", Area.Category.NONE);
+	@ConfigField
+	public ConfigValue<Double> minX = new ConfigValue<>(this, "min.x", 0.0);
+	@ConfigField
+	public ConfigValue<Double> minY = new ConfigValue<>(this, "min.y", 0.0);
+	@ConfigField
+	public ConfigValue<Double> minZ = new ConfigValue<>(this, "min.z", 0.0);
+	@ConfigField
+	public ConfigValue<Double> maxX = new ConfigValue<>(this, "max.x", 0.0);
+	@ConfigField
+	public ConfigValue<Double> maxY = new ConfigValue<>(this, "max.y", 0.0);
+	@ConfigField
+	public ConfigValue<Double> maxZ = new ConfigValue<>(this, "max.z", 0.0);
+	@ConfigField
+	public ConfigValue<Double> warpX = new ConfigValue<>(this, "warp.x", 0.0);
+	@ConfigField
+	public ConfigValue<Double> warpY = new ConfigValue<>(this, "warp.y", 0.0);
+	@ConfigField
+	public ConfigValue<Double> warpZ = new ConfigValue<>(this, "warp.z", 0.0);
+
+	public AreaConfig(File toWrite, String extension, Area... areas) {
+		super("AreaConfig", true, ConfigType.MULTIPLE, toWrite);
+		Arrays.stream(areas).forEach(area -> {
+			File file = new File(String.format("%s/%s%s", toWrite, area.name(), extension));
+			configs.put(area.name(), new Pair<>(file, inMemoryConcurrent()));
+		});
+	}
+
+	@Override
+	public void load() {
+		internalLoad(this);
+	}
+
+	@Override
+	public void loadDefaultValues() {
+		internalDefaultValues(this);
+	}
+}
