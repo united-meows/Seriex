@@ -19,7 +19,6 @@ import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
  * @apiNote Not thread-safe.
  */
 public class DataManager extends Manager {
-
 	// TODOL -> Investigate # maybe IdentityHashMap has better performance and for more stability?
 	// Also we could use LinkedHashMap for removeEldestEntry to remove memory leaks maybe...
 	// AND using Player as keys CAUSES MEMORY LEAKS. Certainly we could use UUIDs but that makes us calculate
@@ -29,7 +28,7 @@ public class DataManager extends Manager {
 
 	@Override
 	public void start(Seriex seriex) {
-		userMap.clear(); // a bug fix for when the server crashes
+		userMap.clear(); // reload & restart
 		seriex.get().getServer().getOnlinePlayers().forEach(this::addUser);
 	}
 

@@ -30,6 +30,7 @@ public class AreaManager extends Manager implements Listener {
 
 	@Override
 	public void start(Seriex seriex) {
+		classMap.clear(); // reload & restart
 		Reflections sorry = new Reflections("pisi.unitedmeows.seriex.managers.area.areas.impl");
 		Set<Class<? extends Area>> areaClasses = sorry.getSubTypesOf(Area.class);
 		areaClasses.stream().forEach(areaClass -> {

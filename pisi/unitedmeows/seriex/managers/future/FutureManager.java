@@ -10,7 +10,6 @@ import pisi.unitedmeows.yystal.parallel.Future;
 
 // note: you cant delete futures until they are done get real
 public class FutureManager extends Manager {
-
 	private List<Future<?>> futures = new GlueList<>();
 
 	@Override
@@ -27,7 +26,6 @@ public class FutureManager extends Manager {
 			if (futures.get(i).hasSet()) {
 				futures.remove(i);
 				i--; // so we dont skip the next one
-				// iterators :DDDD
 			}
 		}
 	}
@@ -45,6 +43,7 @@ public class FutureManager extends Manager {
 				Seriex.logger().info("Primary thread has been interrupted!!! %s", e.getMessage());
 				Seriex.get().primaryThread().interrupt();
 			}
+			// set again or infinite loop
 			done = checkFutures(done);
 		}
 	}

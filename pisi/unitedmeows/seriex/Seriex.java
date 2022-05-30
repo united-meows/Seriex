@@ -23,6 +23,7 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import pisi.unitedmeows.seriex.anticheat.Anticheat;
 import pisi.unitedmeows.seriex.auth.AuthListener;
 import pisi.unitedmeows.seriex.command.Command;
+import pisi.unitedmeows.seriex.command.Command.AutoCompleteInfo;
 import pisi.unitedmeows.seriex.command.CommandSystem;
 import pisi.unitedmeows.seriex.database.SeriexDB;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
@@ -39,6 +40,7 @@ import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.config.impl.server.DatabaseConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
+import pisi.unitedmeows.seriex.util.language.I18n;
 import pisi.unitedmeows.seriex.util.suggestion.WordList;
 import pisi.unitedmeows.yystal.logger.impl.YLogger;
 
@@ -53,6 +55,7 @@ public class Seriex extends JavaPlugin {
 	private static DiscordBot discordBot;
 	private static AuthListener authListener;
 	private static AreaManager areaManager;
+	private static I18n i18n;
 	private static List<ICleanup> cleanupabbleObjects = new GlueList<>();
 	private static List<Manager> managers = new GlueList<>();
 	private static List<Listener> listeners = new GlueList<>();
@@ -97,6 +100,7 @@ public class Seriex extends JavaPlugin {
 								config.DATABASE_NAME.value(),
 								config.DATABASE_HOST.value(),
 								config.DATABASE_PORT.value()));
+					cleanupabbleObjects.add(new I18n());
 					// @ENABLE_FORMATTING
 					managers.add(futureManager = new FutureManager()); // this should be always last!
 				}, "Managers");
@@ -134,6 +138,10 @@ public class Seriex extends JavaPlugin {
 				final String var1 = executeInfo.arguments().get("var1");
 				final String var2 = executeInfo.arguments().get("var2");
 				executeInfo.playerW().getHooked().sendRawMessage(var1 + " " + var2);
+			}).onAutoComplete((AutoCompleteInfo info) -> {
+				info.playerW().getHooked().sendRawMessage(info.input());
+				info.playerW().getHooked().sendRawMessage(info.lastToken());
+				return "";
 			});
 		}
 		/* sign manager */
@@ -173,21 +181,15 @@ public class Seriex extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		// maybe this is slower than using a for loop for the getOnlinePlayers collection
-		List<Player> tempPlayers = new GlueList<>(getOnlinePlayers());
-		for (int i = 0; i < tempPlayers.size(); i++) {
-			Player player = tempPlayers.get(i);
+		getOnlinePlayers().forEach(player -> {
 			player.kickPlayer(getSuffix() + "\n" + "Restarting the server...");
-		}
+		});
 		for (int i = 0; i < cleanupabbleObjects.size(); i++) {
 			ICleanup cleanup = cleanupabbleObjects.get(i);
 			cleanup.cleanup();
 		}
-		dataManager = null;
-		anticheats = null;
-		fileManager = null;
-		futureManager = null;
-		instance_ = Optional.empty(); // this should be last.
+		instance_ = Optional.empty();
+		System.gc();
 		super.onDisable();
 	}
 
@@ -201,6 +203,10 @@ public class Seriex extends JavaPlugin {
 
 	public static YLogger logger() {
 		return logger;
+	}
+
+	public static I18n I18n() {
+		return i18n;
 	}
 
 	public FutureManager futureManager() {

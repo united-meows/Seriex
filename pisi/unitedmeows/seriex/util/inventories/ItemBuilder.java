@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class ItemBuilder {
+public final class ItemBuilder {
 	private final ItemStack is;
 
 	private ItemBuilder(final Material mat) {

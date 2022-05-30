@@ -8,7 +8,6 @@ import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 
 public class Command {
-
 	private String[] triggers;
 	private String description;
 	private Consumer<ExecuteInfo> run;
@@ -107,7 +106,6 @@ public class Command {
 	}
 
 	public static class AutoCompleteInfo {
-
 		private PlayerW playerW;
 		private String input;
 		private String lastToken;
@@ -132,7 +130,6 @@ public class Command {
 	}
 
 	public static class ExecuteInfo {
-
 		private PlayerW playerW;
 		private Map<String, String> arguments;
 		private String fullInput;

@@ -102,7 +102,7 @@ public class Config {
 					Field field = fields[i];
 					field.setAccessible(true);
 					if (field.getAnnotation(ConfigField.class) != null) {
-						ConfigValue fieldValue = (ConfigValue) field.get(o);
+						ConfigValue<?> fieldValue = (ConfigValue) field.get(o);
 						setValue(fieldValue.key(), fieldValue.value(), commentedConfig);
 					}
 				}
@@ -124,7 +124,7 @@ public class Config {
 						Field field = fields[i];
 						field.setAccessible(true);
 						if (field.getAnnotation(ConfigField.class) != null) {
-							ConfigValue fieldValue = (ConfigValue) field.get(ConfigValue.class);
+							ConfigValue<?> fieldValue = (ConfigValue) field.get(ConfigValue.class);
 							getAndSet(fileConfig, config, fieldValue.key());
 						}
 					}

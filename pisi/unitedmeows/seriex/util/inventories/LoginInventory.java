@@ -9,11 +9,12 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import net.wesjd.anvilgui.AnvilGUI;
 import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.auth.AuthListener;
 import pisi.unitedmeows.seriex.util.math.Hashing;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 
 public class LoginInventory {
-	public static void open(PlayerW _w) {
+	public static void open(PlayerW _w, AuthListener authListener) {
 		ItemStack questionMark = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
 		SkullMeta meta = (SkullMeta) questionMark.getItemMeta();
 		meta.setOwner("MHF_Question");
@@ -28,9 +29,13 @@ public class LoginInventory {
 		new AnvilGUI.Builder()
 	    .onComplete((player, text) -> {
 	        if(Objects.equals(Hashing.hashedString(_w.attribute("salt") + text), _w.attribute("password"))) {
-	            player.sendMessage("login");
+	            player.sendMessage("logged in");
+	            authListener.stopAuthentication(_w);
 	            return AnvilGUI.Response.close();
-	        } else return AnvilGUI.Response.text("incorrect password kekw");
+	        } else {
+	      	   authListener.stopAuthentication(_w);
+	      	  return AnvilGUI.Response.text("incorrect password kekw");
+	        }
 	    })
 	    .preventClose()
 	    .text("Enter your password...")
