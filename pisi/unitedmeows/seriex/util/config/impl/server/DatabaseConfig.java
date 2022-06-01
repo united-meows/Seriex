@@ -22,4 +22,14 @@ public class DatabaseConfig extends Config {
 	public ConfigValue<String> DATABASE_HOST = new ConfigValue<>(this, "host", "79.110.234.147");
 	@ConfigField
 	public ConfigValue<Integer> DATABASE_PORT = new ConfigValue<>(this, "port", 3306);
+
+	@Override
+	public void load() {
+		internalLoad(this);
+	}
+
+	@Override
+	public void loadDefaultValues() {
+		internalDefaultValues(this);
+	}
 }
