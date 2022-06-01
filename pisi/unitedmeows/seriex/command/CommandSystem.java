@@ -7,7 +7,6 @@ import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 import pisi.unitedmeows.yystal.hook.YString;
 
 public class CommandSystem {
-
 	//TODO: make this prefix '/'
 	private String prefix = "$";
 	private List<Command> commandList = new ArrayList<>();
@@ -30,14 +29,11 @@ public class CommandSystem {
 	public Command commandFromFull(String input) {
 		input = input.substring(prefix.length());
 		final String name = input.contains(" ") ? input.split(" ")[0] : input;
-
 		for (Command cmd : commandList) {
 			for (String trigger : cmd.triggers()) {
-				if (name.equalsIgnoreCase(trigger))
-					return cmd;
+				if (name.equalsIgnoreCase(trigger)) return cmd;
 			}
 		}
-
 		return null;
 	}
 

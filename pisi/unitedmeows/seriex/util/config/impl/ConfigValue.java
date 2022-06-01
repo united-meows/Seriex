@@ -7,7 +7,7 @@ import com.electronwill.nightconfig.core.CommentedConfig;
  */
 public class ConfigValue<X> {
 	private String key;
-	private Object value;
+	private X value;
 	private Config base;
 
 	public ConfigValue(Config config, String key, X value) {
@@ -21,7 +21,9 @@ public class ConfigValue<X> {
 	}
 
 	public X value() {
-		return value(base.config);
+		X calculatedValue = value(base.config);
+		if (calculatedValue == null) return value;
+		return calculatedValue;
 	}
 
 	public X value(CommentedConfig config) {

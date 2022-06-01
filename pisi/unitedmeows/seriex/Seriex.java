@@ -125,7 +125,7 @@ public class Seriex extends JavaPlugin {
 				listeners.addAll(areaManager.areaList);
 				listeners.forEach(listener -> getPluginManager().registerEvents(listener, this));
 			}
-			managers.forEach(mgr -> mgr.post(get()));
+			managers.forEach((Manager mgr) -> mgr.post(get()));
 		}
 		catch (Exception e) {
 			loadedCorrectly = false;
@@ -134,6 +134,7 @@ public class Seriex extends JavaPlugin {
 		/* commands */
 		/* :DDD don't delete this @ghost */
 		commands: {
+			commandSystem = new CommandSystem();
 			Command.create("cat", "kedi", "deneme").inputs("var1", "var2").onRun(executeInfo -> {
 				executeInfo.playerW().getHooked().sendRawMessage("Command has executed");
 				final String var1 = executeInfo.arguments().get("var1");
@@ -222,7 +223,7 @@ public class Seriex extends JavaPlugin {
 		return fileManager;
 	}
 
-	public String colorizeString(String input) {
+	public static String colorizeString(String input) {
 		return input.replace('&', '\u00A7');
 	}
 

@@ -17,7 +17,7 @@ public class ServerConfig extends Config {
 	@ConfigField
 	public ConfigValue<String> WORLD_NAME = new ConfigValue<>(this, "server.world", "arterial");
 	@ConfigField
-	public ConfigValue<String> MESSAGE_SUFFIX = new ConfigValue<>(this, "server.msg_suffix", Seriex.get().colorizeString("&7[&dSer&5iex&7]"));
+	public ConfigValue<String> MESSAGE_SUFFIX = new ConfigValue<>(this, "server.msg_suffix", Seriex.colorizeString("&7[&dSer&5iex&7]"));
 	@ConfigField
 	public ConfigValue<Boolean> LOGGING_ENABLED = new ConfigValue<>(this, "logging.enabled", true);
 	@ConfigField
