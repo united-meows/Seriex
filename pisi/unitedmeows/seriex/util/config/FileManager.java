@@ -51,8 +51,8 @@ public class FileManager extends Manager {
 			File discordFile = new File(directory, DISCORD + EXTENSION);
 			File worldDirectory = new File(directory, WORLD);
 			this.createFile(WORLD, worldDirectory, new WorldConfig(worldDirectory, EXTENSION, get().getServer().getWorlds().stream().toArray(World[]::new)));
-			this.createFile(DISCORD, discordFile, new DiscordConfig(banActionsFile));
-			this.createFile(DATABASE, databaseFile, new DatabaseConfig(banActionsFile));
+			this.createFile(DISCORD, discordFile, new DiscordConfig(discordFile));
+			this.createFile(DATABASE, databaseFile, new DatabaseConfig(databaseFile));
 			this.createFile(BAN_ACTIONS, banActionsFile, new BanActionsConfig(banActionsFile));
 			this.createFile(RANKS, ranksFile, new RanksConfig(ranksFile));
 			this.createFile(MAINTAINERS, maintainersFile, new MaintainersConfig(maintainersFile));

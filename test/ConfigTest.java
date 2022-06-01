@@ -6,11 +6,11 @@ import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.config.impl.ConfigField;
 import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
-import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.DatabaseConfig;
 
 public class ConfigTest {
 	public static void main(String... args) throws Exception {
-		ServerConfig o = new ServerConfig(null);
+		DatabaseConfig o = new DatabaseConfig(null);
 		o.loadDefaultValues();
 		Field[] fields = ((Class<? extends Config>) o.getClass()).getDeclaredFields();
 		for (int i = 0; i < fields.length; i++) {
