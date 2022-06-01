@@ -125,6 +125,7 @@ public class Seriex extends JavaPlugin {
 				listeners.addAll(areaManager.areaList);
 				listeners.forEach(listener -> getPluginManager().registerEvents(listener, this));
 			}
+			managers.forEach(mgr -> mgr.post(get()));
 		}
 		catch (Exception e) {
 			loadedCorrectly = false;

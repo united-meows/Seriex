@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.bukkit.World;
 
+import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.managers.area.areas.Area;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
@@ -49,9 +50,7 @@ public class FileManager extends Manager {
 			File databaseFile = new File(directory, DATABASE + EXTENSION);
 			File discordFile = new File(directory, DISCORD + EXTENSION);
 			File worldDirectory = new File(directory, WORLD);
-			File areasDirectory = new File(directory, WORLD);
 			this.createFile(WORLD, worldDirectory, new WorldConfig(worldDirectory, EXTENSION, get().getServer().getWorlds().stream().toArray(World[]::new)));
-			this.createFile(AREAS, areasDirectory, new AreaConfig(areasDirectory, EXTENSION, get().areaManager().areaList.stream().toArray(Area[]::new)));
 			this.createFile(DISCORD, discordFile, new DiscordConfig(banActionsFile));
 			this.createFile(DATABASE, databaseFile, new DatabaseConfig(banActionsFile));
 			this.createFile(BAN_ACTIONS, banActionsFile, new BanActionsConfig(banActionsFile));
@@ -61,6 +60,13 @@ public class FileManager extends Manager {
 			this.createFile(TRANSLATIONS, translationsFile, new TranslationsConfig(translationsFile));
 			set = true;
 		}
+	}
+
+	@Override
+	public void post(Seriex seriex) {
+		File areasDirectory = new File(directory, WORLD);
+		this.createFile(AREAS, areasDirectory, new AreaConfig(areasDirectory, EXTENSION, get().areaManager().areaList.stream().toArray(Area[]::new)));
+		super.post(seriex);
 	}
 
 	public void writeString(final File file, final String bytes) {

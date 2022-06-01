@@ -5,8 +5,9 @@ import pisi.unitedmeows.seriex.util.ICleanup;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 
 public class Manager implements ICleanup {
-
 	public void start(Seriex seriex) {}
+
+	public void post(Seriex seriex) {}
 
 	@Override
 	public void cleanup() throws SeriexException {}

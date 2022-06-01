@@ -7,20 +7,27 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.toml.TomlWriter;
 
-import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.managers.area.areas.Area;
 
 public class TomlTest {
 	public static void main(String... args) {
 		CommentedConfig config = CommentedConfig.inMemoryConcurrent();
 		System.setProperty("nightconfig.preserveInsertionOrder", "true");
-		int[] coords = new int[3];
-		coords[0] = 31;
-		coords[1] = 21;
-		coords[2] = 11;
-		config.set("anan", coords);
+		config.set("name", "empty_area");
+		config.set("base", "");
+		config.set("category", Area.Category.NONE);
+		String[] coords_0 = {
+			"min", "max", "warp"
+		};
+		String[] coords_1 = {
+			"x", "y", "z"
+		};
+		Arrays.stream(coords_0).forEach(coord_name -> {
+			Arrays.stream(coords_1).forEach(coord -> {
+				config.set(coord_name + "." + coord, 2173);
+			});
+		});
 		System.out.println("Config: " + config);
-		int[] get = config.get("anan");
-		Arrays.stream(get).forEach(anan -> Seriex.logger().info(anan + ""));
 		File configFile = new File("commentedConfig.toml");
 		TomlWriter writer = new TomlWriter();
 		writer.write(config, configFile, WritingMode.REPLACE);
