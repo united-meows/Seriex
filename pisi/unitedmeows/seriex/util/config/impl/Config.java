@@ -145,6 +145,11 @@ public class Config {
 		return config.get(path);
 	}
 
+	public <T> T getValue(String path) {
+		if (hasMultiple()) throw new SeriexException("Config type isnt multiple! Cant invoke getValue(String path)...");
+		return getValue(path, config);
+	}
+
 	public String name() {
 		return name;
 	}

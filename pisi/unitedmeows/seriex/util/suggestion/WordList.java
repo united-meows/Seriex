@@ -94,7 +94,7 @@ public class WordList {
 		int m = 0;
 		char[] chr = new char[ch.length];
 		char[] k = {
-					'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
 		};
 		for (int i = 0; i < ch.length; i++) {
 			for (int j = 0; j < k.length; j++) {
@@ -114,7 +114,7 @@ public class WordList {
 	public static void transform(File source, String srcEncoding, File target, String tgtEncoding) throws IOException {
 		try (
 					BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(source), srcEncoding));
-					BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(target), tgtEncoding));
+					BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(target), tgtEncoding))
 		) {
 			char[] buffer = new char[16384];
 			int read;

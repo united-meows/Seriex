@@ -19,10 +19,6 @@ public class AxisBB {
 		this.maxZ = Math.max(z1, z2);
 	}
 
-	/**
-	 * Adds the coordinates to the bounding box extending it if the point lies outside the current
-	 * ranges. Args: x, y, z
-	 */
 	public AxisBB addCoord(final double x, final double y, final double z) {
 		double d0 = this.minX;
 		double d1 = this.minY;
@@ -48,10 +44,6 @@ public class AxisBB {
 		return new AxisBB(d0, d1, d2, d3, d4, d5);
 	}
 
-	/**
-	 * Returns a bounding box expanded by the specified vector (if negative numbers are given it will
-	 * shrink). Args: x, y, z
-	 */
 	public AxisBB expand(final double x, final double y, final double z) {
 		final double d0 = this.minX - x;
 		final double d1 = this.minY - y;
@@ -82,9 +74,6 @@ public class AxisBB {
 		return new AxisBB(d0, d1, d2, d3, d4, d5);
 	}
 
-	/**
-	 * returns an AABB with corners x1, y1, z1 and x2, y2, z2
-	 */
 	public static AxisBB fromBounds(final double x1, final double y1, final double z1, final double x2, final double y2, final double z2) {
 		final double d0 = Math.min(x1, x2);
 		final double d1 = Math.min(y1, y2);
@@ -99,18 +88,10 @@ public class AxisBB {
 		return new AxisBB(this.minX + x, this.minY + y, this.minZ + z, this.maxX + x1, this.maxY + y1, this.maxZ + z1);
 	}
 
-	/**
-	 * Offsets the current bounding box by the specified coordinates. Args: x, y, z
-	 */
 	public AxisBB offset(final double x, final double y, final double z) {
 		return new AxisBB(this.minX + x, this.minY + y, this.minZ + z, this.maxX + x, this.maxY + y, this.maxZ + z);
 	}
 
-	/**
-	 * if instance and the argument bounding boxes overlap in the Y and Z dimensions, calculate the
-	 * offset between them in the X dimension. return var2 if the bounding boxes do not overlap or if
-	 * var2 is closer to 0 then the calculated offset. Otherwise return the calculated offset.
-	 */
 	public double calculateXOffset(final AxisBB other, double offsetX) {
 		if (other.maxY > this.minY && other.minY < this.maxY && other.maxZ > this.minZ && other.minZ < this.maxZ) {
 			if (offsetX > 0.0D && other.maxX <= this.minX) {
@@ -128,11 +109,6 @@ public class AxisBB {
 		} else return offsetX;
 	}
 
-	/**
-	 * if instance and the argument bounding boxes overlap in the X and Z dimensions, calculate the
-	 * offset between them in the Y dimension. return var2 if the bounding boxes do not overlap or if
-	 * var2 is closer to 0 then the calculated offset. Otherwise return the calculated offset.
-	 */
 	public double calculateYOffset(final AxisBB other, double offsetY) {
 		if (other.maxX > this.minX && other.minX < this.maxX && other.maxZ > this.minZ && other.minZ < this.maxZ) {
 			if (offsetY > 0.0D && other.maxY <= this.minY) {
@@ -150,11 +126,6 @@ public class AxisBB {
 		} else return offsetY;
 	}
 
-	/**
-	 * if instance and the argument bounding boxes overlap in the Y and X dimensions, calculate the
-	 * offset between them in the Z dimension. return var2 if the bounding boxes do not overlap or if
-	 * var2 is closer to 0 then the calculated offset. Otherwise return the calculated offset.
-	 */
 	public double calculateZOffset(final AxisBB other, double offsetZ) {
 		if (other.maxX > this.minX && other.minX < this.maxX && other.maxY > this.minY && other.minY < this.maxY) {
 			if (offsetZ > 0.0D && other.maxZ <= this.minZ) {
@@ -172,23 +143,14 @@ public class AxisBB {
 		} else return offsetZ;
 	}
 
-	/**
-	 * Returns whether the given bounding box intersects with this one. Args: axisAlignedBB
-	 */
 	public boolean intersectsWith(final AxisBB other) {
 		return other.maxX > this.minX && other.minX < this.maxX ? (other.maxY > this.minY && other.minY < this.maxY ? other.maxZ > this.minZ && other.minZ < this.maxZ : false) : false;
 	}
 
-	/**
-	 * Returns if the supplied Location is completely inside the bounding box
-	 */
 	public boolean isLocInside(final Location vec) {
 		return vec.getX() > this.minX && vec.getX() < this.maxX ? (vec.getY() > this.minY && vec.getY() < this.maxY ? vec.getZ() > this.minZ && vec.getZ() < this.maxZ : false) : false;
 	}
 
-	/**
-	 * Returns the average length of the edges of the bounding box.
-	 */
 	public double getAverageEdgeLength() {
 		final double d0 = this.maxX - this.minX;
 		final double d1 = this.maxY - this.minY;
@@ -196,9 +158,6 @@ public class AxisBB {
 		return (d0 + d1 + d2) / 3.0D;
 	}
 
-	/**
-	 * Returns a bounding box that is inset by the specified amounts
-	 */
 	public AxisBB contract(final double x, final double y, final double z) {
 		final double d0 = this.minX + x;
 		final double d1 = this.minY + y;

@@ -1,4 +1,4 @@
-package pisi.unitedmeows.seriex.util.placeholder;
+package pisi.unitedmeows.seriex.util.placeholder.impl;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.util.placeholder.api.IPlaceHolder;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 
 public class PlayerPlaceHolder implements IPlaceHolder {
@@ -30,7 +31,7 @@ public class PlayerPlaceHolder implements IPlaceHolder {
 				if (player == null) {
 					break;
 				}
-				PlayerW playerW = Seriex.get().dataManager().addUser(player);
+				PlayerW playerW = Seriex.get().dataManager().user(player);
 				input = matcher.replaceFirst(playerW.attribute(matcher.group(2)));
 				matcher = pattern.matcher(input);
 			} while (matcher.find());

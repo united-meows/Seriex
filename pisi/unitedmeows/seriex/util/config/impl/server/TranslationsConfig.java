@@ -1,14 +1,23 @@
 package pisi.unitedmeows.seriex.util.config.impl.server;
 
+import static com.electronwill.nightconfig.core.CommentedConfig.*;
+
 import java.io.File;
+import java.util.Arrays;
 
 import pisi.unitedmeows.seriex.util.config.impl.Config;
+import pisi.unitedmeows.seriex.util.language.Languages;
+import pisi.unitedmeows.yystal.utils.Pair;
 
+// TODO didnt finish yet
 public class TranslationsConfig extends Config {
-
-	public TranslationsConfig(File toWrite) {
-		super("Translations", true);
-		this.toWrite = toWrite;
+	public TranslationsConfig(File toWrite, String extension, Languages... languages) {
+		super("TranslationsConfig", true, ConfigType.MULTIPLE, toWrite);
+		Arrays.stream(languages).forEach(language -> {
+			File file = new File(String.format("%s/%s%s", toWrite, language.languageCode(), extension));
+			configs.put(language.languageCode(), new Pair<>(file, inMemoryConcurrent()));
+		});
+		this.manual = true;
 	}
 
 	@Override

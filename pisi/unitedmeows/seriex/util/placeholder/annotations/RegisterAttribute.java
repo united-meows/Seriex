@@ -1,4 +1,4 @@
-package pisi.unitedmeows.seriex.util.placeholder;
+package pisi.unitedmeows.seriex.util.placeholder.annotations;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

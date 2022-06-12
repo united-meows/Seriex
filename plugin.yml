@@ -3,3 +3,4 @@ name: Seriex
 version: '0.1'
 description: Seriex Rewritten; Official Plugin of Seriex
 author: ghost2173 & slowcheet4h
+depend: [ ProtocolLib ] 

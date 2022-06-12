@@ -4,6 +4,8 @@ import static pisi.unitedmeows.seriex.Seriex.*;
 
 import java.awt.Color;
 import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.security.auth.login.LoginException;
 
@@ -50,7 +52,7 @@ public class DiscordBot extends Manager {
 	private JDA jda;
 	private Promise sendPromise;
 
-	public DiscordBot(FileManager manager) throws LoginException {
+	public DiscordBot(FileManager manager) {
 		DiscordConfig discordConfig = (DiscordConfig) manager.getConfig(manager.DISCORD);
 		ServerConfig serverConfig = (ServerConfig) manager.getConfig(manager.SERVER);
 		JDABuilder builder = JDABuilder.createDefault(discordConfig.BOT_TOKEN.value());
@@ -63,7 +65,7 @@ public class DiscordBot extends Manager {
 			public void onReady(ReadyEvent event) {
 				logger().debug("SeriexBot is ready!");
 				event.getJDA().getGuilds().forEach((Guild guild) -> {
-					Map<Languages, Role> map = new HashMap<>();
+					Map<Languages, Role> map = new EnumMap<>(Languages.class);
 					verified_role: {
 						List<Role> verified = guild.getRolesByName("verified", false);
 						if (verified == null || verified.isEmpty()) {
@@ -223,8 +225,9 @@ public class DiscordBot extends Manager {
 			public void onModalInteraction(ModalInteractionEvent event) {
 				if (!Objects.equals(event.getGuild().getId(), discordConfig.ID_GUILD.value())) return;
 				if ("verify_panel".equals(event.getModalId())) {
-					Optional<ModalMapping> optional_username = event.getInteraction().getValues().stream().filter(modalMapping -> "username".equals(modalMapping.getId())).findAny();
-					Optional<ModalMapping> optional_password = event.getInteraction().getValues().stream().filter(modalMapping -> "password".equals(modalMapping.getId())).findAny();
+					Supplier<Stream<ModalMapping>> stream = event.getInteraction().getValues()::stream;
+					Optional<ModalMapping> optional_username = stream.get().filter(modalMapping -> "username".equals(modalMapping.getId())).findAny();
+					Optional<ModalMapping> optional_password = stream.get().filter(modalMapping -> "password".equals(modalMapping.getId())).findAny();
 					if (optional_username.isPresent() && optional_password.isPresent()) {
 						String username = optional_username.get().getAsString();
 						String password = optional_password.get().getAsString();
@@ -238,9 +241,9 @@ public class DiscordBot extends Manager {
 							return;
 						}
 						event.reply(String.format("Registered as %s!", username)).setEphemeral(true).queue();
-						event.getGuild().getTextChannelById(discordConfig.ID_REGISTER_LOGS.value()).sendMessage(
-									String.format("%s#%s (%s) registered as %s", event.getMember().getEffectiveName(), event.getMember().getUser().getDiscriminator(), event.getMember().getId(), username))
-									.queue();
+						Member member = event.getMember();
+						event.getGuild().getTextChannelById(discordConfig.ID_REGISTER_LOGS.value())
+									.sendMessage(String.format("%s#%s (%s) registered as %s", member.getEffectiveName(), member.getUser().getDiscriminator(), member.getId(), username)).queue();
 					} else {
 						event.reply("Couldn`t register, try again!").setEphemeral(true).queue();
 					}
@@ -248,7 +251,12 @@ public class DiscordBot extends Manager {
 				super.onModalInteraction(event);
 			}
 		});
-		jda = builder.build();
+		try {
+			jda = builder.build();
+		}
+		catch (LoginException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void addMessageToQueue(Player sender, String message) {
@@ -258,17 +266,6 @@ public class DiscordBot extends Manager {
 		builder.setThumbnail(String.format("https://mc-heads.net/avatar/%s", name));
 		builder.addField(name, message, true);
 		serverChatMessages.add(builder.build());
-	}
-
-	@Override
-	public void start(Seriex seriex) {
-		FileManager fileManager = seriex.get().fileManager();
-		try {
-			seriex.discordBot(new DiscordBot(fileManager));
-		}
-		catch (LoginException e) {
-			e.printStackTrace();
-		}
 	}
 
 	@Override

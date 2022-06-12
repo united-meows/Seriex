@@ -35,6 +35,7 @@ import pisi.unitedmeows.seriex.managers.data.DataManager;
 import pisi.unitedmeows.seriex.managers.future.FutureManager;
 import pisi.unitedmeows.seriex.managers.sign.SignManager;
 import pisi.unitedmeows.seriex.util.ICleanup;
+import pisi.unitedmeows.seriex.util.MaintainersUtil;
 import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.config.impl.server.DatabaseConfig;
@@ -64,21 +65,19 @@ public class Seriex extends JavaPlugin {
 	private static boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
 	private Thread primaryThread;
 	private WorldEditPlugin worldEdit;
+	private static final String SECRET_MESSAGE = "࣭࣢࣯࣢ࣰ࣫࢝ࣴࣞ࢝ࣥ࣢࣯࣢";
 
 	@Override
 	public void onEnable() {
 		//TODO: for supporting /reload command we should register all online players at onEnable
-		/*
-		 * if(true) {
-		 * 	test.unsafeStart();
-		 * 	return;
-		 * }
-		 */
 		loadedCorrectly = true;
 		try {
 			WordList.read();
 			instance_ = of(this);
-			logger().info("Starting seriex...");
+			logger().info("Starting Seriex...");
+			if (new Random().nextBoolean()) {
+				logger().fatal("!!! " + SECRET_MESSAGE);
+			}
 			primaryThread = currentThread();
 			managers: {
 				signManager = new SignManager();
@@ -87,22 +86,39 @@ public class Seriex extends JavaPlugin {
 				FormatDetector.registerExtension("seriex", TomlFormat.instance());
 				GET.benchmark(temp -> {
 					logger().info("Loading Managers...");
-					// TODO: Add logger info for every manager (like Loading Signmanager...)
-					managers.add(signManager);
-					managers.add(authListener);
-					managers.add(fileManager = new FileManager(getDataFolder()));
-					managers.add(dataManager = new DataManager());
-					// @DISABLE_FORMATTING
-					DatabaseConfig config = (DatabaseConfig) fileManager.getConfig(DATABASE);
-					cleanupabbleObjects.add(database = new SeriexDB(
-								config.DATABASE_USERNAME.value(),
-								config.DATABASE_PASSWORD.value(),
-								config.DATABASE_NAME.value(),
-								config.DATABASE_HOST.value(),
-								config.DATABASE_PORT.value()));
-					cleanupabbleObjects.add(new I18n());
-					// @ENABLE_FORMATTING
-					managers.add(futureManager = new FutureManager()); // this should be always last!
+					GET.benchmark(yes -> {
+						managers.add(signManager);
+					}, "Sign Manager");
+					GET.benchmark(yes -> {
+						managers.add(fileManager = new FileManager(getDataFolder()));
+					}, "File Manager");
+					GET.benchmark(yes -> {
+						managers.add(dataManager = new DataManager());
+					}, "Data Manager");
+					GET.benchmark(yes -> {
+						// 0 iq ersin moment
+						managers.add(new MaintainersUtil());
+					}, "Maintainers Util");
+					GET.benchmark(yes -> {
+						managers.add(discordBot = new DiscordBot(fileManager));
+					}, "Discord Bot");
+					GET.benchmark(yes -> {
+						// @DISABLE_FORMATTING
+						DatabaseConfig config = (DatabaseConfig) fileManager.getConfig(DATABASE);
+						cleanupabbleObjects.add(database = new SeriexDB(
+									config.DATABASE_USERNAME.value(),
+									config.DATABASE_PASSWORD.value(),
+									config.DATABASE_NAME.value(),
+									config.DATABASE_HOST.value(),
+									config.DATABASE_PORT.value()));
+						// @ENABLE_FORMATTING
+					}, "Database");
+					GET.benchmark(yes -> {
+						cleanupabbleObjects.add(new I18n());
+					}, "I18N");
+					GET.benchmark(yes -> {
+						managers.add(futureManager = new FutureManager()); // this should be always last!
+					}, "Future Manager");
 				}, "Managers");
 				worldEdit = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
 				GET.benchmark(temp -> DatabaseReflection.init(database), "Database Reflection");
@@ -152,7 +168,6 @@ public class Seriex extends JavaPlugin {
 				final Sign block = (Sign) sign.global().getIfPresent("current_sign");
 				int cooldown = (int) sign.session(block).getOrDefault("cooldown", 0);
 				if (cooldown == 0) {
-					// do
 					sign.session(block).put("cooldown", 5);
 				}
 			}).tick(sign -> {
@@ -187,8 +202,7 @@ public class Seriex extends JavaPlugin {
 			player.kickPlayer(getSuffix() + "\n" + "Restarting the server...");
 		});
 		for (int i = 0; i < cleanupabbleObjects.size(); i++) {
-			ICleanup cleanup = cleanupabbleObjects.get(i);
-			cleanup.cleanup();
+			cleanupabbleObjects.get(i).cleanup();
 		}
 		instance_ = Optional.empty();
 		System.gc();
@@ -232,7 +246,11 @@ public class Seriex extends JavaPlugin {
 	}
 
 	public Player sendMessage(Player player, String message, Object... args) {
-		player.sendMessage(colorizeString(String.format("%s &7%s %s", getSuffix(), message, args)));
+		if (args.length == 0) {
+			player.sendMessage(colorizeString(String.format("%s &7%s", getSuffix(), message)));
+		} else {
+			player.sendMessage(colorizeString(String.format("%s &7%s %s", getSuffix(), message, args)));
+		}
 		return player;
 	}
 

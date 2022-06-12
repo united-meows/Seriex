@@ -89,7 +89,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 			for (int j = 0; j < length; j++) {
 				String columnName = columnNames[j];
 				Field field = clazz.getDeclaredField(columnName);
-				String valueOfField = field.get(struct).toString();
+				String valueOfField = field.get(clazz).toString();
 				if (!unefficientCodeTime.get(columnName).nullable && valueOfField == null) {
 					valueOfField = "null";
 				}

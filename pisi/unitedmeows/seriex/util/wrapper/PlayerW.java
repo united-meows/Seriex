@@ -15,8 +15,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerSettings;
-import pisi.unitedmeows.seriex.util.placeholder.IAttributeHolder;
-import pisi.unitedmeows.seriex.util.placeholder.RegisterAttribute;
+import pisi.unitedmeows.seriex.util.placeholder.annotations.RegisterAttribute;
+import pisi.unitedmeows.seriex.util.placeholder.api.IAttributeHolder;
 import pisi.unitedmeows.yystal.clazz.HookClass;
 import pisi.unitedmeows.yystal.hook.YString;
 import pisi.unitedmeows.yystal.utils.CoID;
@@ -86,7 +86,7 @@ public class PlayerW extends HookClass<Player> {
 	private String generateUserToken(final String name) {
 		//		final byte[] bytes = UUID.nameUUIDFromBytes(name.getBytes(UTF_8)).toString().getBytes(UTF_8);
 		//		return "2173" + DigestUtils.sha256Hex(bytes);
-		return CoID.generate().toString(); /* :D */
+		return CoID.generate().toString();
 	}
 
 	public void cleanupUser(final boolean items) {

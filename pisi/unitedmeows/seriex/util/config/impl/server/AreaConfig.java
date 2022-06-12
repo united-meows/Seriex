@@ -1,6 +1,7 @@
 package pisi.unitedmeows.seriex.util.config.impl.server;
 
 import static com.electronwill.nightconfig.core.CommentedConfig.*;
+import static pisi.unitedmeows.seriex.util.config.impl.Config.ConfigType.*;
 
 import java.io.File;
 import java.util.Arrays;
@@ -38,7 +39,7 @@ public class AreaConfig extends Config {
 	public ConfigValue<Double> warpZ = new ConfigValue<>(this, "warp.z", 0.0);
 
 	public AreaConfig(File toWrite, String extension, Area... areas) {
-		super("AreaConfig", true, ConfigType.MULTIPLE, toWrite);
+		super("AreaConfig", true, MULTIPLE, toWrite);
 		Arrays.stream(areas).forEach(area -> {
 			File file = new File(String.format("%s/%s%s", toWrite, area.name(), extension));
 			configs.put(area.name(), new Pair<>(file, inMemoryConcurrent()));

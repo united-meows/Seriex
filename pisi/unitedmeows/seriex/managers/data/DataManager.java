@@ -29,12 +29,14 @@ public class DataManager extends Manager {
 	@Override
 	public void start(Seriex seriex) {
 		userMap.clear(); // reload & restart
-		seriex.get().getServer().getOnlinePlayers().forEach(this::addUser);
+		seriex.get().getServer().getOnlinePlayers().forEach(this::user);
 	}
 
-	public PlayerW addUser(Player player) {
-		Seriex.logger().info("Added %s to the database!", player.getName());
-		return userMap.computeIfAbsent(player, PlayerW::new); // things slowcheet4h never learn
+	public PlayerW user(Player player) {
+		return userMap.computeIfAbsent(player, computedPlayer -> {
+			Seriex.logger().info("Added %s to the database!", player.getName());
+			return new PlayerW(computedPlayer);
+		});
 	}
 
 	public void removeUser(Player player) {

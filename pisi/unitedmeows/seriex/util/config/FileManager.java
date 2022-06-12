@@ -34,6 +34,7 @@ public class FileManager extends Manager {
 	public static final String DISCORD = "discord";
 	public static final String EXTENSION = ".seriex";
 	public static final String PRIVATE = "#PRIVATE#";
+	public static final String AUTH = "AUTH";
 	private final Map<String, Pair<File, Config>> fileVariablesMap = new HashMap<>();
 	public static File directory , saved;
 	public static boolean set;
@@ -50,14 +51,16 @@ public class FileManager extends Manager {
 			File databaseFile = new File(directory, DATABASE + EXTENSION);
 			File discordFile = new File(directory, DISCORD + EXTENSION);
 			File worldDirectory = new File(directory, WORLD);
+			File authFile = new File(directory, AUTH + EXTENSION);
 			this.createFile(WORLD, worldDirectory, new WorldConfig(worldDirectory, EXTENSION, get().getServer().getWorlds().stream().toArray(World[]::new)));
 			this.createFile(DISCORD, discordFile, new DiscordConfig(discordFile));
 			this.createFile(DATABASE, databaseFile, new DatabaseConfig(databaseFile));
+			this.createFile(AUTH, authFile, new AuthConfig(authFile));
 			this.createFile(BAN_ACTIONS, banActionsFile, new BanActionsConfig(banActionsFile));
 			this.createFile(RANKS, ranksFile, new RanksConfig(ranksFile));
 			this.createFile(MAINTAINERS, maintainersFile, new MaintainersConfig(maintainersFile));
 			this.createFile(SERVER, settingsFile, new ServerConfig(settingsFile));
-			this.createFile(TRANSLATIONS, translationsFile, new TranslationsConfig(translationsFile));
+			//			this.createFile(TRANSLATIONS, translationsFile, new TranslationsConfig(translationsFile));
 			set = true;
 		}
 	}

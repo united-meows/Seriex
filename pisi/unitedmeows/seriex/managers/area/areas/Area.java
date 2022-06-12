@@ -11,6 +11,7 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.collections.GlueList;
+import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.config.impl.server.AreaConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
 import pisi.unitedmeows.seriex.util.math.AxisBB;
@@ -31,7 +32,8 @@ public class Area implements Listener {
 		areaName = areaConfig.area_name.value(real);
 		limits = new AxisBB(areaConfig.minX.value(real), areaConfig.minY.value(real), areaConfig.minZ.value(real), areaConfig.maxX.value(real), areaConfig.maxY.value(real), areaConfig.maxZ.value(real));
 		category = areaConfig.area_category.value(category, real).value();
-		ServerConfig config = (ServerConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().SERVER);
+		FileManager fileManager = Seriex.get().fileManager();
+		ServerConfig config = (ServerConfig) fileManager.getConfig(fileManager.SERVER);
 		warpLoc = new Location(Bukkit.getWorld(config.WORLD_NAME.value()), areaConfig.warpX.value(real), areaConfig.warpY.value(real), areaConfig.warpZ.value(real));
 	}
 
