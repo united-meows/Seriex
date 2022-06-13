@@ -1,13 +1,19 @@
 package pisi.unitedmeows.seriex.auth;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -26,10 +32,20 @@ import pisi.unitedmeows.yystal.clazz.HookClass;
 // TODO finish
 public class AuthListener extends Manager implements org.bukkit.event.Listener {
 	private Map<PlayerW, AuthInfo> playerMap = new HashMap<>();
+	private Method getShooter;
+	private boolean shooterIsLivingEntity;
 
 	@Override
 	public void start(Seriex seriex) {
 		Bukkit.getPluginManager().registerEvents(this, Seriex.get());
+		try {
+			this.getShooter = Projectile.class.getDeclaredMethod("getShooter");
+			this.shooterIsLivingEntity = (this.getShooter.getReturnType() == LivingEntity.class);
+		}
+		catch (NoSuchMethodException
+					| SecurityException e) {
+			seriex.logger().fatal("Cannot load getShooter() method on Projectile class", e);
+		}
 	}
 
 	@EventHandler
@@ -72,7 +88,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		}
 
 		@Override
-		protected PlayerW getHooked() {
+		public PlayerW getHooked() {
 			benchmark++;
 			return super.getHooked();
 		}
@@ -111,10 +127,9 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 			AuthConfig authConfig = getAuthConfig();
 			if (!authConfig.ALLOWED_COMMANDS.value().contains(cmd)) return;
 			event.setCancelled(true);
-			TranslationsConfig translationConfig = getTranslationConfig();
 			// TODO set ("auth.command_not_allowed") in TranslationConfig
 			// The command %s is not allowed! <- default message
-			String value = translationConfig.getValue("auth.command_not_allowed", translationConfig.config);
+			String value = Seriex.get().I18n().getString("auth.command_not_allowed", Seriex.get().dataManager().user(player));
 			Seriex.get().sendMessage(player, value);
 		}
 	}
@@ -127,7 +142,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 			TranslationsConfig translationConfig = (TranslationsConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().TRANSLATIONS);
 			// TODO set ("auth.chat_not_allowed") in TranslationConfig
 			// In order to chat you must be authenticated! <- default message
-			String value = translationConfig.getValue("auth.chat_not_allowed", translationConfig.config);
+			String value = Seriex.get().I18n().getString("auth.chat_not_allowed", Seriex.get().dataManager().user(player));
 			Seriex.get().sendMessage(player, value);
 		} else {
 			event.getRecipients().removeIf(this::waitingForLogin);
@@ -146,6 +161,103 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		if (from.getBlockX() == to.getBlockX() && from.getBlockZ() == to.getBlockZ() && from.getY() - to.getY() >= 0.0D) return;
 		if (getAuthInfo(player).spawnLocation.distance(from) > getAuthConfig().ALLOWED_MOVEMENT_DELTA.value()) {
 			event.setTo(event.getFrom());
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true)
+	public void onBlockPlace(BlockPlaceEvent event) {
+		if (!waitingForLogin(event.getPlayer())) return;
+		event.setCancelled(true);
+	}
+
+	@EventHandler(ignoreCancelled = true)
+	public void onBlockBreak(BlockBreakEvent event) {
+		if (!waitingForLogin(event.getPlayer())) return;
+		event.setCancelled(true);
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onDamage(EntityDamageEvent event) {
+		if (event.getEntity() instanceof Player && waitingForLogin((Player) event.getEntity())) {
+			event.getEntity().setFireTicks(0);
+			event.setDamage(0.0D);
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onAttack(EntityDamageByEntityEvent event) {
+		if (event.getEntity() instanceof Player && waitingForLogin((Player) event.getDamager())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onEntityTarget(EntityTargetEvent event) {
+		if (event.getEntity() instanceof Player && waitingForLogin((Player) event.getEntity())) {
+			event.setTarget(null);
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onFoodLevelChange(FoodLevelChangeEvent event) {
+		if (event.getEntity() instanceof Player && waitingForLogin((Player) event.getEntity())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void entityRegainHealthEvent(EntityRegainHealthEvent event) {
+		if (event.getEntity() instanceof Player && waitingForLogin((Player) event.getEntity())) {
+			event.setAmount(0.0D);
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.HIGHEST)
+	public void onEntityInteract(EntityInteractEvent event) {
+		if (event.getEntity() instanceof Player && waitingForLogin((Player) event.getEntity())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onLowestEntityInteract(EntityInteractEvent event) {
+		if (event.getEntity() instanceof Player && waitingForLogin((Player) event.getEntity())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onProjectileLaunch(ProjectileLaunchEvent event) {
+		if (event.getEntity() == null) return;
+		Projectile projectile = event.getEntity();
+		Object shooterRaw = null;
+		if (this.shooterIsLivingEntity) {
+			try {
+				if (this.getShooter == null) {
+					this.getShooter = Projectile.class.getMethod("getShooter");
+				}
+				shooterRaw = this.getShooter.invoke(projectile);
+			}
+			catch (NoSuchMethodException
+						| java.lang.reflect.InvocationTargetException
+						| IllegalAccessException e) {
+				Seriex.get().logger().fatal("Error getting shooter %s", e.getMessage());
+			}
+		} else {
+			shooterRaw = projectile.getShooter();
+		}
+		if (shooterRaw instanceof Player && this.waitingForLogin((Player) shooterRaw)) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.NORMAL)
+	public void onShoot(EntityShootBowEvent event) {
+		if (event.getEntity() instanceof Player && waitingForLogin((Player) event.getEntity())) {
+			event.setCancelled(true);
 		}
 	}
 }

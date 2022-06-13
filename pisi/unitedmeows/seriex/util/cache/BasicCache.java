@@ -55,8 +55,9 @@ public class BasicCache<X> {
 	/**
 	 * disables .get if the operation is heavy
 	 */
-	public void setLocked(boolean locked) {
+	public BasicCache<X> setLocked(boolean locked) {
 		this.locked = locked;
+		return this;
 	}
 
 	public boolean isLocked() {

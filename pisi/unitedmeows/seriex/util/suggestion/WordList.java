@@ -53,7 +53,7 @@ public class WordList {
 						int a = 0;
 						while ((readLine = bf.readLine()) != null) {
 							if (PATTERN.matcher(readLine).find() && !readLine.contains(" ")) {
-								String lowerCase = readLine.toLowerCase(Locale.forLanguageTag(locale)); // lowercase again
+								String lowerCase = readLine.toLowerCase(Locale.forLanguageTag(locale));
 								String[] splitMoment = lowerCase.split(":");
 								FREQUENCY.put(splitMoment[0], Integer.parseInt(splitMoment[1]));
 								a++;
@@ -143,20 +143,22 @@ public class WordList {
 	}
 
 	// for slangs...
-	private static void readBooks() {
+	private static void readBooks(String languageTag) {
+		read();
 		String PATH_TO_BOOKS = "";
 		String PATH_TO_WRITE = "";
+		final Pattern pattern = Pattern.compile("[0-9]");
 		try (Stream<Path> paths = Files.walk(Paths.get(PATH_TO_BOOKS))) {
 			long ms = System.currentTimeMillis();
-			Locale trlocale = Locale.forLanguageTag("tr"); // the language tag
+			Locale locale = Locale.forLanguageTag(languageTag); // the language tag
 			StringBuilder generalBuilder = new StringBuilder();
 			Map<String, Integer> freqMap = new HashMap<>();
 			paths.filter(f -> f.toFile().isFile()).forEach(pathString -> {
 				String string = pathString.toAbsolutePath().toString();
 				if (string.endsWith(".txt")) { // extension
 					File source = new File(string);
-					try (Scanner scanner = new Scanner(new FileInputStream(source), "UTF-8")) {
-						scanner.useLocale(trlocale);
+					try (Scanner scanner = new Scanner(new FileInputStream(source), UTF_8.displayName())) {
+						scanner.useLocale(locale);
 						int currentWords = 0;
 						while (scanner.hasNext()) {
 							String next = scanner.next();
@@ -171,13 +173,14 @@ public class WordList {
 							}
 							if (!stop) {
 								next = removePunctutation(next);
-								next = next.toLowerCase(trlocale);
-								next = removeNumbers(next.toCharArray());
-								if (next.length() > 2 && !next.contains(" ")) {
+								next = next.toLowerCase(locale);
+								next = pattern.matcher(next).replaceAll("");
+								next = next.replace("\0", "");
+								if (next.length() > 2 && !next.contains(" ") && LOWERCASE_WORDS.get(languageTag).contains(next)) {
 									freqMap.put(next, freqMap.getOrDefault(next, 0) + 1);
 									strings.add(next);
+									currentWords++;
 								}
-								currentWords++;
 							}
 						}
 						Seriex.logger().debug("Read %s amount of words from %s!", currentWords, string);

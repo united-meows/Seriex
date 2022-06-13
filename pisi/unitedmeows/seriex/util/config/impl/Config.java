@@ -19,7 +19,7 @@ import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.parallel.Future;
 import pisi.unitedmeows.yystal.utils.Pair;
 
-// :D
+// TODO make toWrite used in a constructor here
 public class Config {
 	public String name;
 	public File toWrite;

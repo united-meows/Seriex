@@ -20,6 +20,8 @@ public class DiscordConfig extends Config {
 	@ConfigField
 	public ConfigValue<String> MAINTAINER_NAME = new ConfigValue<>(this, "maintainer_name", "$$$#0707");
 	@ConfigField
+	public ConfigValue<String> INVITE_LINK = new ConfigValue<>(this, "invite_link", "https://discord.gg/9js26X5B6v");
+	@ConfigField
 	public ConfigValue<String> BANNER = new ConfigValue<>(this, "banner", "https://waa.ai/fyKR");
 	@ConfigField
 	public ConfigValue<ActivityType> ACTIVITY_TYPE = new ConfigValue<>(this, "activity_type", ActivityType.PLAYING);

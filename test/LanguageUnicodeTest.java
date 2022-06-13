@@ -3,11 +3,11 @@ package test;
 import java.util.Arrays;
 
 import pisi.unitedmeows.seriex.Seriex;
-import pisi.unitedmeows.seriex.util.language.Languages;
+import pisi.unitedmeows.seriex.util.language.Language;
 
 public class LanguageUnicodeTest {
 	public static void main(String... args) {
-		Arrays.stream(Languages.values()).forEach(language -> {
+		Arrays.stream(Language.values()).forEach(language -> {
 			String seperator = "-------------------";
 			Seriex.logger().debug(seperator);
 			Seriex.logger().debug(language.name());

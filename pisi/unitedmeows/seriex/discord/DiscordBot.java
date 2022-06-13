@@ -33,12 +33,13 @@ import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerDiscord;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
-import pisi.unitedmeows.seriex.util.language.Languages;
+import pisi.unitedmeows.seriex.util.language.Language;
 import pisi.unitedmeows.seriex.util.math.Hashing;
 import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.parallel.Promise;
@@ -46,7 +47,7 @@ import pisi.unitedmeows.yystal.parallel.Promise;
 public class DiscordBot extends Manager {
 	private static final Color DISCORD_BOT_COLOR = new Color(8281781);
 	private static final Color VERIFIED_MEMBER_COLOR = new Color(42, 106, 209);
-	private static final Map<String, Map<Languages, Role>> roleCache = new HashMap<>();
+	public static final Map<String, Map<Language, Role>> roleCache = new HashMap<>();
 	private static final Map<String, Role> verifiedRole = new HashMap<>();
 	private static final Queue<MessageEmbed> serverChatMessages = new ArrayDeque<>();
 	private JDA jda;
@@ -65,19 +66,23 @@ public class DiscordBot extends Manager {
 			public void onReady(ReadyEvent event) {
 				logger().debug("SeriexBot is ready!");
 				event.getJDA().getGuilds().forEach((Guild guild) -> {
-					Map<Languages, Role> map = new EnumMap<>(Languages.class);
+					Map<Language, Role> map = new EnumMap<>(Language.class);
 					verified_role: {
-						List<Role> verified = guild.getRolesByName("verified", false);
-						if (verified == null || verified.isEmpty()) {
+						List<Role> rolesByName = guild.getRolesByName("verified", false);
+						if (rolesByName.size() > 1) {
+							logger().fatal("There is more than 1 verified roles?");
+						}
+						Role verified = rolesByName.get(0);
+						if (verified == null) {
 							logger().info("Created verified role verified for the guild %s!", guild.getName());
 							guild.createRole().setColor(VERIFIED_MEMBER_COLOR).setMentionable(true).setName("verified").queue();
 						} else {
 							logger().info("Created cache for the role verified in the guild %s!", guild.getName());
-							roleCache.put(guild.getId(), map);
+							verifiedRole.put(guild.getId(), verified);
 						}
 					}
 					language_roles: {
-						Arrays.stream(Languages.values()).forEach(language -> {
+						Arrays.stream(Language.values()).forEach(language -> {
 							List<Role> rolesByName = guild.getRolesByName(language.name(), false);
 							if (rolesByName == null || rolesByName.isEmpty()) {
 								logger().info("Created language role %s for the guild %s!", language.name(), guild.getName());
@@ -136,7 +141,7 @@ public class DiscordBot extends Manager {
 				}
 				if ("$create_language".equals(event.getMessage().getContentRaw())) {
 					event.getChannel().sendMessage("> Select your language(s)")
-								.queue(completeMessage -> Arrays.stream(Languages.values()).forEach(lang -> completeMessage.addReaction(lang.unicode()).queue()));
+								.queue(completeMessage -> Arrays.stream(Language.values()).forEach(lang -> completeMessage.addReaction(lang.unicode()).queue()));
 				}
 				super.onMessageReceived(event);
 			}
@@ -146,17 +151,20 @@ public class DiscordBot extends Manager {
 				if (!Objects.equals(event.getGuild().getId(), discordConfig.ID_GUILD.value())) return;
 				if (Objects.equals(event.getChannel().getId(), event.getGuild().getTextChannelById(discordConfig.ID_LANGUAGE_CHANNEL.value()).getId())) {
 					String emoteName = event.getReactionEmote().getName();
-					Languages foundLang = null;
-					for (Languages language : Languages.values()) {
+					Language foundLang = null;
+					for (Language language : Language.values()) {
 						if (Objects.equals(language.unicode(), emoteName)) {
 							foundLang = language;
 							break;
 						}
 					}
 					if (foundLang != null) {
-						Map<Languages, Role> map = roleCache.get(event.getGuild().getId());
+						Map<Language, Role> map = roleCache.get(event.getGuild().getId());
 						Role role = map.get(foundLang);
-						event.getGuild().addRoleToMember(UserSnowflake.fromId(event.getUserId()), role).queue();
+						UserSnowflake snowflake = UserSnowflake.fromId(event.getUserId());
+						StructPlayerDiscord discord = Seriex.get().database().getPlayerDiscord(snowflake);
+						discord.languages |= foundLang.mask();
+						event.getGuild().addRoleToMember(snowflake, role).queue();
 						logger().info("Added role %s to the member %s!", role.getName(), event.getMember().getUser().getAsTag());
 					}
 				}
@@ -168,15 +176,15 @@ public class DiscordBot extends Manager {
 				if (!Objects.equals(event.getGuild().getId(), discordConfig.ID_GUILD.value())) return;
 				if (Objects.equals(event.getChannel().getId(), event.getGuild().getTextChannelById(discordConfig.ID_LANGUAGE_CHANNEL.value()).getId())) {
 					String emoteName = event.getReactionEmote().getName();
-					Languages foundLang = null;
-					for (Languages language : Languages.values()) {
+					Language foundLang = null;
+					for (Language language : Language.values()) {
 						if (Objects.equals(language.unicode(), emoteName)) {
 							foundLang = language;
 							break;
 						}
 					}
 					if (foundLang != null) {
-						Map<Languages, Role> map = roleCache.get(event.getGuild().getId());
+						Map<Language, Role> map = roleCache.get(event.getGuild().getId());
 						Role role = map.get(foundLang);
 						String userId = event.getUserId();
 						UserSnowflake fromId = UserSnowflake.fromId(userId);
@@ -235,9 +243,21 @@ public class DiscordBot extends Manager {
 						structPlayer.username = username;
 						structPlayer.salt = Hashing.randomString(8);
 						structPlayer.password = Hashing.hashedString(structPlayer.salt + password);
-						boolean created = Seriex.get().database().createStruct(structPlayer, "WHERE NOT EXISTS (SELECT * FROM %s WHERE username='username')");
-						if (!created) {
-							event.reply("Couldnt register!").setEphemeral(true).queue();
+						boolean structPlayerCreated = Seriex.get().database().createStruct(structPlayer, "WHERE NOT EXISTS (SELECT * FROM %s WHERE username='%d')".replace("%d", username));
+						if (!structPlayerCreated) {
+							event.reply("Couldnt register (0x1)!").setEphemeral(true).queue();
+							return;
+						}
+						StructPlayerDiscord structPlayerDiscord = new StructPlayerDiscord();
+						long idLong = event.getMember().getIdLong();
+						structPlayerDiscord.discord_id = idLong;
+						User user = event.getMember().getUser();
+						structPlayerDiscord.joinedAs = user.getName() + "#" + user.getDiscriminator();
+						structPlayerDiscord.linkMS = System.currentTimeMillis();
+						structPlayerDiscord.player_id = structPlayer.player_id;
+						boolean structPlayerDiscordCreated = Seriex.get().database().createStruct(structPlayer, "WHERE NOT EXISTS (SELECT * FROM %s WHERE discord_id='%d')".replace("%d", idLong + ""));
+						if (!structPlayerDiscordCreated) {
+							event.reply("Couldnt register (0x2)!").setEphemeral(true).queue();
 							return;
 						}
 						event.reply(String.format("Registered as %s!", username)).setEphemeral(true).queue();
@@ -271,5 +291,9 @@ public class DiscordBot extends Manager {
 	@Override
 	public void cleanup() throws SeriexException {
 		sendPromise.stop();
+	}
+
+	public JDA JDA() {
+		return jda;
 	}
 }

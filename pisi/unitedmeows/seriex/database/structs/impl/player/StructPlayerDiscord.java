@@ -8,7 +8,6 @@ import pisi.unitedmeows.yystal.sql.YSQLCommand;
 
 @Struct(name = "player_discord")
 public class StructPlayerDiscord implements IStruct {
-
 	@Column
 	public int player_discord_id;
 	@Column
@@ -16,11 +15,11 @@ public class StructPlayerDiscord implements IStruct {
 	@Column
 	public long discord_id;
 	@Column
-	public String joinMS;
-	@Column
-	public String linkMS;
+	public long linkMS;
 	@Column
 	public String joinedAs;
+	@Column
+	public int languages;
 
 	@Override
 	public String[] getColumns() {
@@ -34,7 +33,6 @@ public class StructPlayerDiscord implements IStruct {
 
 	@Override
 	public String toString() {
-		return String.format("StructPlayerDiscord [player_discord_id=%s, player_id=%s, discord_id=%s, joinMS=%s, linkMS=%s, joinedAs=%s]", player_discord_id, player_id, discord_id, joinMS, linkMS,
-					joinedAs);
+		return String.format("StructPlayerDiscord [player_discord_id=%s, player_id=%s, discord_id=%s, linkMS=%s, joinedAs=%s]", player_discord_id, player_id, discord_id, linkMS, joinedAs);
 	}
 }

@@ -19,7 +19,7 @@ public class WorldConfig extends Config {
 	public ConfigValue<WorldType> WORLD_TPYE = new ConfigValue<>(this, "world.type", NULL);
 
 	public WorldConfig(File toWrite, String extension, World... worlds) {
-		super("WorldConfig", true, ConfigType.MULTIPLE, toWrite);
+		super("World", true, ConfigType.MULTIPLE, toWrite);
 		Arrays.stream(worlds).forEach(world -> {
 			File file = new File(String.format("%s/%s%s", toWrite, world.getName(), extension));
 			configs.put(world.getName(), new Pair<>(file, inMemoryConcurrent()));

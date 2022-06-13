@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.dv8tion.jda.api.entities.UserSnowflake;
 import pisi.unitedmeows.seriex.database.structs.IStruct;
 import pisi.unitedmeows.seriex.database.structs.impl.player.*;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
@@ -118,7 +119,11 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 	}
 
 	public StructPlayerDiscord getPlayerDiscord(String username) {
-		return getPlayerDiscord(new YSQLCommand("SELECT * FROM player_discord WHERE player_id=^ LIMIT 1").putString(username));
+		return getPlayerDiscord(new YSQLCommand("SELECT * FROM player_discord WHERE player_discord_id=^ LIMIT 1").putString(username));
+	}
+
+	public StructPlayerDiscord getPlayerDiscord(UserSnowflake snowflake) {
+		return getPlayerDiscord(new YSQLCommand("SELECT * FROM player_discord WHERE discord_id=^ LIMIT 1").putString(snowflake.getId()));
 	}
 
 	public StructPlayer getPlayerFromToken(String token) {
@@ -126,19 +131,20 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 	}
 
 	public StructPlayerSettings getPlayerSettings(int playerId) {
-		return getPlayerSettings(new YSQLCommand("SELECT * FROM player_settings WHERE player_id=^ LIMIT 1").putInt(playerId));
+		return getPlayerSettings(new YSQLCommand("SELECT * FROM player_settings WHERE player_settings_id=^ LIMIT 1").putInt(playerId));
 	}
 
 	public StructPlayerSettings getPlayerSettings(String username) {
-		return getPlayerSettings(new YSQLCommand("SELECT * FROM player_settings WHERE player_id IN (SELECT player_id FROM playerw WHERE username=^)").putString(username));
+		return getPlayerSettings(new YSQLCommand("SELECT * FROM player_settings WHERE player_settings_id IN (SELECT player_id FROM playerw WHERE username=^)").putString(username));
 	}
 
 	public StructPlayerLastLogin getLastLogin(int playerId) {
-		return getPlayerLastLogin(new YSQLCommand("SELECT * FROM player_last_login WHERE player_id=^ ORDER BY time DESC LIMIT 1").putInt(playerId));
+		return getPlayerLastLogin(new YSQLCommand("SELECT * FROM player_last_login WHERE player_last_login_id=^ ORDER BY time DESC LIMIT 1").putInt(playerId));
 	}
 
 	public StructPlayerLastLogin getLastLogin(String username) {
-		return getPlayerLastLogin(new YSQLCommand("SELECT * FROM player_last_login WHERE player_id IN (SELECT player_id FROM player WHERE username=^) ORDER BY time DESC LIMIT 1").putString(username));
+		return getPlayerLastLogin(
+					new YSQLCommand("SELECT * FROM player_last_login WHERE player_last_login_id IN (SELECT player_id FROM player WHERE username=^) ORDER BY time DESC LIMIT 1").putString(username));
 	}
 
 	@Override

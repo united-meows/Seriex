@@ -254,7 +254,7 @@ public class Seriex extends JavaPlugin {
 		return player;
 	}
 
-	private String getSuffix() {
+	public String getSuffix() {
 		ServerConfig config = (ServerConfig) fileManager.getConfig(fileManager.SERVER);
 		return config.MESSAGE_SUFFIX.value();
 	}

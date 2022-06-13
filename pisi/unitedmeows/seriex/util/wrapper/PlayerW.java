@@ -1,8 +1,9 @@
 package pisi.unitedmeows.seriex.util.wrapper;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -12,9 +13,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.UserSnowflake;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerDiscord;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerSettings;
+import pisi.unitedmeows.seriex.discord.DiscordBot;
+import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
+import pisi.unitedmeows.seriex.util.language.Language;
 import pisi.unitedmeows.seriex.util.placeholder.annotations.RegisterAttribute;
 import pisi.unitedmeows.seriex.util.placeholder.api.IAttributeHolder;
 import pisi.unitedmeows.yystal.clazz.HookClass;
@@ -25,9 +32,11 @@ public class PlayerW extends HookClass<Player> {
 	private static final Pattern pattern = Pattern.compile("Player[0-9]{1,4}");
 	private StructPlayer playerInfo;
 	private StructPlayerSettings playerSettings;
+	private StructPlayerDiscord playerDiscord;
 	private HashMap<String, IAttributeHolder> attributeHolders;
+	private Set<Language> selectedLanguages;
 	@RegisterAttribute(name = "name")
-	private IAttributeHolder nameAtr = () -> hooked.getName();
+	private IAttributeHolder nameAtr = hooked::getName;
 	@RegisterAttribute(name = "id")
 	private IAttributeHolder idAtr = () -> String.valueOf(playerInfo.player_id);
 	@RegisterAttribute(name = "token")
@@ -37,7 +46,8 @@ public class PlayerW extends HookClass<Player> {
 	@RegisterAttribute(name = "password")
 	public IAttributeHolder passwordAtr = () -> playerInfo.password;
 	@RegisterAttribute(name = "world")
-	private IAttributeHolder worldAtr = () -> getHooked().getWorld().getName();
+	private IAttributeHolder worldAtr = getHooked().getWorld()::getName;
+	private Language selectedLanguage = Language.ENGLISH;
 
 	public PlayerW(final Player _player) {
 		hooked = _player;
@@ -48,6 +58,18 @@ public class PlayerW extends HookClass<Player> {
 			_player.kickPlayer(ChatColor.YELLOW + "Please verify :DDDD or your db values are corrupted" /* @ghost make this cool */);
 			return; // bug fix
 		}
+		if (selectedLanguages == null) {
+			selectedLanguages = new HashSet<>();
+		}
+		DiscordConfig discordConfig = (DiscordConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().DISCORD);
+		playerDiscord = Seriex.get().database().getPlayerDiscord(_player.getName());
+		DiscordBot discordBot = Seriex.get().discordBot();
+		String guildID = discordConfig.ID_GUILD.value();
+		Map<Language, Role> map = discordBot.roleCache.get(guildID);
+		discordBot.JDA().getGuildById(guildID).getMember(UserSnowflake.fromId(playerDiscord.discord_id)).getRoles().stream().filter(map::containsValue).forEach(role -> {
+			Set<Language> collect = map.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), role)).map(Map.Entry::getKey).collect(Collectors.toSet());
+			selectedLanguages.addAll(collect);
+		});
 		/* tries to retrieve player's settings if not exists creates new one */
 		playerSettings = Seriex.get().database().getPlayerSettings(playerInfo.player_id);
 		if (playerSettings == null) {
@@ -174,6 +196,22 @@ public class PlayerW extends HookClass<Player> {
 			}
 		}
 		return finalIp.toString();
+	}
+
+	public StructPlayer playerInfo() {
+		return playerInfo;
+	}
+
+	public StructPlayerSettings playerSettings() {
+		return playerSettings;
+	}
+
+	public StructPlayerDiscord playerDiscord() {
+		return playerDiscord;
+	}
+
+	public Language selectedLanguage() {
+		return selectedLanguage;
 	}
 
 	@Override

@@ -8,7 +8,6 @@ import pisi.unitedmeows.yystal.sql.YSQLCommand;
 
 @Struct(name = "player")
 public class StructPlayer implements IStruct {
-
 	@Column
 	public int player_id;
 	@Column
