@@ -30,7 +30,14 @@ public class Area implements Listener {
 		this.areaConfig = areaConfig;
 		this.realConfig = real;
 		areaName = areaConfig.area_name.value(real);
-		limits = new AxisBB(areaConfig.minX.value(real), areaConfig.minY.value(real), areaConfig.minZ.value(real), areaConfig.maxX.value(real), areaConfig.maxY.value(real), areaConfig.maxZ.value(real));
+		limits = new AxisBB(
+					areaConfig.world_name.value(real),
+					areaConfig.minX.value(real), 
+					areaConfig.minY.value(real),
+					areaConfig.minZ.value(real),
+					areaConfig.maxX.value(real), 
+					areaConfig.maxY.value(real),
+					areaConfig.maxZ.value(real));
 		category = areaConfig.area_category.value(category, real).value();
 		FileManager fileManager = Seriex.get().fileManager();
 		ServerConfig config = (ServerConfig) fileManager.getConfig(fileManager.SERVER);

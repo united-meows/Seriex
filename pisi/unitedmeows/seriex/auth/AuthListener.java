@@ -6,28 +6,30 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.*;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.*;
 
+import pisi.unitedmeows.eventapi.event.listener.Listener;
 import pisi.unitedmeows.pispigot.Pispigot;
+import pisi.unitedmeows.pispigot.event.impl.client.C14PacketTabComplete;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.util.config.impl.server.AuthConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.TranslationsConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
+import pisi.unitedmeows.seriex.util.inventories.LoginInventory;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 import pisi.unitedmeows.yystal.clazz.HookClass;
+import pisi.unitedmeows.yystal.parallel.Async;
 
 // TODO finish
 public class AuthListener extends Manager implements org.bukkit.event.Listener {
@@ -53,20 +55,20 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		final PlayerW playerW = Seriex.get().dataManager().user(event.getPlayer());
 		final AuthInfo authentication = new AuthInfo(playerW);
 		playerMap.put(playerW, authentication);
-		authentication.onJoin();
+		authentication.onJoin(playerW);
 		Pispigot.playerSystem(event.getPlayer()).subscribeAll(this);
 	}
 
 	@Override
 	public void cleanup() throws SeriexException {
-		playerMap.forEach((PlayerW k, AuthInfo v) -> v.onServerEnd());
+		playerMap.forEach((PlayerW k, AuthInfo v) -> v.onServerEnd(k.getHooked()));
 		playerMap.clear();
 	}
 
 	public void stopAuthentication(PlayerW playerW) {
 		Pispigot.playerSystem(playerW.getHooked()).unsubscribeAll(this);
 		final AuthInfo authentication = playerMap.remove(playerW);
-		authentication.onLogin();
+		authentication.onLogin(playerW.getHooked());
 	}
 
 	public class AuthInfo extends HookClass<PlayerW> {
@@ -75,13 +77,23 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		private AuthState state = AuthState.WAITING;
 		private long benchmark;
 
-		public void onJoin() {}
+		public void onJoin(PlayerW player) {
+			Seriex.get().inventoryPacketAdapter().sendBlankInventoryPacket(player.getHooked());
+			LoginInventory.open(player, Seriex.get().authentication());
+		}
 
-		public void onLogin() {}
+		public void onLogin(Player player) {
+			player.updateInventory();
+			state = AuthState.LOGGED_IN;
+		}
 
-		public void onServerEnd() {}
+		public void onServerEnd(Player player) {
+			// todo
+		}
 
-		public void onAuthInterrupted() {}
+		public void onAuthInterrupted(Player player) {
+			// todo
+		}
 
 		public AuthInfo(PlayerW player) {
 			this.hooked = player;
@@ -119,6 +131,14 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		return (ServerConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().SERVER);
 	}
 
+	public Listener<C14PacketTabComplete> tabcompleteListener = new Listener<>(event -> {
+		Player player = event.player();
+		if (waitingForLogin(player)) {
+			event.setCanceled(true);
+			event.setSilentCancel(true); // does this do smth i dont remember lololol @slowcheet4h
+		}
+	});
+
 	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
 		Player player = event.getPlayer();
@@ -139,7 +159,6 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		Player player = event.getPlayer();
 		if (waitingForLogin(player)) {
 			event.setCancelled(true);
-			TranslationsConfig translationConfig = (TranslationsConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().TRANSLATIONS);
 			// TODO set ("auth.chat_not_allowed") in TranslationConfig
 			// In order to chat you must be authenticated! <- default message
 			String value = Seriex.get().I18n().getString("auth.chat_not_allowed", Seriex.get().dataManager().user(player));
@@ -257,6 +276,161 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 	@EventHandler(ignoreCancelled = true , priority = EventPriority.NORMAL)
 	public void onShoot(EntityShootBowEvent event) {
 		if (event.getEntity() instanceof Player && waitingForLogin((Player) event.getEntity())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onJoin(PlayerJoinEvent event) {
+		// ( + ) %s %join_message%
+		// Default join message: "joined the server!"
+		// TODO set ("join_message") in TranslationConfig
+		Player player = event.getPlayer();
+		String value = Seriex.get().I18n().getString("join_message", Seriex.get().dataManager().user(player));
+		event.setJoinMessage(Seriex.get().colorizeString(String.format("&7( &a+ &7) &4%s&f%s", player.getName(), value)));
+		Async.async_w(() -> {
+			Location worldSpawn = getServerConfig().getWorldSpawn();
+			if (event.getPlayer() != null && event.getPlayer().isOnline() && worldSpawn != null) {
+				event.getPlayer().teleport(worldSpawn);
+			}
+		}, 50 * 3L /* 3 ticks */);
+	}
+
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onQuit(PlayerQuitEvent event) {
+		Player player = event.getPlayer();
+		// ( + ) %s %join_message%
+		// Default join message: "%s left the server!"
+		// TODO set ("leave_message") in TranslationConfig
+		String value = Seriex.get().I18n().getString("leave_message", Seriex.get().dataManager().user(player));
+		event.setQuitMessage(Seriex.get().colorizeString(String.format("&7( &a+ &7) &4%s&f%s", player.getName(), value)));
+		if (!waitingForLogin(player)) return;
+		getAuthInfo(player).onAuthInterrupted(player);
+	}
+
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onKick(PlayerKickEvent event) {
+		if (event.getReason().contains("You logged in from another location")) {
+			event.setCancelled(true);
+			return;
+		}
+		Player player = event.getPlayer();
+		if (!waitingForLogin(player)) return;
+		getAuthInfo(player).onAuthInterrupted(player);
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onPlayerPickupItem(PlayerPickupItemEvent event) {
+		if (waitingForLogin(event.getPlayer())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onPlayerHeldItem(PlayerItemHeldEvent event) {
+		if (waitingForLogin(event.getPlayer())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onPlayerInteract(PlayerInteractEvent event) {
+		if (waitingForLogin(event.getPlayer())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onPlayerConsumeItem(PlayerItemConsumeEvent event) {
+		if (waitingForLogin(event.getPlayer())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onPlayerInventoryOpen(InventoryOpenEvent event) {
+		HumanEntity player = event.getPlayer();
+		if (player instanceof Player) {
+			if (waitingForLogin((Player) player)) {
+				event.setCancelled(true);
+				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Seriex.get(), player::closeInventory, 1L);
+			}
+		} else {
+			Seriex.get().logger().fatal("göte geldik HumanEntity Playerin Master Classi olmuyomuş yardım edin");
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onPlayerInventoryClick(InventoryClickEvent event) {
+		HumanEntity whoClicked = event.getWhoClicked();
+		if (whoClicked instanceof Player) {
+			if (waitingForLogin((Player) whoClicked)) {
+				event.setCancelled(true);
+			}
+		} else {
+			Seriex.get().logger().fatal("göte geldik HumanEntity Playerin Master Classi olmuyomuş yardım edin");
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onPlayerHitPlayerEvent(EntityDamageByEntityEvent event) {
+		Entity entity = event.getEntity();
+		if (entity instanceof Player && waitingForLogin((Player) entity)) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+		if (waitingForLogin(event.getPlayer())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onPlayerDropItem(PlayerDropItemEvent event) {
+		if (waitingForLogin(event.getPlayer())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onPlayerBedEnter(PlayerBedEnterEvent event) {
+		if (waitingForLogin(event.getPlayer())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onSignChange(SignChangeEvent event) {
+		if (waitingForLogin(event.getPlayer())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.HIGHEST)
+	public void onPlayerRespawn(PlayerRespawnEvent event) {
+		if (!waitingForLogin(event.getPlayer())) return;
+		event.setRespawnLocation(getServerConfig().getWorldSpawn());
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onPlayerShear(PlayerShearEntityEvent event) {
+		if (waitingForLogin(event.getPlayer())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onPlayerFish(PlayerFishEvent event) {
+		if (waitingForLogin(event.getPlayer())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
+	public void onPlayerInteractAtEntity(PlayerInteractAtEntityEvent event) {
+		if (waitingForLogin(event.getPlayer())) {
 			event.setCancelled(true);
 		}
 	}

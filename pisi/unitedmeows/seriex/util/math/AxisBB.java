@@ -1,16 +1,42 @@
 package pisi.unitedmeows.seriex.util.math;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.block.Block;
 
-public class AxisBB {
-	public double minX;
-	public double minY;
-	public double minZ;
-	public double maxX;
-	public double maxY;
-	public double maxZ;
+public class AxisBB implements Iterable<Block> {
+	public String worldName;
+	public int minX;
+	public int minY;
+	public int minZ;
+	public int maxX;
+	public int maxY;
+	public int maxZ;
 
-	public AxisBB(final double x1, final double y1, final double z1, final double x2, final double y2, final double z2) {
+	public AxisBB(Location l1, Location l2) {
+		if (!l1.getWorld().equals(l2.getWorld())) throw new IllegalArgumentException("Locations must be on the same world!");
+		this.worldName = l1.getWorld().getName();
+		this.minX = Math.min(l1.getBlockX(), l2.getBlockX());
+		this.minY = Math.min(l1.getBlockY(), l2.getBlockY());
+		this.minZ = Math.min(l1.getBlockZ(), l2.getBlockZ());
+		this.maxX = Math.max(l1.getBlockX(), l2.getBlockX());
+		this.maxY = Math.max(l1.getBlockY(), l2.getBlockY());
+		this.maxZ = Math.max(l1.getBlockZ(), l2.getBlockZ());
+	}
+
+	public AxisBB(AxisBB other) {
+		this(other.worldName, other.minX, other.minY, other.minZ, other.maxX, other.maxY, other.maxZ);
+	}
+
+	public AxisBB(final String worldName, final int x1, final int y1, final int z1, final int x2, final int y2, final int z2) {
+		this.worldName = worldName;
 		this.minX = Math.min(x1, x2);
 		this.minY = Math.min(y1, y2);
 		this.minZ = Math.min(z1, z2);
@@ -19,13 +45,13 @@ public class AxisBB {
 		this.maxZ = Math.max(z1, z2);
 	}
 
-	public AxisBB addCoord(final double x, final double y, final double z) {
-		double d0 = this.minX;
-		double d1 = this.minY;
-		double d2 = this.minZ;
-		double d3 = this.maxX;
-		double d4 = this.maxY;
-		double d5 = this.maxZ;
+	public AxisBB addCoord(final int x, final int y, final int z) {
+		int d0 = this.minX;
+		int d1 = this.minY;
+		int d2 = this.minZ;
+		int d3 = this.maxX;
+		int d4 = this.maxY;
+		int d5 = this.maxZ;
 		if (x < 0.0D) {
 			d0 += x;
 		} else if (x > 0.0D) {
@@ -41,66 +67,39 @@ public class AxisBB {
 		} else if (z > 0.0D) {
 			d5 += z;
 		}
-		return new AxisBB(d0, d1, d2, d3, d4, d5);
+		return new AxisBB(this.worldName, d0, d1, d2, d3, d4, d5);
 	}
 
-	public AxisBB expand(final double x, final double y, final double z) {
-		final double d0 = this.minX - x;
-		final double d1 = this.minY - y;
-		final double d2 = this.minZ - z;
-		final double d3 = this.maxX + x;
-		final double d4 = this.maxY + y;
-		final double d5 = this.maxZ + z;
-		return new AxisBB(d0, d1, d2, d3, d4, d5);
+	public AxisBB expand(final int x, final int y, final int z) {
+		return new AxisBB(this.worldName, this.minX - x, this.minY - y, this.minZ - z, this.maxX + x, this.maxY + y, this.maxZ + z);
 	}
 
 	public AxisBB copy() {
-		final double var7 = this.minX;
-		final double var9 = this.minY;
-		final double var11 = this.minZ;
-		final double var13 = this.maxX;
-		final double var15 = this.maxY;
-		final double var17 = this.maxZ;
-		return new AxisBB(var7, var9, var11, var13, var15, var17);
+		return new AxisBB(this.worldName, this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
 	}
 
 	public AxisBB union(final AxisBB other) {
-		final double d0 = Math.min(this.minX, other.minX);
-		final double d1 = Math.min(this.minY, other.minY);
-		final double d2 = Math.min(this.minZ, other.minZ);
-		final double d3 = Math.max(this.maxX, other.maxX);
-		final double d4 = Math.max(this.maxY, other.maxY);
-		final double d5 = Math.max(this.maxZ, other.maxZ);
-		return new AxisBB(d0, d1, d2, d3, d4, d5);
+		return new AxisBB(this.worldName, Math.min(this.minX, other.minX), Math.min(this.minY, other.minY), Math.min(this.minZ, other.minZ), Math.max(this.maxX, other.maxX),
+					Math.max(this.maxY, other.maxY), Math.max(this.maxZ, other.maxZ));
 	}
 
-	public static AxisBB fromBounds(final double x1, final double y1, final double z1, final double x2, final double y2, final double z2) {
-		final double d0 = Math.min(x1, x2);
-		final double d1 = Math.min(y1, y2);
-		final double d2 = Math.min(z1, z2);
-		final double d3 = Math.max(x1, x2);
-		final double d4 = Math.max(y1, y2);
-		final double d5 = Math.max(z1, z2);
-		return new AxisBB(d0, d1, d2, d3, d4, d5);
+	public AxisBB offset(final int x, final int y, final int z, final int x1, final int y1, final int z1) {
+		return new AxisBB(this.worldName, this.minX + x, this.minY + y, this.minZ + z, this.maxX + x1, this.maxY + y1, this.maxZ + z1);
 	}
 
-	public AxisBB offset(final double x, final double y, final double z, final double x1, final double y1, final double z1) {
-		return new AxisBB(this.minX + x, this.minY + y, this.minZ + z, this.maxX + x1, this.maxY + y1, this.maxZ + z1);
+	public AxisBB offset(final int x, final int y, final int z) {
+		return new AxisBB(this.worldName, this.minX + x, this.minY + y, this.minZ + z, this.maxX + x, this.maxY + y, this.maxZ + z);
 	}
 
-	public AxisBB offset(final double x, final double y, final double z) {
-		return new AxisBB(this.minX + x, this.minY + y, this.minZ + z, this.maxX + x, this.maxY + y, this.maxZ + z);
-	}
-
-	public double calculateXOffset(final AxisBB other, double offsetX) {
+	public int calculateXOffset(final AxisBB other, int offsetX) {
 		if (other.maxY > this.minY && other.minY < this.maxY && other.maxZ > this.minZ && other.minZ < this.maxZ) {
 			if (offsetX > 0.0D && other.maxX <= this.minX) {
-				final double d1 = this.minX - other.maxX;
+				final int d1 = this.minX - other.maxX;
 				if (d1 < offsetX) {
 					offsetX = d1;
 				}
 			} else if (offsetX < 0.0D && other.minX >= this.maxX) {
-				final double d0 = this.maxX - other.minX;
+				final int d0 = this.maxX - other.minX;
 				if (d0 > offsetX) {
 					offsetX = d0;
 				}
@@ -109,15 +108,15 @@ public class AxisBB {
 		} else return offsetX;
 	}
 
-	public double calculateYOffset(final AxisBB other, double offsetY) {
+	public int calculateYOffset(final AxisBB other, int offsetY) {
 		if (other.maxX > this.minX && other.minX < this.maxX && other.maxZ > this.minZ && other.minZ < this.maxZ) {
 			if (offsetY > 0.0D && other.maxY <= this.minY) {
-				final double d1 = this.minY - other.maxY;
+				final int d1 = this.minY - other.maxY;
 				if (d1 < offsetY) {
 					offsetY = d1;
 				}
 			} else if (offsetY < 0.0D && other.minY >= this.maxY) {
-				final double d0 = this.maxY - other.minY;
+				final int d0 = this.maxY - other.minY;
 				if (d0 > offsetY) {
 					offsetY = d0;
 				}
@@ -126,15 +125,15 @@ public class AxisBB {
 		} else return offsetY;
 	}
 
-	public double calculateZOffset(final AxisBB other, double offsetZ) {
+	public int calculateZOffset(final AxisBB other, int offsetZ) {
 		if (other.maxX > this.minX && other.minX < this.maxX && other.maxY > this.minY && other.minY < this.maxY) {
 			if (offsetZ > 0.0D && other.maxZ <= this.minZ) {
-				final double d1 = this.minZ - other.maxZ;
+				final int d1 = this.minZ - other.maxZ;
 				if (d1 < offsetZ) {
 					offsetZ = d1;
 				}
 			} else if (offsetZ < 0.0D && other.minZ >= this.maxZ) {
-				final double d0 = this.maxZ - other.minZ;
+				final int d0 = this.maxZ - other.minZ;
 				if (d0 > offsetZ) {
 					offsetZ = d0;
 				}
@@ -152,32 +151,45 @@ public class AxisBB {
 	}
 
 	public double getAverageEdgeLength() {
-		final double d0 = this.maxX - this.minX;
-		final double d1 = this.maxY - this.minY;
-		final double d2 = this.maxZ - this.minZ;
+		final int d0 = this.maxX - this.minX;
+		final int d1 = this.maxY - this.minY;
+		final int d2 = this.maxZ - this.minZ;
 		return (d0 + d1 + d2) / 3.0D;
 	}
 
-	public AxisBB contract(final double x, final double y, final double z) {
-		final double d0 = this.minX + x;
-		final double d1 = this.minY + y;
-		final double d2 = this.minZ + z;
-		final double d3 = this.maxX - x;
-		final double d4 = this.maxY - y;
-		final double d5 = this.maxZ - z;
-		return new AxisBB(d0, d1, d2, d3, d4, d5);
+	public AxisBB contract(final int x, final int y, final int z) {
+		final int d0 = this.minX + x;
+		final int d1 = this.minY + y;
+		final int d2 = this.minZ + z;
+		final int d3 = this.maxX - x;
+		final int d4 = this.maxY - y;
+		final int d5 = this.maxZ - z;
+		return new AxisBB(this.worldName, d0, d1, d2, d3, d4, d5);
 	}
 
 	@Override
 	public String toString() {
-		return "box[" + this.minX + ", " + this.minY + ", " + this.minZ + " -> " + this.maxX + ", " + this.maxY + ", " + this.maxZ + "]";
+		StringBuilder stringBuilder = new StringBuilder();
+		String delimiter = ", ";
+		stringBuilder.append("box@");
+		stringBuilder.append(worldName);
+		stringBuilder.append("[");
+		stringBuilder.append(this.minX);
+		stringBuilder.append(delimiter);
+		stringBuilder.append(this.minY);
+		stringBuilder.append(delimiter);
+		stringBuilder.append(this.minZ);
+		stringBuilder.append(" -> ");
+		stringBuilder.append(this.maxX);
+		stringBuilder.append(delimiter);
+		stringBuilder.append(this.maxY);
+		stringBuilder.append(delimiter);
+		stringBuilder.append(this.maxZ);
+		stringBuilder.append("]");
+		return stringBuilder.toString();
 	}
 
-	public boolean hasNaN() {
-		return Double.isNaN(this.minX) || Double.isNaN(this.minY) || Double.isNaN(this.minZ) || Double.isNaN(this.maxX) || Double.isNaN(this.maxY) || Double.isNaN(this.maxZ);
-	}
-
-	public AxisBB offsetAndUpdate(final double par1, final double par3, final double par5) {
+	public AxisBB offsetAndUpdate(final int par1, final int par3, final int par5) {
 		this.minX += par1;
 		this.minY += par3;
 		this.minZ += par5;
@@ -185,5 +197,108 @@ public class AxisBB {
 		this.maxY += par3;
 		this.maxZ += par5;
 		return this;
+	}
+
+	public int getSizeX() {
+		return (this.maxX - this.minX) + 1;
+	}
+
+	public int getSizeY() {
+		return (this.maxY - this.minY) + 1;
+	}
+
+	public int getSizeZ() {
+		return (this.maxZ - this.minZ) + 1;
+	}
+
+	public Location getMinCoords() {
+		return new Location(getWorld(), minX, minY, minZ);
+	}
+
+	public Location getMaxCoords() {
+		return new Location(getWorld(), maxX, maxY, maxZ);
+	}
+
+	public World getWorld() {
+		World world = Bukkit.getWorld(this.worldName);
+		if (world == null) throw new IllegalStateException("World '" + this.worldName + "' is not loaded");
+		return world;
+	}
+
+	public Block[] corners() {
+		Block[] res = new Block[8];
+		World w = this.getWorld();
+		res[0] = w.getBlockAt(this.minX, this.minY, this.minZ);
+		res[1] = w.getBlockAt(this.minX, this.minY, this.maxZ);
+		res[2] = w.getBlockAt(this.minX, this.maxY, this.minZ);
+		res[3] = w.getBlockAt(this.minX, this.maxY, this.maxZ);
+		res[4] = w.getBlockAt(this.maxX, this.minY, this.minZ);
+		res[5] = w.getBlockAt(this.maxX, this.minY, this.maxZ);
+		res[6] = w.getBlockAt(this.maxX, this.maxY, this.minZ);
+		res[7] = w.getBlockAt(this.maxX, this.maxY, this.maxZ);
+		return res;
+	}
+
+	public List<Chunk> getChunks() {
+		List<Chunk> res = new ArrayList<>();
+		World w = this.getWorld();
+		int i = 0xf;
+		int x1 = this.minX & ~i;
+		int x2 = this.maxX & ~i;
+		int z1 = this.minZ & ~i;
+		int z2 = this.maxZ & ~i;
+		int chunkSize = 16;
+		for (int x = x1; x <= x2; x += chunkSize) {
+			for (int z = z1; z <= z2; z += chunkSize) {
+				int shift = 4;
+				res.add(w.getChunkAt(x >> shift, z >> shift));
+			}
+		}
+		return res;
+	}
+
+	@Override
+	public Iterator<Block> iterator() {
+		return new AxisBBIterator(this.getWorld(), this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
+	}
+
+	public static class AxisBBIterator implements Iterator<Block> {
+		private World w;
+		private int x , y , z;
+		private int baseX , baseY , baseZ;
+		private int sizeX , sizeY , sizeZ;
+
+		public AxisBBIterator(World w, int x1, int y1, int z1, int x2, int y2, int z2) {
+			this.w = w;
+			this.baseX = x1;
+			this.baseY = y1;
+			this.baseZ = z1;
+			this.sizeX = Math.abs(x2 - x1) + 1;
+			this.sizeY = Math.abs(y2 - y1) + 1;
+			this.sizeZ = Math.abs(z2 - z1) + 1;
+			this.x = this.y = this.z = 0;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return this.x < this.sizeX && this.y < this.sizeY && this.z < this.sizeZ;
+		}
+
+		@Override
+		public Block next() {
+			if (!hasNext()) throw new NoSuchElementException();
+			Block b = this.w.getBlockAt(this.baseX + this.x, this.baseY + this.y, this.baseZ + this.z);
+			if (++x >= this.sizeX) {
+				this.x = 0;
+				if (++this.y >= this.sizeY) {
+					this.y = 0;
+					++this.z;
+				}
+			}
+			return b;
+		}
+
+		@Override
+		public void remove() {}
 	}
 }

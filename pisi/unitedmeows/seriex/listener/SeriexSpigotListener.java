@@ -1,5 +1,7 @@
 package pisi.unitedmeows.seriex.listener;
 
+import static org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.*;
+
 import java.util.List;
 
 import org.bukkit.ChatColor;
@@ -9,7 +11,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.command.Command;
@@ -33,17 +34,17 @@ public class SeriexSpigotListener implements Listener {
 	public void onAsyncPreJoin(AsyncPlayerPreLoginEvent event) {
 		String name = event.getName();
 		if (name.length() < 3 && name.length() > 16) {
-			event.disallow(Result.KICK_WHITELIST, Seriex.get().getSuffix() + "\n" + "Disallowed username.");
+			event.disallow(KICK_WHITELIST, Seriex.get().colorizeString(String.format("%s%n&7Disallowed username.", Seriex.get().getSuffix())));
 			return;
 		}
 		StructPlayer playerStruct = Seriex.get().database().getPlayer(name);
 		if (playerStruct == null) {
-			event.disallow(Result.KICK_WHITELIST, Seriex.get().getSuffix() + "\n" + "Please register on the discord server. \n " + discordLinkCache.get());
+			event.disallow(KICK_WHITELIST, String.format("%s%n&7Please register on the discord server. %n%s", Seriex.get().getSuffix(), discordLinkCache.get()));
 			return;
 		}
 		Player player = Seriex.get().getServer().getPlayerExact(name);
 		if (player != null) {
-			event.disallow(Result.KICK_WHITELIST, Seriex.get().getSuffix() + "\n" + "Player already online.");
+			event.disallow(KICK_WHITELIST, String.format("%s%n&7Player already online.", Seriex.get().getSuffix()));
 		}
 		// AntiBot :DDDDD
 	}

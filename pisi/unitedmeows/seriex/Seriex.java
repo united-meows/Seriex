@@ -16,12 +16,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketAdapter;
 import com.electronwill.nightconfig.core.file.FormatDetector;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
 import pisi.unitedmeows.seriex.anticheat.Anticheat;
 import pisi.unitedmeows.seriex.auth.AuthListener;
+import pisi.unitedmeows.seriex.auth.adapters.InventoryPacketAdapter;
 import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.command.Command.AutoCompleteInfo;
 import pisi.unitedmeows.seriex.command.CommandSystem;
@@ -56,10 +59,12 @@ public class Seriex extends JavaPlugin {
 	private static DiscordBot discordBot;
 	private static AuthListener authListener;
 	private static AreaManager areaManager;
+	private static InventoryPacketAdapter inventoryPacketAdapter;
 	private static I18n i18n;
 	private static List<ICleanup> cleanupabbleObjects = new GlueList<>();
 	private static List<Manager> managers = new GlueList<>();
 	private static List<Listener> listeners = new GlueList<>();
+	private static List<PacketAdapter> packetAdapters = new GlueList<>();
 	private static YLogger logger = new YLogger(null, "Seriex").setTime(YLogger.Time.DAY_MONTH_YEAR_FULL).setColored(true);
 	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here so it can work async :D
 	private static boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
@@ -126,6 +131,13 @@ public class Seriex extends JavaPlugin {
 					logger().info("Enabling Managers...");
 					managers.forEach((Manager manager) -> manager.start(get()));
 				}, "Enabled Managers");
+			}
+			// sorry shit code
+			packet_adapters: {
+				GET.benchmark(yes -> {
+					packetAdapters.add(inventoryPacketAdapter = new InventoryPacketAdapter());
+				}, "Inventory Packet Adapter");
+				packetAdapters.forEach(ProtocolLibrary.getProtocolManager()::addPacketListener);
 			}
 			async_stuff: {
 				// 🤞 🤞 🤞 🤞 🤞
@@ -199,7 +211,7 @@ public class Seriex extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		getOnlinePlayers().forEach(player -> {
-			player.kickPlayer(getSuffix() + "\n" + "Restarting the server...");
+			player.kickPlayer(colorizeString(String.format("%s%n&7Restarting the server...", getSuffix())));
 		});
 		for (int i = 0; i < cleanupabbleObjects.size(); i++) {
 			cleanupabbleObjects.get(i).cleanup();
@@ -286,5 +298,13 @@ public class Seriex extends JavaPlugin {
 
 	public AreaManager areaManager() {
 		return areaManager;
+	}
+
+	public AuthListener authentication() {
+		return authListener;
+	}
+
+	public InventoryPacketAdapter inventoryPacketAdapter() {
+		return inventoryPacketAdapter;
 	}
 }
