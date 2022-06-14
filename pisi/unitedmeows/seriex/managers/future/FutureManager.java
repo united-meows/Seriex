@@ -6,6 +6,7 @@ import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
+import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.parallel.Future;
 
 // note: you cant delete futures until they are done get real
@@ -30,18 +31,33 @@ public class FutureManager extends Manager {
 		}
 	}
 
+	private boolean done = true;
+
 	@Override
 	public void cleanup() throws SeriexException {
-		boolean done = true;
 		done = checkFutures(done);
+		Thread mainThread = Seriex.get().primaryThread();
+		Async.async_loop_condition(() -> {
+			if (done) {
+				Seriex.logger().info("All futures finished.");
+				synchronized (mainThread) {
+					mainThread.notify();
+				}
+			}
+			// maybe?
+			done = checkFutures(done);
+		}, 50L, () -> true);
 		while (!done) {
 			Seriex.logger().info("Waiting for futures to be finished.");
-			try {
-				Seriex.get().primaryThread().sleep(1L);
-			}
-			catch (InterruptedException e) {
-				Seriex.logger().info("Primary thread has been interrupted!!! %s", e.getMessage());
-				Seriex.get().primaryThread().interrupt();
+			// runs once
+			synchronized (mainThread) {
+				try {
+					mainThread.wait();
+				}
+				catch (InterruptedException e) {
+					e.printStackTrace();
+					mainThread.interrupt();
+				}
 			}
 			// set again or infinite loop
 			done = checkFutures(done);
