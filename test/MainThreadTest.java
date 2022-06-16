@@ -47,7 +47,15 @@ public class MainThreadTest {
 		// 16 x 16 x 7 = 1792
 		// 16 x 11 = 176
 		// C
-		Seriex.logger().info(0xA001 + " " + 0x57BC + " " + Math.pow(2, 16) / 8);
+		// 121913
+		// 16 x 16 x 16 x 16 x 1
+		// 56,377 left
+		// 16 x 16 x 16 x 13 = 56,377
+		// 3129  - 3,072
+		// 16 x 16 x 12 = 2304
+		// 16 x 3
+		// 9
+		Seriex.logger().info(0xA001 + " " + 0x1DC39 + " " + Math.pow(2, 16) / 8);
 		AtomicInteger kek = new AtomicInteger();
 		Future<Boolean> future = Async.async(() -> {
 			Seriex.logger().debug("Waiting for operation to end...");
