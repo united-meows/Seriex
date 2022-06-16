@@ -55,7 +55,33 @@ public class MainThreadTest {
 		// 16 x 16 x 12 = 2304
 		// 16 x 3
 		// 9
-		Seriex.logger().info(0xA001 + " " + 0x1DC39 + " " + Math.pow(2, 16) / 8);
+		// -10
+		//	1010
+		//
+		//
+		//
+		//
+		// 0000 0000 0000 1010
+		// 1111 1111 1111 0111
+		/*
+		 *
+		 * -12
+		 * 12
+		 * 
+		 * 0000 0000 0000 0000 0000 0000 0000 1100
+		 * 
+		 * 
+		 * 1111 1111 1111 0110 =
+		 * 1 + 2 + 4 + 8 = 15
+		 * 1 + 2 + 4 + 8 = 15
+		 * 1 + 2 + 4 + 8 = 15
+		 * 
+		 * 0 + 2 + 4 + 0 = 6
+		 */
+		int negativeBinary = ~0b1010 + 0b1;
+		int unsignedSorryJavaMoment = 0x8000 * 2;
+		int asd = 0x7FFFFFFF;
+		Seriex.logger().info("" + (~0b110000 + 0b1));
 		AtomicInteger kek = new AtomicInteger();
 		Future<Boolean> future = Async.async(() -> {
 			Seriex.logger().debug("Waiting for operation to end...");
