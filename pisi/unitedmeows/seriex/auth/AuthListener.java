@@ -55,20 +55,20 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		final PlayerW playerW = Seriex.get().dataManager().user(event.getPlayer());
 		final AuthInfo authentication = new AuthInfo(playerW);
 		playerMap.put(playerW, authentication);
-		authentication.onJoin(playerW);
+		authentication.onJoin();
 		Pispigot.playerSystem(event.getPlayer()).subscribeAll(this);
 	}
 
 	@Override
 	public void cleanup() throws SeriexException {
-		playerMap.forEach((PlayerW k, AuthInfo v) -> v.onServerEnd(k.getHooked()));
+		playerMap.forEach((PlayerW k, AuthInfo v) -> v.onServerEnd());
 		playerMap.clear();
 	}
 
 	public void stopAuthentication(PlayerW playerW) {
 		Pispigot.playerSystem(playerW.getHooked()).unsubscribeAll(this);
-		final AuthInfo authentication = playerMap.remove(playerW);
-		authentication.onLogin(playerW.getHooked());
+		final AuthInfo authentication = playerMap.get(playerW);
+		authentication.onLogin();
 	}
 
 	public class AuthInfo extends HookClass<PlayerW> {
@@ -77,22 +77,25 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		private AuthState state = AuthState.WAITING;
 		private long benchmark;
 
-		public void onJoin(PlayerW player) {
-			Seriex.get().inventoryPacketAdapter().sendBlankInventoryPacket(player.getHooked());
-			LoginInventory.open(player, Seriex.get().authentication());
+		public void onJoin() {
+			PlayerW baseHook = getHooked();
+			Seriex.get().inventoryPacketAdapter().sendBlankInventoryPacket(baseHook.getHooked());
+			LoginInventory.open(baseHook, Seriex.get().authentication());
 		}
 
-		public void onLogin(Player player) {
-			player.updateInventory();
+		public void onLogin() {
+			PlayerW baseHook = getHooked();
+			baseHook.getHooked().updateInventory();
 			state = AuthState.LOGGED_IN;
+			Seriex.get().authentication().playerMap.remove(baseHook);
 		}
 
-		public void onServerEnd(Player player) {
-			// todo
+		public void onServerEnd() {
+			Seriex.get().authentication().playerMap.remove(getHooked());
 		}
 
-		public void onAuthInterrupted(Player player) {
-			// todo
+		public void onAuthInterrupted() {
+			Seriex.get().authentication().playerMap.remove(getHooked());
 		}
 
 		public AuthInfo(PlayerW player) {
@@ -305,7 +308,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		String value = Seriex.get().I18n().getString("leave_message", Seriex.get().dataManager().user(player));
 		event.setQuitMessage(Seriex.get().colorizeString(String.format("&7( &a+ &7) &4%s&f%s", player.getName(), value)));
 		if (!waitingForLogin(player)) return;
-		getAuthInfo(player).onAuthInterrupted(player);
+		getAuthInfo(player).onAuthInterrupted();
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
@@ -316,7 +319,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		}
 		Player player = event.getPlayer();
 		if (!waitingForLogin(player)) return;
-		getAuthInfo(player).onAuthInterrupted(player);
+		getAuthInfo(player).onAuthInterrupted();
 	}
 
 	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
