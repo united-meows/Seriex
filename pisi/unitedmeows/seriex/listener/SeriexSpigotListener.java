@@ -27,6 +27,8 @@ import pisi.unitedmeows.seriex.managers.sign.impl.SignCommand;
 import pisi.unitedmeows.seriex.util.config.impl.server.BanActionsConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
 import pisi.unitedmeows.seriex.util.crasher.PlayerCrasher;
+import pisi.unitedmeows.seriex.util.ip.IPApi;
+import pisi.unitedmeows.seriex.util.ip.IPApiResponse;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 
 public class SeriexSpigotListener implements Listener {
@@ -125,7 +127,21 @@ public class SeriexSpigotListener implements Listener {
 			// TODO player_already_online
 			// default message -> Player is already online.
 			event.disallow(KICK_WHITELIST, String.format("%s%n&7%s", Seriex.get().I18n().getString("player_already_online", hooked), Seriex.get().suffix()));
+			return;
 		}
+		IPApiResponse response = IPApi.response(event.getAddress().getHostAddress());
+		boolean fuckMCLeaks = "OVH SAS".equals(response.getIsp()) && ("France".equalsIgnoreCase(response.getCountry()) || "Italy".equalsIgnoreCase(response.getCountry()));
+		boolean noChina = "CN".equals(response.getCountryCode());
+		if (fuckMCLeaks) {
+			event.disallow(KICK_WHITELIST, String.format("%s%n&7%s", "MC-Leaks is not allowed on Seriex.", Seriex.get().suffix()));
+			return;
+		}
+		if (noChina) {
+			// Chinese IP`s are literally never seen in Seriex because they cannot connect
+			// for whatever reason, so blocking them changes nothing.
+			event.disallow(KICK_WHITELIST, String.format("%s%n&7%s", "Chinese IPs are not allowed on Seriex.", Seriex.get().suffix()));
+		}
+		// TODO use ip api to select default language for first login
 		// AntiBot :DDDDD
 	}
 
