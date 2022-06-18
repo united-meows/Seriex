@@ -14,7 +14,6 @@ import pisi.unitedmeows.seriex.database.util.annotation.Struct;
 import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.yystal.sql.YSQLCommand;
 import pisi.unitedmeows.yystal.utils.Pair;
-import pisi.unitedmeows.yystal.utils.kThread;
 
 // dont touch this code, its black magic
 public class DatabaseReflection {
@@ -238,7 +237,5 @@ public class DatabaseReflection {
 		cache.clear();
 		tables.clear();
 		reverseTables.clear();
-		Seriex.get().logger().info("Waiting 200 ms for DatabaseReflection to clean up properly.");
-		kThread.sleep(200L);
 	}
 }
