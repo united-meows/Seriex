@@ -298,7 +298,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 			if (event.getPlayer() != null && event.getPlayer().isOnline() && worldSpawn != null) {
 				event.getPlayer().teleport(worldSpawn);
 			}
-		}, 50 * 3L /* 3 ticks */);
+		}, 50 * 1L /* 1 tick */);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
