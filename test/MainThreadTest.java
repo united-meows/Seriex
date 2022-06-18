@@ -81,7 +81,12 @@ public class MainThreadTest {
 		int negativeBinary = ~0b1010 + 0b1;
 		int unsignedSorryJavaMoment = 0x8000 * 2;
 		int asd = 0x7FFFFFFF;
-		Seriex.logger().info("" + (~0b110000 + 0b1));
+		// 100
+		// 16 x 6 = 96
+		//
+		//
+		int gay = ~0b110000 + 0b1;
+		Seriex.logger().info("" + 0x64);
 		AtomicInteger kek = new AtomicInteger();
 		Future<Boolean> future = Async.async(() -> {
 			Seriex.logger().debug("Waiting for operation to end...");

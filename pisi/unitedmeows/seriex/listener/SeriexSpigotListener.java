@@ -79,7 +79,8 @@ public class SeriexSpigotListener implements Listener {
 				DiscordConfig config = (DiscordConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().DISCORD);
 				Guild guild = JDA.getGuildById(config.ID_GUILD.value());
 				Member member = guild.getMember(UserSnowflake.fromId(playerStructDiscord.discord_id));
-				// TODO should all bans be 7 days long?
+				// TODO (for 0 iq intellij users)
+				// TODOH should all bans be 7 days long?
 				if (!member.isTimedOut()) {
 					member.timeoutFor(ofDays(7));
 				}
@@ -120,8 +121,10 @@ public class SeriexSpigotListener implements Listener {
 		}
 		Player player = Seriex.get().getServer().getPlayerExact(name);
 		if (player != null) {
-			// TODO translations
-			event.disallow(KICK_WHITELIST, String.format("%s%n&7Player already online.", Seriex.get().suffix()));
+			PlayerW hooked = Seriex.get().dataManager().user(player);
+			// TODO player_already_online
+			// default message -> Player is already online.
+			event.disallow(KICK_WHITELIST, String.format("%s%n&7%s", Seriex.get().I18n().getString("player_already_online", hooked), Seriex.get().suffix()));
 		}
 		// AntiBot :DDDDD
 	}

