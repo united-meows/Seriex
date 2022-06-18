@@ -34,7 +34,7 @@ public class LoginInventory {
 				// TODO set ("auth.logged_in") in TranslationConfig
 				// Succesfully logged in! <- default message
 				String value = Seriex.get().I18n().getString("auth.logged_in", Seriex.get().dataManager().user(player));
-				player.sendMessage(Seriex.get().colorizeString(String.format("%s &7%s", Seriex.get().getSuffix(), value)));
+				player.sendMessage(Seriex.get().colorizeString(String.format("%s &7%s", Seriex.get().suffix(), value)));
 				authListener.stopAuthentication(_w);
 				return AnvilGUI.Response.close();
 			} else {

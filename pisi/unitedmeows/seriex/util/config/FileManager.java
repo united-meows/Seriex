@@ -24,6 +24,7 @@ import pisi.unitedmeows.yystal.utils.Pair;
 public class FileManager extends Manager {
 	public static final String EMOTES = "global_emotes";
 	public static final String SERVER = "server";
+	public static final String EMOTE = "emote";
 	public static final String BAN_ACTIONS = "banActions";
 	public static final String RANKS = "ranks";
 	public static final String MAINTAINERS = "maintainers";

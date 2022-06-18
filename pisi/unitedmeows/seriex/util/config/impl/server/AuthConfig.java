@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pisi.unitedmeows.seriex.util.config.impl.Config;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigField;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
+import pisi.unitedmeows.seriex.util.config.util.Cfg;
+import pisi.unitedmeows.seriex.util.config.util.ConfigField;
+import pisi.unitedmeows.seriex.util.config.util.ConfigValue;
 
 // TODO finish
+@Cfg(name = "Auth" , manual = false , multi = false)
 public class AuthConfig extends Config {
 	private static List<String> defaultAllowedCommands = new ArrayList<>();
 	static {

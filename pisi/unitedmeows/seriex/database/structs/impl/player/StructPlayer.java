@@ -22,6 +22,8 @@ public class StructPlayer implements IStruct {
 	public String gAuth;
 	@Column
 	public String salt;
+	@Column
+	public boolean banned;
 
 	@Override
 	public String[] getColumns() {

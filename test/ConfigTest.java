@@ -4,9 +4,9 @@ import java.lang.reflect.Field;
 
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigField;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
 import pisi.unitedmeows.seriex.util.config.impl.server.DatabaseConfig;
+import pisi.unitedmeows.seriex.util.config.util.ConfigField;
+import pisi.unitedmeows.seriex.util.config.util.ConfigValue;
 
 public class ConfigTest {
 	public static void main(String... args) throws Exception {

@@ -1,6 +1,8 @@
-package pisi.unitedmeows.seriex.util.config.impl;
+package pisi.unitedmeows.seriex.util.config.util;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
+
+import pisi.unitedmeows.seriex.util.config.impl.Config;
 
 /**
  * @apiNote keys are TOML keys.

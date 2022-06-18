@@ -167,6 +167,7 @@ public class PlayerW extends HookClass<Player> {
 	 *          btw fuck regex LOL
 	 */
 	public String getMaskedIP(final String input) {
+		if ("loki".equals(input)) return "loki"; // ;((( my ip -slowcheet4h
 		final String maskChar = "-";
 		final String ip = input.replace('.', ':');
 		final String[] splitIp = ip.split(":");

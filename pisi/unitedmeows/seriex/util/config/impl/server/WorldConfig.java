@@ -9,11 +9,13 @@ import java.util.Arrays;
 import org.bukkit.World;
 
 import pisi.unitedmeows.seriex.util.config.impl.Config;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigField;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
+import pisi.unitedmeows.seriex.util.config.util.Cfg;
+import pisi.unitedmeows.seriex.util.config.util.ConfigField;
+import pisi.unitedmeows.seriex.util.config.util.ConfigValue;
 import pisi.unitedmeows.yystal.utils.Pair;
 
 // TODO implement
+@Cfg(name = "World" , manual = false , multi = true)
 public class WorldConfig extends Config {
 	@ConfigField
 	public ConfigValue<WorldType> WORLD_TPYE = new ConfigValue<>(this, "world.type", NULL);

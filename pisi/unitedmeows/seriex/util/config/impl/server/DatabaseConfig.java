@@ -3,9 +3,11 @@ package pisi.unitedmeows.seriex.util.config.impl.server;
 import java.io.File;
 
 import pisi.unitedmeows.seriex.util.config.impl.Config;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigField;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
+import pisi.unitedmeows.seriex.util.config.util.Cfg;
+import pisi.unitedmeows.seriex.util.config.util.ConfigField;
+import pisi.unitedmeows.seriex.util.config.util.ConfigValue;
 
+@Cfg(name = "Database" , manual = false , multi = false)
 public class DatabaseConfig extends Config {
 	public DatabaseConfig(File toWrite) {
 		super("Database");

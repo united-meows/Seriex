@@ -8,10 +8,12 @@ import org.bukkit.Location;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.cache.BasicCache;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigField;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
+import pisi.unitedmeows.seriex.util.config.util.Cfg;
+import pisi.unitedmeows.seriex.util.config.util.ConfigField;
+import pisi.unitedmeows.seriex.util.config.util.ConfigValue;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 
+@Cfg(name = "Server" , manual = false , multi = false)
 public class ServerConfig extends Config {
 	@ConfigField
 	public ConfigValue<String> SERVER_NAME = new ConfigValue<>(this, "server.name", "Seriex");

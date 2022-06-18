@@ -6,9 +6,11 @@ import java.io.File;
 
 import net.dv8tion.jda.api.entities.Activity.ActivityType;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigField;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
+import pisi.unitedmeows.seriex.util.config.util.Cfg;
+import pisi.unitedmeows.seriex.util.config.util.ConfigField;
+import pisi.unitedmeows.seriex.util.config.util.ConfigValue;
 
+@Cfg(name = "Discord" , manual = false , multi = false)
 public class DiscordConfig extends Config {
 	public DiscordConfig(File toWrite) {
 		super("Discord");
@@ -20,7 +22,7 @@ public class DiscordConfig extends Config {
 	@ConfigField
 	public ConfigValue<String> MAINTAINER_NAME = new ConfigValue<>(this, "maintainer_name", "$$$#0707");
 	@ConfigField
-	public ConfigValue<String> INVITE_LINK = new ConfigValue<>(this, "invite_link", "https://discord.gg/9js26X5B6v");
+	public ConfigValue<String> INVITE_LINK = new ConfigValue<>(this, "invite_link", "discord.gg/9js26X5B6v");
 	@ConfigField
 	public ConfigValue<String> BANNER = new ConfigValue<>(this, "banner", "https://waa.ai/fyKR");
 	@ConfigField

@@ -5,9 +5,11 @@ import java.util.List;
 
 import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigField;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
+import pisi.unitedmeows.seriex.util.config.util.Cfg;
+import pisi.unitedmeows.seriex.util.config.util.ConfigField;
+import pisi.unitedmeows.seriex.util.config.util.ConfigValue;
 
+@Cfg(name = "Maintainers" , manual = false , multi = false)
 public class MaintainersConfig extends Config {
 	private static List<String> defaultMaintainers = new GlueList<>();
 	@ConfigField

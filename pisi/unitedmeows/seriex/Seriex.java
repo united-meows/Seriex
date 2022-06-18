@@ -17,11 +17,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.electronwill.nightconfig.core.file.FormatDetector;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
+import pisi.unitedmeows.seriex.adapters.MOTDAdapter;
 import pisi.unitedmeows.seriex.anticheat.Anticheat;
 import pisi.unitedmeows.seriex.auth.AuthListener;
 import pisi.unitedmeows.seriex.auth.adapters.InventoryPacketAdapter;
@@ -134,10 +136,19 @@ public class Seriex extends JavaPlugin {
 			}
 			// sorry shit code
 			packet_adapters: {
+				if (packetAdapters == null) {
+					packetAdapters = new GlueList<>();
+					logger().fatal("Packet adapters was somehow null?");
+				}
+				packetAdapters.clear();
+				ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
 				GET.benchmark(yes -> {
 					packetAdapters.add(inventoryPacketAdapter = new InventoryPacketAdapter());
 				}, "Inventory Packet Adapter");
-				packetAdapters.forEach(ProtocolLibrary.getProtocolManager()::addPacketListener);
+				GET.benchmark(yes -> {
+					packetAdapters.add(new MOTDAdapter().createAdapter(protocolManager));
+				}, "MOTD Packet Adapter");
+				packetAdapters.forEach(protocolManager::addPacketListener);
 			}
 			async_stuff: {
 				// 🤞 🤞 🤞 🤞 🤞
@@ -211,7 +222,7 @@ public class Seriex extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		getOnlinePlayers().forEach(player -> {
-			player.kickPlayer(colorizeString(String.format("%s%n&7Restarting the server...", getSuffix())));
+			player.kickPlayer(colorizeString(String.format("%s%n&7Restarting the server...", suffix())));
 		});
 		for (int i = 0; i < cleanupabbleObjects.size(); i++) {
 			cleanupabbleObjects.get(i).cleanup();
@@ -259,16 +270,21 @@ public class Seriex extends JavaPlugin {
 
 	public Player sendMessage(Player player, String message, Object... args) {
 		if (args.length == 0) {
-			player.sendMessage(colorizeString(String.format("%s &7%s", getSuffix(), message)));
+			player.sendMessage(colorizeString(String.format("%s &7%s", suffix(), message)));
 		} else {
-			player.sendMessage(colorizeString(String.format("%s &7%s %s", getSuffix(), message, args)));
+			player.sendMessage(colorizeString(String.format("%s &7%s %s", suffix(), message, args)));
 		}
 		return player;
 	}
 
-	public String getSuffix() {
+	public String suffix() {
 		ServerConfig config = (ServerConfig) fileManager.getConfig(fileManager.SERVER);
 		return config.MESSAGE_SUFFIX.value();
+	}
+
+	// TODO
+	public String motd() {
+		return "Sample MOTD";
 	}
 
 	public SignManager signManager() {

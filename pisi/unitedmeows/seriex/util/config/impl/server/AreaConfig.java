@@ -8,10 +8,12 @@ import java.util.Arrays;
 
 import pisi.unitedmeows.seriex.managers.area.areas.Area;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigField;
-import pisi.unitedmeows.seriex.util.config.impl.ConfigValue;
+import pisi.unitedmeows.seriex.util.config.util.Cfg;
+import pisi.unitedmeows.seriex.util.config.util.ConfigField;
+import pisi.unitedmeows.seriex.util.config.util.ConfigValue;
 import pisi.unitedmeows.yystal.utils.Pair;
 
+@Cfg(name = "Area" , manual = false , multi = true)
 public class AreaConfig extends Config {
 	@ConfigField
 	public ConfigValue<String> area_name = new ConfigValue<>(this, "name", "");
@@ -41,7 +43,7 @@ public class AreaConfig extends Config {
 	public ConfigValue<Integer> warpZ = new ConfigValue<>(this, "warp.z", 0);
 
 	public AreaConfig(File toWrite, String extension, Area... areas) {
-		super("AreaConfig", true, MULTIPLE, toWrite);
+		super("Area", true, MULTIPLE, toWrite);
 		Arrays.stream(areas).forEach(area -> {
 			File file = new File(String.format("%s/%s%s", toWrite, area.name(), extension));
 			configs.put(area.name(), new Pair<>(file, inMemoryConcurrent()));
