@@ -1,9 +1,9 @@
 package pisi.unitedmeows.seriex.managers.data;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.entity.Player;
 
@@ -11,24 +11,15 @@ import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 
-/**
- * @author ghost2173
- * 
- * @since May 4, 2022 3:28:11 PM
- * 
- * @apiNote Not thread-safe.
- */
+// should be threadsafe
 public class DataManager extends Manager {
-	// TODOL -> Investigate # maybe IdentityHashMap has better performance and for more stability?
-	// Also we could use LinkedHashMap for removeEldestEntry to remove memory leaks maybe...
-	// AND using Player as keys CAUSES MEMORY LEAKS. Certainly we could use UUIDs but that makes us calculate
-	// the player every time we try to get Player from UUID. (see Bukkit.getPlayer(UUID))
-	// I dont know maybe I am thinking too much about useless things...
-	private final Map<Player, PlayerW> userMap = new HashMap<>();
+	private Map<Player, PlayerW> userMap;
 
 	@Override
 	public void start(Seriex seriex) {
-		userMap.clear(); // reload & restart
+		// note for self:
+		// opening a new instead of .clear should use less memory because it allocates a totally new object
+		userMap = new ConcurrentHashMap<>(); // reload & restart
 		seriex.get().getServer().getOnlinePlayers().forEach(this::user);
 	}
 
@@ -69,6 +60,6 @@ public class DataManager extends Manager {
 
 	@Override
 	public void cleanup() {
-		userMap.clear();
+		userMap.clear(); // clear is good enough here jvm should handle it
 	}
 }

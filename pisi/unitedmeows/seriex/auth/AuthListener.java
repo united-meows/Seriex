@@ -288,9 +288,11 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		// ( + ) %s %join_message%
 		// Default join message: "joined the server!"
 		// TODO set ("join_message") in TranslationConfig
-		Player player = event.getPlayer();
-		String value = Seriex.get().I18n().getString("join_message", Seriex.get().dataManager().user(player));
-		event.setJoinMessage(Seriex.get().colorizeString(String.format("&7( &a+ &7) &4%s&f%s", player.getName(), value)));
+		event.setJoinMessage(null);
+		Seriex.get().getServer().getOnlinePlayers().forEach(onlinePlayer -> {
+			String value = Seriex.get().I18n().getString("join_message", Seriex.get().dataManager().user(onlinePlayer));
+			Seriex.get().sendMessage(onlinePlayer, "&7( &a+ &7) " + value);
+		});
 		Async.async_w(() -> {
 			Location worldSpawn = getServerConfig().getWorldSpawn();
 			if (event.getPlayer() != null && event.getPlayer().isOnline() && worldSpawn != null) {
@@ -302,11 +304,14 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onQuit(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
-		// ( + ) %s %join_message%
-		// Default join message: "%s left the server!"
+		// ( - ) %leave_message%
+		// Default leave message: "%s left the server!"
 		// TODO set ("leave_message") in TranslationConfig
-		String value = Seriex.get().I18n().getString("leave_message", Seriex.get().dataManager().user(player));
-		event.setQuitMessage(Seriex.get().colorizeString(String.format("&7( &a+ &7) &4%s&f%s", player.getName(), value)));
+		event.setQuitMessage(null);
+		Seriex.get().getServer().getOnlinePlayers().forEach(onlinePlayer -> {
+			String value = Seriex.get().I18n().getString("leave_message", Seriex.get().dataManager().user(onlinePlayer));
+			Seriex.get().sendMessage(onlinePlayer, "&7( &c- &7) " + value);
+		});
 		if (!waitingForLogin(player)) return;
 		getAuthInfo(player).onAuthInterrupted();
 	}

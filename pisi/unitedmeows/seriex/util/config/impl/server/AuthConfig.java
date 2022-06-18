@@ -10,6 +10,7 @@ import pisi.unitedmeows.seriex.util.config.util.ConfigField;
 import pisi.unitedmeows.seriex.util.config.util.ConfigValue;
 
 // TODO finish
+// ^^ this should be finished but i think ghost @ 3 am is trying to tell something
 @Cfg(name = "Auth" , manual = false , multi = false)
 public class AuthConfig extends Config {
 	private static List<String> defaultAllowedCommands = new ArrayList<>();

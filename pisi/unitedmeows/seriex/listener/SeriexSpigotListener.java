@@ -178,14 +178,16 @@ public class SeriexSpigotListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onLeave(final PlayerQuitEvent event) {
-		Seriex.logger().info("%s left the server!", event.getPlayer().getName());
-		Seriex.get().dataManager().removeUser(event.getPlayer());
+		Player player = event.getPlayer();
+		Seriex.logger().info("%s left the server!", player.getName());
+		Seriex.get().dataManager().removeUser(player);
 	}
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onKick(final PlayerKickEvent event) {
-		Seriex.logger().info("%s got kicked out of the server!", event.getPlayer().getName());
-		Seriex.get().dataManager().removeUser(event.getPlayer());
+		Player player = event.getPlayer();
+		Seriex.logger().info("%s got kicked out of the server!", player.getName());
+		Seriex.get().dataManager().removeUser(player);
 	}
 
 	@EventHandler
