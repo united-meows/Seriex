@@ -10,7 +10,6 @@ import pisi.unitedmeows.seriex.util.config.util.Cfg;
 import pisi.unitedmeows.seriex.util.language.Language;
 import pisi.unitedmeows.yystal.utils.Pair;
 
-// TODO didnt finish yet
 @Cfg(name = "Translations" , manual = true , multi = true)
 public class TranslationsConfig extends Config {
 	public TranslationsConfig(File toWrite, String extension, Language... languages) {

@@ -54,4 +54,15 @@ public enum Language {
 	public boolean isLanguageSelected(int totalID) {
 		return isLanguageSelected(totalID, id);
 	}
+
+	public static Language fromCode(String code, Language default_) {
+		Language foundLanguage = default_;
+		for (Language language : Language.values()) {
+			if (language.languageCode().equalsIgnoreCase(code)) {
+				foundLanguage = language;
+				break;
+			}
+		}
+		return foundLanguage;
+	}
 }

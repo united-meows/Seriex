@@ -18,7 +18,7 @@ public class DiscordConfig extends Config {
 	}
 
 	@ConfigField
-	public ConfigValue<String> BOT_TOKEN = new ConfigValue<>(this, "bot_token", get().fileManager().PRIVATE);
+	public ConfigValue<String> BOT_TOKEN = new ConfigValue<>(this, "bot_token", !available() ? "private" : get().fileManager().PRIVATE);
 	@ConfigField
 	public ConfigValue<String> MAINTAINER_NAME = new ConfigValue<>(this, "maintainer_name", "$$$#0707");
 	@ConfigField

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.dv8tion.jda.api.entities.UserSnowflake;
+import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.structs.IStruct;
 import pisi.unitedmeows.seriex.database.structs.impl.player.*;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
@@ -53,6 +54,68 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 		return DatabaseReflection.get("player_wallet", command, this, new StructPlayerWallet());
 	}
 
+	public boolean updateStruct(IStruct struct, String... extraCommands) {
+		try {
+			Class<? extends IStruct> clazz = struct.getClass();
+			String table = DatabaseReflection.getTable(clazz);
+			StringBuilder builder = new StringBuilder(String.format("UPDATE %s SET ", table));
+			Pair<String[], List<Pair<String, FieldType>>> columnsFromClass = DatabaseReflection.getColumnsFromClass(clazz);
+			String[] columnNames = columnsFromClass.item1();
+			List<Pair<String, FieldType>> pairs = columnsFromClass.item2();
+			Map<String, FieldType> unefficientCodeTime = new HashMap<>();
+			pairs.forEach((Pair<String, FieldType> pair) -> unefficientCodeTime.put(pair.item1(), pair.item2()));
+			int length = columnNames.length;
+			int playerID = -2173;
+			for (int i = 0; i < length; i++) {
+				String name = columnNames[i];
+				Field field = clazz.getDeclaredField(name);
+				String valueOfField = field.get(clazz).toString();
+				boolean isNotNullable = !unefficientCodeTime.get(name).nullable;
+				if ("player_id".equals(name)) {
+					try {
+						playerID = Integer.parseInt(valueOfField);
+					}
+					catch (Exception e) {
+						Seriex.logger().fatal("Couldnt parse player_id %s", valueOfField);
+					}
+				}
+				if (isNotNullable && valueOfField == null) {
+					valueOfField = "null";
+					// todo fatal log
+				}
+				if (i == length - 1) {
+					builder.append(name);
+					builder.append(" = ");
+					builder.append(valueOfField);
+				} else {
+					builder.append(name);
+					builder.append(" = ");
+					builder.append(valueOfField);
+					builder.append(", ");
+				}
+			}
+			if (playerID != -2173) {
+				builder.append("WHERE player_id = ");
+				builder.append(playerID);
+				builder.append(";");
+			} else {
+				Seriex.logger().fatal("playerID could not be received!");
+			}
+			/*
+			 * UPDATE player SET values blablabl
+			 * todo: check tomorrow
+			 * 
+			 */
+		}
+		catch (NoSuchFieldException
+					| SecurityException
+					| IllegalArgumentException
+					| IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+
 	public boolean createStruct(IStruct struct, String... extraCommands) {
 		//  	based on
 		//		return execute(new YSQLCommand(
@@ -93,6 +156,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 				String valueOfField = field.get(clazz).toString();
 				if (!unefficientCodeTime.get(columnName).nullable && valueOfField == null) {
 					valueOfField = "null";
+					// todo fatal log
 				}
 				if (j == length - 1) {
 					builder.append(String.format("%s)", valueOfField.toString()));

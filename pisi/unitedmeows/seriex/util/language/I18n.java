@@ -17,7 +17,8 @@ import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 import pisi.unitedmeows.yystal.utils.Pair;
 
 public class I18n implements ICleanup {
-	private Map<String, String> cache = new WeakHashMap<>();
+	// todo ycache / caffeine
+	private Map<String, String> cache = new WeakHashMap<>(100, 0.5F);
 
 	public String getString(String message, PlayerW player) {
 		FileManager fileManager = get().fileManager();

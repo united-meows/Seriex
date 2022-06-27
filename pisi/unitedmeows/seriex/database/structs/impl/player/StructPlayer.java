@@ -24,6 +24,8 @@ public class StructPlayer implements IStruct {
 	public String salt;
 	@Column
 	public boolean banned;
+	@Column
+	public boolean firstLogin;
 
 	@Override
 	public String[] getColumns() {

@@ -23,12 +23,14 @@ import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerDiscord;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerSettings;
 import pisi.unitedmeows.seriex.managers.sign.impl.SignCommand;
 import pisi.unitedmeows.seriex.util.config.impl.server.BanActionsConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
 import pisi.unitedmeows.seriex.util.crasher.PlayerCrasher;
 import pisi.unitedmeows.seriex.util.ip.IPApi;
 import pisi.unitedmeows.seriex.util.ip.IPApiResponse;
+import pisi.unitedmeows.seriex.util.language.Language;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 
 public class SeriexSpigotListener implements Listener {
@@ -71,7 +73,7 @@ public class SeriexSpigotListener implements Listener {
 					PlayerW hooked = Seriex.get().dataManager().user(onlinePlayer);
 					// Player %s (IP: %s) tried to join the server, but is banned.
 					// ^^ default message of vv
-					// TODO ban_actions.ip_announcement <- add to config
+					// TODO ban_actions.ip_announcement <- add to translation config
 					Seriex.get().sendMessage(player, Seriex.get().I18n().getString("ban_actions.ip_announcement", hooked), name, hooked.getMaskedIP(hooked.getIP()));
 				});
 			}
@@ -140,8 +142,13 @@ public class SeriexSpigotListener implements Listener {
 			// Chinese IP`s are literally never seen in Seriex because they cannot connect
 			// for whatever reason, so blocking them changes nothing.
 			event.disallow(KICK_WHITELIST, String.format("%s%n&7%s", "Chinese IPs are not allowed on Seriex.", Seriex.get().suffix()));
+			return;
 		}
 		// TODO use ip api to select default language for first login
+		if (playerStruct.firstLogin) {
+			StructPlayerSettings playerSettings = Seriex.get().database().getPlayerSettings(playerStruct.player_id);
+			playerSettings.selectedLanguage = Language.fromCode(response.getCountryCode(), Language.ENGLISH).languageCode();
+		}
 		// AntiBot :DDDDD
 	}
 
@@ -161,13 +168,14 @@ public class SeriexSpigotListener implements Listener {
 			case RIGHT_CLICK_BLOCK: {
 				if (interactEvent.getClickedBlock() instanceof Sign) {
 					Sign sign = (Sign) interactEvent.getClickedBlock();
+					org.bukkit.material.Sign materialSign = (org.bukkit.material.Sign) sign.getData();
 					String line1 = ChatColor.stripColor(sign.getLine(0)).substring(1);
 					line1 = line1.substring(0, line1.length() - 1);
 					List<SignCommand> signCommands = Seriex.get().signManager().signCommands();
 					for (int i = 0; i < signCommands.size(); i++) {
 						SignCommand signCommand = signCommands.get(i);
 						if (signCommand.trigger().equalsIgnoreCase(line1)) {
-							signCommand.runRight(Seriex.get().dataManager().user(interactEvent.getPlayer()), sign);
+							signCommand.runRight(Seriex.get().dataManager().user(interactEvent.getPlayer()), sign, materialSign);
 							break;
 						}
 					}
@@ -177,13 +185,14 @@ public class SeriexSpigotListener implements Listener {
 			case LEFT_CLICK_BLOCK: {
 				if (interactEvent.getClickedBlock() instanceof Sign) {
 					Sign sign = (Sign) interactEvent.getClickedBlock();
+					org.bukkit.material.Sign materialSign = (org.bukkit.material.Sign) sign.getData();
 					String line1 = ChatColor.stripColor(sign.getLine(0)).substring(1);
 					line1 = line1.substring(0, line1.length() - 1);
 					List<SignCommand> signCommands = Seriex.get().signManager().signCommands();
 					for (int i = 0; i < signCommands.size(); i++) {
 						SignCommand signCommand = signCommands.get(i);
 						if (signCommand.trigger().equalsIgnoreCase(line1)) {
-							signCommand.runLeft(Seriex.get().dataManager().user(interactEvent.getPlayer()), sign);
+							signCommand.runLeft(Seriex.get().dataManager().user(interactEvent.getPlayer()), sign, materialSign);
 							break;
 						}
 					}
@@ -211,4 +220,11 @@ public class SeriexSpigotListener implements Listener {
 
 	@EventHandler
 	public void onAsyncChat(final AsyncPlayerChatEvent event) {}
+
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onCommandPreprocess(final PlayerCommandPreprocessEvent event) {
+		if (Seriex.get().commandSystem().execute(Seriex.get().dataManager().user(event.getPlayer()), event.getMessage())) {
+			event.setCancelled(true);
+		}
+	}
 }

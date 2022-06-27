@@ -53,7 +53,9 @@ public class FileManager extends Manager {
 			File discordFile = new File(directory, DISCORD + EXTENSION);
 			File worldDirectory = new File(directory, WORLD);
 			File authFile = new File(directory, AUTH + EXTENSION);
-			this.createFile(WORLD, worldDirectory, new WorldConfig(worldDirectory, EXTENSION, get().getServer().getWorlds().stream().toArray(World[]::new)));
+			if (Seriex.available()) {
+				this.createFile(WORLD, worldDirectory, new WorldConfig(worldDirectory, EXTENSION, get().getServer().getWorlds().stream().toArray(World[]::new)));
+			}
 			this.createFile(DISCORD, discordFile, new DiscordConfig(discordFile));
 			this.createFile(DATABASE, databaseFile, new DatabaseConfig(databaseFile));
 			this.createFile(AUTH, authFile, new AuthConfig(authFile));

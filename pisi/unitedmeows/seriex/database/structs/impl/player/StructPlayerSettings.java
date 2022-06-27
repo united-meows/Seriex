@@ -8,7 +8,6 @@ import pisi.unitedmeows.yystal.sql.YSQLCommand;
 
 @Struct(name = "player_settings")
 public class StructPlayerSettings implements IStruct {
-
 	@Column
 	public int player_settings_id;
 	@Column
@@ -23,6 +22,8 @@ public class StructPlayerSettings implements IStruct {
 	public boolean fall_damage;
 	@Column
 	public String anticheat;
+	@Column
+	public String selectedLanguage;
 
 	@Override
 	public String[] getColumns() {

@@ -60,7 +60,12 @@ public class DiscordBot extends Manager {
 		builder.disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE);
 		builder.setBulkDeleteSplittingEnabled(true);
 		builder.setCompression(Compression.NONE);
-		builder.setActivity(Activity.of(discordConfig.ACTIVITY_TYPE.value(), discordConfig.ACTIVITY_MESSAGE.value(), discordConfig.ACTIVITY_URL.value()));
+		try {
+			builder.setActivity(Activity.of(discordConfig.ACTIVITY_TYPE.value(), discordConfig.ACTIVITY_MESSAGE.value(), discordConfig.ACTIVITY_URL.value()));
+		}
+		catch (Exception e) {
+			Seriex.logger().fatal("Couldnt set activity!");
+		}
 		builder.addEventListeners(new ListenerAdapter() {
 			@Override
 			public void onReady(ReadyEvent event) {
@@ -242,6 +247,7 @@ public class DiscordBot extends Manager {
 						StructPlayer structPlayer = new StructPlayer();
 						structPlayer.username = username;
 						structPlayer.salt = Hashing.randomString(8);
+						structPlayer.firstLogin = true;
 						structPlayer.password = Hashing.hashedString(structPlayer.salt + password);
 						boolean structPlayerCreated = Seriex.get().database().createStruct(structPlayer, "WHERE NOT EXISTS (SELECT * FROM %s WHERE username='%d')".replace("%d", username));
 						if (!structPlayerCreated) {

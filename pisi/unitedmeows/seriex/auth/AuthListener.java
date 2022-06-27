@@ -16,6 +16,7 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import pisi.unitedmeows.eventapi.event.listener.Listener;
 import pisi.unitedmeows.pispigot.Pispigot;
@@ -27,6 +28,7 @@ import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.TranslationsConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.inventories.LoginInventory;
+import pisi.unitedmeows.seriex.util.title.AnimatedTitle;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 import pisi.unitedmeows.yystal.clazz.HookClass;
 import pisi.unitedmeows.yystal.parallel.Async;
@@ -71,16 +73,25 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		authentication.onLogin();
 	}
 
+	protected static String[] cachedWelcome = null;
+
 	public class AuthInfo extends HookClass<PlayerW> {
 		public final Location spawnLocation = getServerConfig().getWorldSpawn();
 		private long startMS = System.currentTimeMillis() , endMS;
 		private AuthState state = AuthState.WAITING;
 		private long benchmark;
+		private BukkitRunnable joinMessageRunnable , loginMessageRunnable;
 
 		public void onJoin() {
 			PlayerW baseHook = getHooked();
-			Seriex.get().inventoryPacketAdapter().sendBlankInventoryPacket(baseHook.getHooked());
+			Player player = baseHook.getHooked();
+			Seriex.get().inventoryPacketAdapter().sendBlankInventoryPacket(player);
 			LoginInventory.open(baseHook, Seriex.get().authentication());
+			if (cachedWelcome == null) {
+				// TODO translations
+				cachedWelcome = AnimatedTitle.animateText("Welcome to Seriex!", "Seriex", "&d", "&5&l");
+			}
+			joinMessageRunnable = AnimatedTitle.animatedTitle(player, cachedWelcome, null);
 		}
 
 		public void onLogin() {
@@ -261,11 +272,11 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 				if (this.getShooter == null) {
 					this.getShooter = Projectile.class.getMethod("getShooter");
 				}
+				// hopefully we throw an exception if getShooter is null
+				// & invoke doesnt happen so it doesnt fuck tps
 				shooterRaw = this.getShooter.invoke(projectile);
 			}
-			catch (NoSuchMethodException
-						| java.lang.reflect.InvocationTargetException
-						| IllegalAccessException e) {
+			catch (Exception e) {
 				Seriex.get().logger().fatal("Error getting shooter %s", e.getMessage());
 			}
 		} else {
@@ -376,7 +387,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 				event.setCancelled(true);
 			}
 		} else {
-			Seriex.get().logger().fatal("göte geldik HumanEntity Playerin Master Classi olmuyomuş yardım edin");
+			Seriex.get().logger().fatal("HumanEntity is not instanceof Player... @ghost pls fix.");
 		}
 	}
 

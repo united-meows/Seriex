@@ -1,4 +1,4 @@
-package pisi.unitedmeows.seriex.auth.adapters;
+package pisi.unitedmeows.seriex.adapters;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;

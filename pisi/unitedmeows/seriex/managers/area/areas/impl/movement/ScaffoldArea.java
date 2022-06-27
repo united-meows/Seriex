@@ -14,6 +14,7 @@ import pisi.unitedmeows.seriex.util.config.impl.server.AreaConfig;
 
 @ImplementArea(name = "scaffold" , category = Category.MOVEMENT)
 public class ScaffoldArea extends BasicArea {
+	// called using reflections
 	public ScaffoldArea(AreaConfig areaConfig, CommentedConfig commentedConfig, Category category) {
 		super(areaConfig, commentedConfig, category);
 	}

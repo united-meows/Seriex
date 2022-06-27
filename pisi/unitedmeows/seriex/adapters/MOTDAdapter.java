@@ -20,7 +20,7 @@ import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
 
 public class MOTDAdapter {
-	private static final String TAB = "                                                                                    ";
+	private static final String TAB = "                                                                                         ";
 
 	public PacketAdapter createAdapter(final ProtocolManager protocolManager) {
 		final WrappedServerPing wrappedServerPing = new WrappedServerPing();
