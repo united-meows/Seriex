@@ -1,5 +1,6 @@
 package pisi.unitedmeows.seriex.database.structs.impl.player;
 
+import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.structs.IStruct;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.database.util.annotation.Column;
@@ -33,5 +34,24 @@ public class StructPlayerSettings implements IStruct {
 	@Override
 	public YSQLCommand[] setColumns() {
 		return DatabaseReflection.setAndGetColumns(this.getClass());
+	}
+
+	@Override
+	public void create() {
+		Seriex.get().database().createStruct(this);
+	}
+
+	@Override
+	public void update() {
+		Seriex.get().database().updateStruct(this);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("StructPlayerSettings [player_settings_id=").append(player_settings_id).append(", player_id=").append(player_id).append(", guest=").append(guest).append(", flags=").append(flags)
+					.append(", hunger=").append(hunger).append(", fall_damage=").append(fall_damage).append(", anticheat=").append(anticheat).append(", selectedLanguage=").append(selectedLanguage)
+					.append("]");
+		return builder.toString();
 	}
 }

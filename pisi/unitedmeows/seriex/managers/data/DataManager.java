@@ -25,7 +25,7 @@ public class DataManager extends Manager {
 
 	public PlayerW user(Player player) {
 		return userMap.computeIfAbsent(player, computedPlayer -> {
-			Seriex.logger().info("Added %s to the database!", player.getName());
+			Seriex.logger().info("Added %s to the temporary database!", player.getName());
 			return new PlayerW(computedPlayer);
 		});
 	}
@@ -60,6 +60,6 @@ public class DataManager extends Manager {
 
 	@Override
 	public void cleanup() {
-		userMap.clear(); // clear is good enough here jvm should handle it
+		userMap.clear(); // clear is good enough here jvm should handle the rest
 	}
 }

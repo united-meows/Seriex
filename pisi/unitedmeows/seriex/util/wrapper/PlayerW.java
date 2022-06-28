@@ -76,7 +76,7 @@ public class PlayerW extends HookClass<Player> {
 			Seriex.logger().warn("The player %s does not have Settings row on database (maybe first login?)", name);
 			playerSettings = new StructPlayerSettings();
 			playerSettings.player_id = playerInfo.player_id;
-			Seriex.get().database().createStruct(playerSettings);
+			playerSettings.create();
 		}
 		attributeHolders = new HashMap<>();
 		registerAttributes();
@@ -106,8 +106,6 @@ public class PlayerW extends HookClass<Player> {
 	}
 
 	private String generateUserToken(final String name) {
-		//		final byte[] bytes = UUID.nameUUIDFromBytes(name.getBytes(UTF_8)).toString().getBytes(UTF_8);
-		//		return "2173" + DigestUtils.sha256Hex(bytes);
 		return CoID.generate().toString();
 	}
 

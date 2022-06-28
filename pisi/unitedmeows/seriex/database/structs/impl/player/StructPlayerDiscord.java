@@ -1,5 +1,6 @@
 package pisi.unitedmeows.seriex.database.structs.impl.player;
 
+import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.structs.IStruct;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.database.util.annotation.Column;
@@ -32,7 +33,20 @@ public class StructPlayerDiscord implements IStruct {
 	}
 
 	@Override
+	public void create() {
+		Seriex.get().database().createStruct(this);
+	}
+
+	@Override
+	public void update() {
+		Seriex.get().database().updateStruct(this);
+	}
+
+	@Override
 	public String toString() {
-		return String.format("StructPlayerDiscord [player_discord_id=%s, player_id=%s, discord_id=%s, linkMS=%s, joinedAs=%s]", player_discord_id, player_id, discord_id, linkMS, joinedAs);
+		StringBuilder builder = new StringBuilder();
+		builder.append("StructPlayerDiscord [player_discord_id=").append(player_discord_id).append(", player_id=").append(player_id).append(", discord_id=").append(discord_id).append(", linkMS=")
+					.append(linkMS).append(", joinedAs=").append(joinedAs).append(", languages=").append(languages).append("]");
+		return builder.toString();
 	}
 }

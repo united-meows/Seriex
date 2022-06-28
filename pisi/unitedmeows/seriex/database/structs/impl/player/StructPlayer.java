@@ -1,5 +1,6 @@
 package pisi.unitedmeows.seriex.database.structs.impl.player;
 
+import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.structs.IStruct;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.database.util.annotation.Column;
@@ -26,6 +27,10 @@ public class StructPlayer implements IStruct {
 	public boolean banned;
 	@Column
 	public boolean firstLogin;
+	@Column
+	public int timesLogined;
+	@Column
+	public long playTime;
 
 	@Override
 	public String[] getColumns() {
@@ -38,7 +43,21 @@ public class StructPlayer implements IStruct {
 	}
 
 	@Override
+	public void create() {
+		Seriex.get().database().createStruct(this);
+	}
+
+	@Override
+	public void update() {
+		Seriex.get().database().updateStruct(this);
+	}
+
+	@Override
 	public String toString() {
-		return String.format("StructPlayer [player_id=%s, api_access=%s, username=%s, password=%s, token=%s, gAuth=%s, salt=%s]", player_id, api_access, username, password, token, gAuth, salt);
+		StringBuilder builder = new StringBuilder();
+		builder.append("StructPlayer [player_id=").append(player_id).append(", api_access=").append(api_access).append(", username=").append(username).append(", password=").append(password)
+					.append(", token=").append(token).append(", gAuth=").append(gAuth).append(", salt=").append(salt).append(", banned=").append(banned).append(", firstLogin=").append(firstLogin)
+					.append(", timesLogined=").append(timesLogined).append(", playTime=").append(playTime).append("]");
+		return builder.toString();
 	}
 }

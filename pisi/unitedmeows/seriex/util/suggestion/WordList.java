@@ -14,6 +14,7 @@ import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 
 import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.util.language.Language;
 
 public class WordList {
 	private static final Pattern RESOURCE_PATTERN = Pattern.compile(".*");
@@ -70,6 +71,9 @@ public class WordList {
 				e1.printStackTrace();
 			}
 		});
+		for (Language language : Language.values()) {
+			LOWERCASE_WORDS.putIfAbsent(language.languageCode(), new HashSet<>());
+		}
 		wordCount.forEach((locale, wordAmount) -> {
 			Seriex.logger().info("Read %s amount of words from locale %s", wordAmount, locale);
 		});

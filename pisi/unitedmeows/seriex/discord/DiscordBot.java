@@ -1,5 +1,6 @@
 package pisi.unitedmeows.seriex.discord;
 
+import static java.nio.charset.StandardCharsets.*;
 import static pisi.unitedmeows.seriex.Seriex.*;
 
 import java.awt.Color;
@@ -9,6 +10,7 @@ import java.util.stream.Stream;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.bukkit.entity.Player;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -34,6 +36,7 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerDiscord;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerWallet;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
@@ -249,6 +252,12 @@ public class DiscordBot extends Manager {
 						structPlayer.salt = Hashing.randomString(8);
 						structPlayer.firstLogin = true;
 						structPlayer.password = Hashing.hashedString(structPlayer.salt + password);
+						StructPlayerWallet structPlayerWallet = new StructPlayerWallet();
+						structPlayerWallet.player_id = structPlayer.player_id;
+						structPlayerWallet.coins = 0;
+						final byte[] bytes = UUID.nameUUIDFromBytes(username.getBytes(UTF_8)).toString().getBytes(UTF_8);
+						structPlayerWallet.player_wallet = "0x2173" + DigestUtils.sha256Hex(bytes);
+						structPlayerWallet.create();
 						boolean structPlayerCreated = Seriex.get().database().createStruct(structPlayer, "WHERE NOT EXISTS (SELECT * FROM %s WHERE username='%d')".replace("%d", username));
 						if (!structPlayerCreated) {
 							event.reply("Couldnt register (0x1)!").setEphemeral(true).queue();

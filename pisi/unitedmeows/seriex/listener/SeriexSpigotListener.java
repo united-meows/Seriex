@@ -4,6 +4,8 @@ import static java.nio.charset.StandardCharsets.*;
 import static java.time.Duration.*;
 import static org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -21,16 +24,21 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.UserSnowflake;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.command.Command;
+import pisi.unitedmeows.seriex.database.SeriexDB;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerDiscord;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerFirstLogin;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerSettings;
 import pisi.unitedmeows.seriex.managers.sign.impl.SignCommand;
 import pisi.unitedmeows.seriex.util.config.impl.server.BanActionsConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
 import pisi.unitedmeows.seriex.util.crasher.PlayerCrasher;
+import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.ip.IPApi;
 import pisi.unitedmeows.seriex.util.ip.IPApiResponse;
+import pisi.unitedmeows.seriex.util.language.I18n;
 import pisi.unitedmeows.seriex.util.language.Language;
+import pisi.unitedmeows.seriex.util.suggestion.suggesters.Suggester;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 
 public class SeriexSpigotListener implements Listener {
@@ -104,31 +112,40 @@ public class SeriexSpigotListener implements Listener {
 		stringBuilder.append(OFFLINE_PLAYER);
 		stringBuilder.append(player.getName());
 		UUID calculatedUUID = UUID.nameUUIDFromBytes(stringBuilder.toString().getBytes(UTF_8));
-		if (!calculatedUUID.equals(player.getUniqueId())) {
+		UUID uniqueId = player.getUniqueId();
+		if (!calculatedUUID.equals(uniqueId)) {
 			// TODO translations
-			event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, "spoofed uuid smh get real");
+			event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST,
+						Seriex.get().colorizeString(String.format("%s%n&7Disallowed UUID!%n&cCalculated UUID: %s%n&4Login UUID: %s", Seriex.get().suffix(), calculatedUUID, uniqueId)));
 		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onAsyncPreJoin(AsyncPlayerPreLoginEvent event) {
+		if (!Seriex.available()) {
+			event.disallow(Result.KICK_WHITELIST, "...?");
+			throw new SeriexException("What the fuck happened?");
+		}
 		String name = event.getName();
-		if (name.length() < 3 && name.length() > 16) {
+		int length = name.length();
+		if (length < 3 && length > 16) {
 			event.disallow(KICK_WHITELIST, Seriex.get().colorizeString(String.format("%s%n&7Disallowed username.", Seriex.get().suffix())));
 			return;
 		}
-		StructPlayer playerStruct = Seriex.get().database().getPlayer(name);
+		SeriexDB database = Seriex.get().database();
+		StructPlayer playerStruct = database.getPlayer(name);
 		if (playerStruct == null) {
 			String discordLink = ((DiscordConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().DISCORD)).INVITE_LINK.value();
 			event.disallow(KICK_WHITELIST, String.format("%s%n&7Please register on the discord server. %n%s", Seriex.get().suffix(), discordLink));
 			return;
 		}
 		Player player = Seriex.get().getServer().getPlayerExact(name);
+		PlayerW hooked = Seriex.get().dataManager().user(player);
+		I18n i18n = Seriex.get().I18n();
 		if (player != null) {
-			PlayerW hooked = Seriex.get().dataManager().user(player);
-			// TODO player_already_online
+			// TODO set ("player_already_online") in translation config
 			// default message -> Player is already online.
-			event.disallow(KICK_WHITELIST, String.format("%s%n&7%s", Seriex.get().I18n().getString("player_already_online", hooked), Seriex.get().suffix()));
+			event.disallow(KICK_WHITELIST, String.format("%s%n&7%s", i18n.getString("player_already_online", hooked), Seriex.get().suffix()));
 			return;
 		}
 		IPApiResponse response = IPApi.response(event.getAddress().getHostAddress());
@@ -144,10 +161,17 @@ public class SeriexSpigotListener implements Listener {
 			event.disallow(KICK_WHITELIST, String.format("%s%n&7%s", "Chinese IPs are not allowed on Seriex.", Seriex.get().suffix()));
 			return;
 		}
-		// TODO use ip api to select default language for first login
 		if (playerStruct.firstLogin) {
-			StructPlayerSettings playerSettings = Seriex.get().database().getPlayerSettings(playerStruct.player_id);
+			StructPlayerSettings playerSettings = database.getPlayerSettings(playerStruct.player_id);
 			playerSettings.selectedLanguage = Language.fromCode(response.getCountryCode(), Language.ENGLISH).languageCode();
+			StructPlayerFirstLogin playerFirstLogin = new StructPlayerFirstLogin();
+			playerFirstLogin.date = LocalDate.now() + " " + LocalTime.now();
+			playerFirstLogin.ip_adress = hooked.getIP();
+			playerFirstLogin.player_id = playerStruct.player_id;
+			playerStruct.firstLogin = false;
+			playerFirstLogin.create();
+			playerSettings.update();
+			playerStruct.update();
 		}
 		// AntiBot :DDDDD
 	}
@@ -159,7 +183,10 @@ public class SeriexSpigotListener implements Listener {
 			cmd.executeAutoComplete(Seriex.get().dataManager().user(event.getPlayer()), event.getChatMessage(), event.getLastToken());
 		}
 		// todo add suggester when settings-ui has language
-		//		event.getTabCompletions().addAll(suggester.autocomplete(event.getLastToken(), 5));
+		Suggester suggester = Seriex.get().dataManager().user(event.getPlayer()).selectedLanguage().getSuggester();
+		if (suggester != null) {
+			event.getTabCompletions().addAll(suggester.autocomplete(event.getLastToken(), 5));
+		}
 	}
 
 	@EventHandler(priority = EventPriority.LOW)

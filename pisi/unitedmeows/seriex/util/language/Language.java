@@ -1,8 +1,14 @@
 package pisi.unitedmeows.seriex.util.language;
 
+import static pisi.unitedmeows.seriex.util.suggestion.WordList.*;
+
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.Function;
+
+import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.util.suggestion.suggesters.Suggester;
 
 public enum Language {
 	ENGLISH(Locale.ENGLISH, 0b1, 55356, 56826, 55356, 56824),
@@ -13,15 +19,23 @@ public enum Language {
 	private String languageCode;
 	private Locale locale;
 	private String unicode;
+	private Suggester suggester;
 	private int id;
 	private Function<int[], String> function = array -> {
 		StringBuilder stringBuilder = new StringBuilder();
-		Arrays.stream(array).forEach(number -> stringBuilder.append((char) number));
+		Arrays.stream(array).forEach((int number) -> stringBuilder.append((char) number));
 		return stringBuilder.toString();
 	};
 
 	Language(Locale locale, int id, int... unicode) {
 		this.languageCode = locale.toString();
+		Set<String> words = LOWERCASE_WORDS.get(languageCode);
+		if (words != null && !words.isEmpty()) {
+			this.suggester = new Suggester(words);
+		} else {
+			this.suggester = null;
+			Seriex.logger().fatal("No suggester is available for language %s", name());
+		}
 		this.locale = locale;
 		this.id = id;
 		this.unicode = function.apply(unicode);
@@ -45,6 +59,10 @@ public enum Language {
 
 	public static Language getLanguage(int id) {
 		return values()[(int) (Math.log(id) / Math.log(2))];
+	}
+
+	public Suggester getSuggester() {
+		return suggester;
 	}
 
 	public static boolean isLanguageSelected(int totalID, int id) {

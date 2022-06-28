@@ -54,7 +54,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 		return DatabaseReflection.get("player_wallet", command, this, new StructPlayerWallet());
 	}
 
-	public boolean updateStruct(IStruct struct, String... extraCommands) {
+	public boolean updateStruct(IStruct struct) {
 		try {
 			Class<? extends IStruct> clazz = struct.getClass();
 			String table = DatabaseReflection.getTable(clazz);
@@ -70,7 +70,8 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 				String name = columnNames[i];
 				Field field = clazz.getDeclaredField(name);
 				String valueOfField = field.get(clazz).toString();
-				boolean isNotNullable = !unefficientCodeTime.get(name).nullable;
+				FieldType fieldType = unefficientCodeTime.get(name);
+				boolean isNotNullable = !fieldType.nullable;
 				if ("player_id".equals(name)) {
 					try {
 						playerID = Integer.parseInt(valueOfField);
@@ -79,6 +80,9 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 						Seriex.logger().fatal("Couldnt parse player_id %s", valueOfField);
 					}
 				}
+				if (name.equals("player_id")) {
+					continue;
+				}
 				if (isNotNullable && valueOfField == null) {
 					valueOfField = "null";
 					// todo fatal log
@@ -86,11 +90,23 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 				if (i == length - 1) {
 					builder.append(name);
 					builder.append(" = ");
+					if (fieldType == FieldType.STRING) {
+						builder.append("'");
+					}
 					builder.append(valueOfField);
+					if (fieldType == FieldType.STRING) {
+						builder.append("'");
+					}
 				} else {
 					builder.append(name);
 					builder.append(" = ");
+					if (fieldType == FieldType.STRING) {
+						builder.append("'");
+					}
 					builder.append(valueOfField);
+					if (fieldType == FieldType.STRING) {
+						builder.append("'");
+					}
 					builder.append(", ");
 				}
 			}
@@ -98,22 +114,20 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 				builder.append("WHERE player_id = ");
 				builder.append(playerID);
 				builder.append(";");
+				execute(builder.toString());
+				return true;
 			} else {
 				Seriex.logger().fatal("playerID could not be received!");
+				return false;
 			}
-			/*
-			 * UPDATE player SET values blablabl
-			 * todo: check tomorrow
-			 * 
-			 */
 		}
 		catch (NoSuchFieldException
 					| SecurityException
 					| IllegalArgumentException
 					| IllegalAccessException e) {
 			e.printStackTrace();
+			return false;
 		}
-		return true;
 	}
 
 	public boolean createStruct(IStruct struct, String... extraCommands) {
@@ -166,7 +180,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 			}
 			// INSERT INTO player(player_id, api_access, username, password, token, gAuth, salt)
 			// VALUES(1, 31, "probablyThisDoesntwork", "pass", "tokenqwe", "gAuthEX", "saltEx")
-			// WHERE NOT EXISTS (SELECT * FROM player WHERE username='username')
+			// WHERE NOT EXISTS (SELECT * FROM player WHERE username='username') <- extra command usually
 			if (extraCommands.length != 0) {
 				builder.append(String.format(extraCommands[0], table));
 			}

@@ -77,7 +77,6 @@ public class AnimatedTitle {
 				frames.add(primaryColor + kek);
 			}
 			for (int j = 0; j < highlightedChars.length; j++) {
-				char hC = highlightedChars[j];
 				String highlightedBefore = primaryColor + highlightedWord.substring(0, j);
 				String highlightedChar = highlightColor + highlightedWord.substring(j, j + 1);
 				String highlightedAfter = primaryColor + highlightedWord.substring(j + 1);
