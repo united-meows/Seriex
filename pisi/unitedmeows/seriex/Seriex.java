@@ -225,7 +225,7 @@ public class Seriex extends JavaPlugin {
 					}
 				}
 				if (oppositeBlockFace == null) {
-					Seriex.get().logger().print("Couldnt get opposite block face of sign %s", locationOfSign.toString());
+					Seriex.logger().print("Couldnt get opposite block face of sign %s", locationOfSign.toString());
 					return;
 				}
 				Location oneBlockAheadOfSign = locationOfSign.add(offsetX, 0, offsetZ);

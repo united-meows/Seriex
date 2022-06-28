@@ -102,7 +102,7 @@ public class SignCommand {
 					}
 					catch (Exception e) {
 						e.printStackTrace();
-						Seriex.get().logger().fatal("Couldnt create stream!");
+						Seriex.logger().fatal("Couldnt create stream!");
 					}
 				}
 				tick.accept(instance);

@@ -12,7 +12,7 @@ public class Try {
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
-				Seriex.get().logger().fatal(errorMessage);
+				Seriex.logger().fatal(errorMessage);
 			}
 		};
 	}
@@ -25,12 +25,12 @@ public class Try {
 			catch (Exception ex) {
 				ex.printStackTrace();
 				if (args != null && args.length != 0) {
-					Seriex.get().logger().fatal(errorMessage, args);
+					Seriex.logger().fatal(errorMessage, args);
 				} else {
 					StringBuilder stringBuilder = new StringBuilder();
 					stringBuilder.append("(Formatting failed!!) ");
 					stringBuilder.append(errorMessage);
-					Seriex.get().logger().fatal(stringBuilder.toString());
+					Seriex.logger().fatal(stringBuilder.toString());
 				}
 			}
 		};

@@ -50,7 +50,7 @@ public class InventoryPacketAdapter extends PacketAdapter {
 		}
 		catch (InvocationTargetException invocationExc) {
 			invocationExc.printStackTrace();
-			Seriex.get().logger().fatal("Couldnt send blank inventory packet!");
+			Seriex.logger().fatal("Couldnt send blank inventory packet!");
 		}
 	}
 }

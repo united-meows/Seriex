@@ -277,7 +277,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 				shooterRaw = this.getShooter.invoke(projectile);
 			}
 			catch (Exception e) {
-				Seriex.get().logger().fatal("Error getting shooter %s", e.getMessage());
+				Seriex.logger().fatal("Error getting shooter %s", e.getMessage());
 			}
 		} else {
 			shooterRaw = projectile.getShooter();
@@ -375,7 +375,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Seriex.get(), player::closeInventory, 1L);
 			}
 		} else {
-			Seriex.get().logger().fatal("göte geldik HumanEntity Playerin Master Classi olmuyomuş yardım edin");
+			Seriex.logger().fatal("göte geldik HumanEntity Playerin Master Classi olmuyomuş yardım edin");
 		}
 	}
 
@@ -387,7 +387,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 				event.setCancelled(true);
 			}
 		} else {
-			Seriex.get().logger().fatal("HumanEntity is not instanceof Player... @ghost pls fix.");
+			Seriex.logger().fatal("HumanEntity is not instanceof Player... @ghost pls fix.");
 		}
 	}
 
