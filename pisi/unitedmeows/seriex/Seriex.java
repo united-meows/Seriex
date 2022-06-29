@@ -239,6 +239,11 @@ public class Seriex extends JavaPlugin {
 						pigLocations.add(oneBlockAheadOfSign.add(reverse.getModX() * i, -0.5, reverse.getModZ() * i));
 					}
 				}
+				//
+				//	7 6 5 4 3 2 1 0
+				//	0 1 0 0 0 1 1 1
+				//		0b000000000000000000000100111
+				//
 				PotionEffect infiniteSlowness = new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 10);
 				Vector var1 = new Vector(0, 0, 0);
 				pigLocations.forEach(location -> {

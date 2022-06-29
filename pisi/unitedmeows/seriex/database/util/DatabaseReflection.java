@@ -52,12 +52,16 @@ public class DatabaseReflection {
 				List<String> currentColumns = Arrays.asList(newInstance.getColumns());
 				List<String> dbColumns = dbColumns(name, db);
 				List<String> uncommon = new ArrayList<>();
-				for (String s : currentColumns) {
+				int columnsSize = currentColumns.size();
+				int databaseColumnsSize = dbColumns.size();
+				for (int i = 0; i < columnsSize; i++) {
+					String s = currentColumns.get(i);
 					if (!dbColumns.contains(s)) {
 						uncommon.add(s);
 					}
 				}
-				for (String s : dbColumns) {
+				for (int i = 0; i < databaseColumnsSize; i++) {
+					String s = dbColumns.get(i);
 					if (!currentColumns.contains(s)) {
 						uncommon.add(s);
 					}

@@ -23,12 +23,7 @@ public class FutureManager extends Manager {
 	}
 
 	public void updateFutures() {
-		for (int i = 0; i < futures.size(); i++) {
-			if (futures.get(i).hasSet()) {
-				futures.remove(i);
-				i--; // so we dont skip the next one
-			}
-		}
+		futures.removeIf(Future::hasSet);
 	}
 
 	private boolean done = true;
@@ -41,7 +36,7 @@ public class FutureManager extends Manager {
 			if (done) {
 				Seriex.logger().info("All futures finished.");
 				synchronized (mainThread) {
-					mainThread.notify();
+					mainThread.notifyAll();
 				}
 			}
 			// maybe?
@@ -60,6 +55,8 @@ public class FutureManager extends Manager {
 				}
 			}
 			// set again or infinite loop
+			// this should not work because we literally stopped the main thread
+			// so we check again using another thread above
 			done = checkFutures(done);
 		}
 	}

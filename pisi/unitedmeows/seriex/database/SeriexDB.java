@@ -80,31 +80,32 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 						Seriex.logger().fatal("Couldnt parse player_id %s", valueOfField);
 					}
 				}
-				if (name.equals("player_id")) {
+				if ("player_id".equals(name)) {
 					continue;
 				}
 				if (isNotNullable && valueOfField == null) {
 					valueOfField = "null";
-					// todo fatal log
+					Seriex.logger().fatal("Value is not nullable but value of field is null! %s", name, fieldType.name());
 				}
+				boolean isFieldString = fieldType == FieldType.STRING;
 				if (i == length - 1) {
 					builder.append(name);
 					builder.append(" = ");
-					if (fieldType == FieldType.STRING) {
+					if (isFieldString) {
 						builder.append("'");
 					}
 					builder.append(valueOfField);
-					if (fieldType == FieldType.STRING) {
+					if (isFieldString) {
 						builder.append("'");
 					}
 				} else {
 					builder.append(name);
 					builder.append(" = ");
-					if (fieldType == FieldType.STRING) {
+					if (isFieldString) {
 						builder.append("'");
 					}
 					builder.append(valueOfField);
-					if (fieldType == FieldType.STRING) {
+					if (isFieldString) {
 						builder.append("'");
 					}
 					builder.append(", ");

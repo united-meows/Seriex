@@ -86,7 +86,22 @@ public class MainThreadTest {
 		//
 		//
 		int gay = ~0b110000 + 0b1;
-		Seriex.logger().info("" + 0x64);
+		// 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+		//
+		//
+		//
+		//
+		// 4 3 2 1 0
+		// 0 1 0 0 0
+		//
+		//
+		//
+		//
+		//
+		// 0000000000000000000000000000000000000000111
+		// 1111111111111111111111111111111111111111000
+		//
+		Seriex.logger().info(0x31 + "");
 		AtomicInteger kek = new AtomicInteger();
 		Future<Boolean> future = Async.async(() -> {
 			Seriex.logger().debug("Waiting for operation to end...");

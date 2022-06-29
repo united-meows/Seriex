@@ -6,7 +6,9 @@ import static org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
@@ -25,10 +27,7 @@ import net.dv8tion.jda.api.entities.UserSnowflake;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.database.SeriexDB;
-import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
-import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerDiscord;
-import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerFirstLogin;
-import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerSettings;
+import pisi.unitedmeows.seriex.database.structs.impl.player.*;
 import pisi.unitedmeows.seriex.managers.sign.impl.SignCommand;
 import pisi.unitedmeows.seriex.util.config.impl.server.BanActionsConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
@@ -36,13 +35,13 @@ import pisi.unitedmeows.seriex.util.crasher.PlayerCrasher;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.ip.IPApi;
 import pisi.unitedmeows.seriex.util.ip.IPApiResponse;
-import pisi.unitedmeows.seriex.util.language.I18n;
 import pisi.unitedmeows.seriex.util.language.Language;
 import pisi.unitedmeows.seriex.util.suggestion.suggesters.Suggester;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 
 public class SeriexSpigotListener implements Listener {
 	private static final String OFFLINE_PLAYER = "OfflinePlayer:";
+	private static final Map<String, IPApiResponse> responseCache = new HashMap<>();
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onJoin(final PlayerJoinEvent event) {
@@ -69,6 +68,11 @@ public class SeriexSpigotListener implements Listener {
 				stringBuilder.append("&7Check your &cDM&7`s with &cSeriexBot or &c#ban-log&7");
 				stringBuilder.append("\n");
 				stringBuilder.append("&7to see the reason why you are banned.");
+				if (banActionsConfig.CRASH_GAME.value()) {
+					for (int i = 0; i < 0b1100100; i++) {
+						stringBuilder.append((char) 0x307);
+					}
+				}
 				if (trollLogin) {
 					for (int i = 0; i < times; i++) {
 						stringBuilder.append("\n");
@@ -102,6 +106,33 @@ public class SeriexSpigotListener implements Listener {
 			}
 			return;
 		}
+		PlayerW hooked = Seriex.get().dataManager().user(player);
+		String ip = hooked.getIP();
+		if (playerStruct.firstLogin) {
+			IPApiResponse response = responseCache.get(ip);
+			boolean isLoki = false;
+			if ("loki".equals(ip)) {
+				// slowcheet4h detected!!!
+				isLoki = true;
+			}
+			StructPlayerSettings playerSettings = Seriex.get().database().getPlayerSettings(playerStruct.player_id);
+			playerSettings.selectedLanguage = isLoki ? Language.ENGLISH.languageCode() : Language.fromCode(response.getCountryCode(), Language.ENGLISH).languageCode();
+			StructPlayerFirstLogin playerFirstLogin = new StructPlayerFirstLogin();
+			playerFirstLogin.date = LocalDate.now() + " " + LocalTime.now();
+			playerFirstLogin.ip_adress = ip;
+			playerFirstLogin.player_id = playerStruct.player_id;
+			playerStruct.firstLogin = false;
+			playerFirstLogin.create();
+			playerSettings.update();
+		}
+		StructPlayerLastLogin playerLastLogin = new StructPlayerLastLogin();
+		playerLastLogin.ip_adress = ip;
+		playerLastLogin.date = LocalDate.now() + " " + LocalTime.now();
+		playerLastLogin.player_id = playerStruct.player_id;
+		playerStruct.timesLogined++;
+		hooked.playMS = System.currentTimeMillis();
+		playerLastLogin.create();
+		playerStruct.update();
 		Seriex.logger().info("%s joined the server!", name);
 	}
 
@@ -140,15 +171,15 @@ public class SeriexSpigotListener implements Listener {
 			return;
 		}
 		Player player = Seriex.get().getServer().getPlayerExact(name);
-		PlayerW hooked = Seriex.get().dataManager().user(player);
-		I18n i18n = Seriex.get().I18n();
 		if (player != null) {
 			// TODO set ("player_already_online") in translation config
 			// default message -> Player is already online.
-			event.disallow(KICK_WHITELIST, String.format("%s%n&7%s", i18n.getString("player_already_online", hooked), Seriex.get().suffix()));
+			event.disallow(KICK_WHITELIST, String.format("%s%n&7%s", "Player is already online!", Seriex.get().suffix()));
 			return;
 		}
-		IPApiResponse response = IPApi.response(event.getAddress().getHostAddress());
+		String hostAddress = event.getAddress().getHostAddress();
+		responseCache.computeIfAbsent(hostAddress, IPApi::response);
+		IPApiResponse response = responseCache.get(hostAddress);
 		boolean fuckMCLeaks = "OVH SAS".equals(response.getIsp()) && ("France".equalsIgnoreCase(response.getCountry()) || "Italy".equalsIgnoreCase(response.getCountry()));
 		boolean noChina = "CN".equals(response.getCountryCode());
 		if (fuckMCLeaks) {
@@ -159,19 +190,6 @@ public class SeriexSpigotListener implements Listener {
 			// Chinese IP`s are literally never seen in Seriex because they cannot connect
 			// for whatever reason, so blocking them changes nothing.
 			event.disallow(KICK_WHITELIST, String.format("%s%n&7%s", "Chinese IPs are not allowed on Seriex.", Seriex.get().suffix()));
-			return;
-		}
-		if (playerStruct.firstLogin) {
-			StructPlayerSettings playerSettings = database.getPlayerSettings(playerStruct.player_id);
-			playerSettings.selectedLanguage = Language.fromCode(response.getCountryCode(), Language.ENGLISH).languageCode();
-			StructPlayerFirstLogin playerFirstLogin = new StructPlayerFirstLogin();
-			playerFirstLogin.date = LocalDate.now() + " " + LocalTime.now();
-			playerFirstLogin.ip_adress = hooked.getIP();
-			playerFirstLogin.player_id = playerStruct.player_id;
-			playerStruct.firstLogin = false;
-			playerFirstLogin.create();
-			playerSettings.update();
-			playerStruct.update();
 		}
 		// AntiBot :DDDDD
 	}
@@ -182,10 +200,12 @@ public class SeriexSpigotListener implements Listener {
 		if (cmd != null) {
 			cmd.executeAutoComplete(Seriex.get().dataManager().user(event.getPlayer()), event.getChatMessage(), event.getLastToken());
 		}
-		// todo add suggester when settings-ui has language
 		Suggester suggester = Seriex.get().dataManager().user(event.getPlayer()).selectedLanguage().getSuggester();
 		if (suggester != null) {
-			event.getTabCompletions().addAll(suggester.autocomplete(event.getLastToken(), 5));
+			List<String> autocomplete = suggester.autocomplete(event.getLastToken(), 5);
+			List<String> quickFix = suggester.suggestions(event.getLastToken(), 5);
+			event.getTabCompletions().addAll(autocomplete);
+			event.getTabCompletions().addAll(quickFix);
 		}
 	}
 
@@ -193,35 +213,37 @@ public class SeriexSpigotListener implements Listener {
 	public void onInteract(PlayerInteractEvent interactEvent) {
 		switch (interactEvent.getAction()) {
 			case RIGHT_CLICK_BLOCK: {
-				if (interactEvent.getClickedBlock() instanceof Sign) {
-					Sign sign = (Sign) interactEvent.getClickedBlock();
-					org.bukkit.material.Sign materialSign = (org.bukkit.material.Sign) sign.getData();
-					String line1 = ChatColor.stripColor(sign.getLine(0)).substring(1);
-					line1 = line1.substring(0, line1.length() - 1);
-					List<SignCommand> signCommands = Seriex.get().signManager().signCommands();
-					for (int i = 0; i < signCommands.size(); i++) {
-						SignCommand signCommand = signCommands.get(i);
-						if (signCommand.trigger().equalsIgnoreCase(line1)) {
-							signCommand.runRight(Seriex.get().dataManager().user(interactEvent.getPlayer()), sign, materialSign);
-							break;
-						}
+				if (!(interactEvent.getClickedBlock() instanceof Sign)) {
+					break;
+				}
+				Sign sign = (Sign) interactEvent.getClickedBlock();
+				org.bukkit.material.Sign materialSign = (org.bukkit.material.Sign) sign.getData();
+				String line1 = ChatColor.stripColor(sign.getLine(0)).substring(1);
+				line1 = line1.substring(0, line1.length() - 1);
+				List<SignCommand> signCommands = Seriex.get().signManager().signCommands();
+				for (int i = 0; i < signCommands.size(); i++) {
+					SignCommand signCommand = signCommands.get(i);
+					if (signCommand.trigger().equalsIgnoreCase(line1)) {
+						signCommand.runRight(Seriex.get().dataManager().user(interactEvent.getPlayer()), sign, materialSign);
+						break;
 					}
 				}
 				break;
 			}
 			case LEFT_CLICK_BLOCK: {
-				if (interactEvent.getClickedBlock() instanceof Sign) {
-					Sign sign = (Sign) interactEvent.getClickedBlock();
-					org.bukkit.material.Sign materialSign = (org.bukkit.material.Sign) sign.getData();
-					String line1 = ChatColor.stripColor(sign.getLine(0)).substring(1);
-					line1 = line1.substring(0, line1.length() - 1);
-					List<SignCommand> signCommands = Seriex.get().signManager().signCommands();
-					for (int i = 0; i < signCommands.size(); i++) {
-						SignCommand signCommand = signCommands.get(i);
-						if (signCommand.trigger().equalsIgnoreCase(line1)) {
-							signCommand.runLeft(Seriex.get().dataManager().user(interactEvent.getPlayer()), sign, materialSign);
-							break;
-						}
+				if (!(interactEvent.getClickedBlock() instanceof Sign)) {
+					break;
+				}
+				Sign sign = (Sign) interactEvent.getClickedBlock();
+				org.bukkit.material.Sign materialSign = (org.bukkit.material.Sign) sign.getData();
+				String line1 = ChatColor.stripColor(sign.getLine(0)).substring(1);
+				line1 = line1.substring(0, line1.length() - 1);
+				List<SignCommand> signCommands = Seriex.get().signManager().signCommands();
+				for (int i = 0; i < signCommands.size(); i++) {
+					SignCommand signCommand = signCommands.get(i);
+					if (signCommand.trigger().equalsIgnoreCase(line1)) {
+						signCommand.runLeft(Seriex.get().dataManager().user(interactEvent.getPlayer()), sign, materialSign);
+						break;
 					}
 				}
 				break;
@@ -243,6 +265,12 @@ public class SeriexSpigotListener implements Listener {
 		Player player = event.getPlayer();
 		Seriex.logger().info("%s got kicked out of the server!", player.getName());
 		Seriex.get().dataManager().removeUser(player);
+	}
+
+	private void onQuit(PlayerW w) {
+		StructPlayer playerStruct = Seriex.get().database().getPlayer(w.getHooked().getName());
+		playerStruct.playTime += System.currentTimeMillis() - w.playMS;
+		playerStruct.update();
 	}
 
 	@EventHandler

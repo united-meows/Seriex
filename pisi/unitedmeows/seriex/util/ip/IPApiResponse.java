@@ -79,7 +79,10 @@ public class IPApiResponse {
 
 	@Override
 	public String toString() {
-		return String.format("IPApiResponse [status=%s, message=%s, query=%s, country=%s, countryCode=%s, region=%s, regionName=%s, city=%s, zip=%s, lat=%s, lon=%s, timezone=%s, isp=%s, org=%s, as=%s]",
-					status, message, query, country, countryCode, region, regionName, city, zip, lat, lon, timezone, isp, org, as);
+		StringBuilder builder = new StringBuilder();
+		builder.append("IPApiResponse [status=").append(status).append(", message=").append(message).append(", query=").append(query).append(", country=").append(country).append(", countryCode=")
+					.append(countryCode).append(", region=").append(region).append(", regionName=").append(regionName).append(", city=").append(city).append(", zip=").append(zip).append(", lat=")
+					.append(lat).append(", lon=").append(lon).append(", timezone=").append(timezone).append(", isp=").append(isp).append(", org=").append(org).append(", as=").append(as).append("]");
+		return builder.toString();
 	}
 }

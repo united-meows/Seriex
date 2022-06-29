@@ -28,8 +28,11 @@ public class CommandSystem {
 	public Command commandFromFull(String input) {
 		input = input.substring(prefix.length());
 		final String name = input.contains(" ") ? input.split(" ")[0] : input;
-		for (Command cmd : commandList) {
-			for (String trigger : cmd.triggers()) {
+		for (int i = 0; i < commandList.size(); i++) {
+			Command cmd = commandList.get(i);
+			String[] triggers = cmd.triggers();
+			for (int j = 0; j < triggers.length; j++) {
+				String trigger = triggers[j];
 				if (name.equalsIgnoreCase(trigger)) return cmd;
 			}
 		}

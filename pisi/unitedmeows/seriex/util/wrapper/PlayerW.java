@@ -34,7 +34,6 @@ public class PlayerW extends HookClass<Player> {
 	private StructPlayerSettings playerSettings;
 	private StructPlayerDiscord playerDiscord;
 	private HashMap<String, IAttributeHolder> attributeHolders;
-	private Set<Language> selectedLanguages;
 	@RegisterAttribute(name = "name")
 	private IAttributeHolder nameAtr = hooked::getName;
 	@RegisterAttribute(name = "id")
@@ -47,7 +46,11 @@ public class PlayerW extends HookClass<Player> {
 	public IAttributeHolder passwordAtr = () -> playerInfo.password;
 	@RegisterAttribute(name = "world")
 	private IAttributeHolder worldAtr = getHooked().getWorld()::getName;
+	// the language text will be translated into
 	private Language selectedLanguage = Language.ENGLISH;
+	// this is for discord
+	private Set<Language> selectedLanguages;
+	public long playMS;
 
 	public PlayerW(final Player _player) {
 		hooked = _player;
@@ -68,6 +71,7 @@ public class PlayerW extends HookClass<Player> {
 		Map<Language, Role> map = discordBot.roleCache.get(guildID);
 		discordBot.JDA().getGuildById(guildID).getMember(UserSnowflake.fromId(playerDiscord.discord_id)).getRoles().stream().filter(map::containsValue).forEach(role -> {
 			Set<Language> collect = map.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), role)).map(Map.Entry::getKey).collect(Collectors.toSet());
+			// maybe save this in db?
 			selectedLanguages.addAll(collect);
 		});
 		/* tries to retrieve player's settings if not exists creates new one */
@@ -83,7 +87,9 @@ public class PlayerW extends HookClass<Player> {
 	}
 
 	private void registerAttributes() {
-		for (Field field : getClass().getDeclaredFields()) {
+		Field[] declaredFields = getClass().getDeclaredFields();
+		for (int i = 0; i < declaredFields.length; i++) {
+			Field field = declaredFields[i];
 			if (field.getType() == IAttributeHolder.class) {
 				field.setAccessible(true);
 				if (field.isAnnotationPresent(RegisterAttribute.class)) {
@@ -165,7 +171,7 @@ public class PlayerW extends HookClass<Player> {
 	 *          btw fuck regex LOL
 	 */
 	public String getMaskedIP(final String input) {
-		if ("loki".equals(input)) return "loki"; // ;((( my ip -slowcheet4h
+		if (!input.contains(".")) return input; // ;((( my ip -slowcheet4h
 		final String maskChar = "-";
 		final String ip = input.replace('.', ':');
 		final String[] splitIp = ip.split(":");
