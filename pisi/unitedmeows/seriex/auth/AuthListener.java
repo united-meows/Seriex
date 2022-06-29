@@ -92,6 +92,11 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 				cachedWelcome = AnimatedTitle.animateText("Welcome to Seriex!", "Seriex", "&d", "&5&l");
 			}
 			joinMessageRunnable = AnimatedTitle.animatedTitle(player, cachedWelcome, null);
+			if (baseHook.isGuest() && false) {
+				// TODO translations & guest support
+				Seriex.get().sendMessage(player, "You automatically logged in because you are in a guest account!");
+				onLogin();
+			}
 		}
 
 		public void onLogin() {

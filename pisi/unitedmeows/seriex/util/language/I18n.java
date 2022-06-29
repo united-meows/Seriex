@@ -9,6 +9,7 @@ import java.util.WeakHashMap;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 
+import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.ICleanup;
 import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.config.impl.server.TranslationsConfig;
@@ -24,10 +25,17 @@ public class I18n implements ICleanup {
 		FileManager fileManager = get().fileManager();
 		TranslationsConfig config = (TranslationsConfig) fileManager.getConfig(TRANSLATIONS);
 		return cache.computeIfAbsent(message, (String msg) -> {
-			Language language = player.selectedLanguage();
-			String languageCode = language.languageCode();
-			Pair<File, CommentedConfig> pair = config.getConfigs().get(languageCode);
-			return config.getValue(msg, pair.item2());
+			try {
+				Language language = player.selectedLanguage();
+				String languageCode = language.languageCode();
+				Pair<File, CommentedConfig> pair = config.getConfigs().get(languageCode);
+				String value = config.getValue(msg, pair.item2());
+				return value;
+			}
+			catch (Exception e) {
+				Seriex.logger().fatal("Translations are not working correctly.");
+				return msg;
+			}
 		});
 	}
 

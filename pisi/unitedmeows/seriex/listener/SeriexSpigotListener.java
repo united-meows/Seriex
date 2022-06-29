@@ -117,6 +117,13 @@ public class SeriexSpigotListener implements Listener {
 			}
 			StructPlayerSettings playerSettings = Seriex.get().database().getPlayerSettings(playerStruct.player_id);
 			playerSettings.selectedLanguage = isLoki ? Language.ENGLISH.languageCode() : Language.fromCode(response.getCountryCode(), Language.ENGLISH).languageCode();
+			if (hooked.isGuest()) {
+				playerSettings.guest = true;
+			}
+			// default settings
+			playerSettings.fall_damage = false;
+			playerSettings.flags = true;
+			playerSettings.hunger = false;
 			StructPlayerFirstLogin playerFirstLogin = new StructPlayerFirstLogin();
 			playerFirstLogin.date = LocalDate.now() + " " + LocalTime.now();
 			playerFirstLogin.ip_adress = ip;
@@ -165,6 +172,7 @@ public class SeriexSpigotListener implements Listener {
 		}
 		SeriexDB database = Seriex.get().database();
 		StructPlayer playerStruct = database.getPlayer(name);
+		// TODO guest support
 		if (playerStruct == null) {
 			String discordLink = ((DiscordConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().DISCORD)).INVITE_LINK.value();
 			event.disallow(KICK_WHITELIST, String.format("%s%n&7Please register on the discord server. %n%s", Seriex.get().suffix(), discordLink));

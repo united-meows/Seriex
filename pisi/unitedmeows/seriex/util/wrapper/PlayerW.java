@@ -157,7 +157,11 @@ public class PlayerW extends HookClass<Player> {
 	}
 
 	public boolean isGuest() {
-		return pattern.matcher(hooked.getName()).matches();
+		return isGuest(hooked.getName());
+	}
+
+	public static boolean isGuest(String name) {
+		return pattern.matcher(name).matches();
 	}
 
 	public String getIP() {
