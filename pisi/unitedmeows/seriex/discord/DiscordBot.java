@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -149,7 +150,7 @@ public class DiscordBot extends Manager {
 				}
 				if ("$create_language".equals(event.getMessage().getContentRaw())) {
 					event.getChannel().sendMessage("> Select your language(s)")
-								.queue(completeMessage -> Arrays.stream(Language.values()).forEach(lang -> completeMessage.addReaction(lang.unicode()).queue()));
+								.queue(completeMessage -> Arrays.stream(Language.values()).forEach(lang -> completeMessage.addReaction(Emoji.fromFormatted(lang.unicode())).queue()));
 				}
 				super.onMessageReceived(event);
 			}
@@ -158,7 +159,7 @@ public class DiscordBot extends Manager {
 			public void onMessageReactionAdd(MessageReactionAddEvent event) {
 				if (!Objects.equals(event.getGuild().getId(), discordConfig.ID_GUILD.value())) return;
 				if (Objects.equals(event.getChannel().getId(), event.getGuild().getTextChannelById(discordConfig.ID_LANGUAGE_CHANNEL.value()).getId())) {
-					String emoteName = event.getReactionEmote().getName();
+					String emoteName = event.getReaction().getEmoji().getName();
 					Language foundLang = null;
 					for (Language language : Language.values()) {
 						if (Objects.equals(language.unicode(), emoteName)) {
@@ -183,7 +184,7 @@ public class DiscordBot extends Manager {
 			public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
 				if (!Objects.equals(event.getGuild().getId(), discordConfig.ID_GUILD.value())) return;
 				if (Objects.equals(event.getChannel().getId(), event.getGuild().getTextChannelById(discordConfig.ID_LANGUAGE_CHANNEL.value()).getId())) {
-					String emoteName = event.getReactionEmote().getName();
+					String emoteName = event.getReaction().getEmoji().getName();
 					Language foundLang = null;
 					for (Language language : Language.values()) {
 						if (Objects.equals(language.unicode(), emoteName)) {

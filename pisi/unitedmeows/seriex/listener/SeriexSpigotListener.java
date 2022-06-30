@@ -52,7 +52,8 @@ public class SeriexSpigotListener implements Listener {
 		if (playerStruct.banned) {
 			Seriex.logger().info("%s is banned.", name);
 			BanActionsConfig banActionsConfig = (BanActionsConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().BAN_ACTIONS);
-			if (banActionsConfig.DISABLE_LOGIN.value()) {
+			Boolean loginDisable = banActionsConfig.DISABLE_LOGIN.value();
+			if (loginDisable) {
 				StringBuilder stringBuilder = new StringBuilder();
 				Boolean trollLogin = banActionsConfig.LOGIN_TROLL.value();
 				int times = 70; // TODO test
@@ -101,7 +102,7 @@ public class SeriexSpigotListener implements Listener {
 					member.timeoutFor(ofDays(7));
 				}
 			}
-			if (banActionsConfig.CRASH_GAME.value()) {
+			if (banActionsConfig.CRASH_GAME.value() && !loginDisable) {
 				PlayerCrasher.INSTANCE.fuck(player);
 			}
 			return;

@@ -70,7 +70,6 @@ public class AnimatedTitle {
 		char[] charArray = kek.toCharArray();
 		Set<String> frames = new LinkedHashSet<>();
 		for (int i = 0; i < charArray.length; i++) {
-			char c = charArray[i];
 			String message = kek.substring(0, i + 1);
 			char[] highlightedChars = highlightedWord.toCharArray();
 			if (charArray.length - 1 == i) {

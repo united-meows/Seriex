@@ -28,7 +28,6 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.electronwill.nightconfig.core.file.FormatDetector;
 import com.electronwill.nightconfig.toml.TomlFormat;
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
 import pisi.unitedmeows.seriex.adapters.InventoryPacketAdapter;
 import pisi.unitedmeows.seriex.adapters.MOTDAdapter;
@@ -77,11 +76,10 @@ public class Seriex extends JavaPlugin {
 	private static List<Manager> managers = new GlueList<>();
 	private static List<Listener> listeners = new GlueList<>();
 	private static List<PacketAdapter> packetAdapters = new GlueList<>();
-	private static YLogger logger = new YLogger(null, "Seriex").setTime(YLogger.Time.DAY_MONTH_YEAR_FULL).setColored(true);
+	private static YLogger logger = new YLogger(null, "Seriex").time(YLogger.Time.DAY_MONTH_YEAR_FULL).colored(true);
 	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here so it can work async :D
 	private static boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
 	private Thread primaryThread;
-	private WorldEditPlugin worldEdit;
 	private static final String SECRET_MESSAGE = "࣭࣢࣯࣢ࣰ࣫࢝ࣴࣞ࢝ࣥ࣢࣯࣢";
 
 	@Override
@@ -138,7 +136,6 @@ public class Seriex extends JavaPlugin {
 						managers.add(futureManager = new FutureManager()); // this should be always last!
 					}, "Future Manager");
 				}, "Managers");
-				worldEdit = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
 				GET.benchmark(temp -> DatabaseReflection.init(database), "Database Reflection");
 				GET.benchmark(temp -> {
 					logger().info("Enabling Managers...");
@@ -225,7 +222,7 @@ public class Seriex extends JavaPlugin {
 					}
 				}
 				if (oppositeBlockFace == null) {
-					Seriex.logger().print("Couldnt get opposite block face of sign %s", locationOfSign.toString());
+					Seriex.logger().fatal("Couldnt get opposite block face of sign %s", locationOfSign.toString());
 					return;
 				}
 				Location oneBlockAheadOfSign = locationOfSign.add(offsetX, 0, offsetZ);
@@ -363,10 +360,6 @@ public class Seriex extends JavaPlugin {
 
 	public CommandSystem commandSystem() {
 		return commandSystem;
-	}
-
-	public WorldEditPlugin worldEdit() {
-		return worldEdit;
 	}
 
 	public AreaManager areaManager() {
