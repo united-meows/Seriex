@@ -9,6 +9,7 @@ import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import sun.misc.Unsafe;
 
 // todo: find original author
+@SuppressWarnings("all")
 public class UnsafeReflect {
 	private static final Unsafe UNSAFE = AccessController.doPrivileged((PrivilegedAction<Unsafe>) () -> {
 		try {
