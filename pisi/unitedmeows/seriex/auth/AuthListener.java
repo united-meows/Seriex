@@ -153,7 +153,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 	public Listener<C14PacketTabComplete> tabcompleteListener = new Listener<>(event -> {
 		Player player = event.player();
 		if (waitingForLogin(player)) {
-			event.setCanceled(true);
+			event.cancel(true);
 			event.setSilentCancel(true); // does this do smth i dont remember lololol @slowcheet4h
 		}
 	});

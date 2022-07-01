@@ -88,26 +88,16 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 					Seriex.logger().fatal("Value is not nullable but value of field is null! %s", name, fieldType.name());
 				}
 				boolean isFieldString = fieldType == FieldType.STRING;
-				if (i == length - 1) {
-					builder.append(name);
-					builder.append(" = ");
-					if (isFieldString) {
-						builder.append("'");
-					}
-					builder.append(valueOfField);
-					if (isFieldString) {
-						builder.append("'");
-					}
-				} else {
-					builder.append(name);
-					builder.append(" = ");
-					if (isFieldString) {
-						builder.append("'");
-					}
-					builder.append(valueOfField);
-					if (isFieldString) {
-						builder.append("'");
-					}
+				builder.append(name);
+				builder.append(" = ");
+				if (isFieldString) {
+					builder.append("'");
+				}
+				builder.append(valueOfField);
+				if (isFieldString) {
+					builder.append("'");
+				}
+				if (i != length - 1) {
 					builder.append(", ");
 				}
 			}
