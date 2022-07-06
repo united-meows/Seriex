@@ -7,6 +7,10 @@ import pisi.unitedmeows.seriex.util.timings.TimingsCalculator;
 
 public class SuggestionTest {
 	public static void main(String... args) {
+		if (true) {
+			WordList.readBooks("tr");
+			return;
+		}
 		TimingsCalculator.GET.benchmark(func -> {
 			WordList.read();
 		}, "Words");

@@ -10,7 +10,7 @@ import pisi.unitedmeows.seriex.util.config.util.ConfigValue;
 
 public class ConfigTest {
 	public static void main(String... args) throws Exception {
-		DatabaseConfig o = new DatabaseConfig(null);
+		DatabaseConfig o = new DatabaseConfig();
 		o.loadDefaultValues();
 		Field[] fields = ((Class<? extends Config>) o.getClass()).getDeclaredFields();
 		for (int i = 0; i < fields.length; i++) {

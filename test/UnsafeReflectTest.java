@@ -6,6 +6,7 @@ import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.cache.BasicCache;
 
 public class UnsafeReflectTest {
+	@SuppressWarnings("all")
 	public static void main(String... args) throws NoSuchFieldException,SecurityException,IllegalArgumentException,IllegalAccessException {
 		int times = 10_000_000;
 		long totalUnsafeMS = 0L;

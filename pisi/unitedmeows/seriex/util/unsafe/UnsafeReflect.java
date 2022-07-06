@@ -96,4 +96,8 @@ public class UnsafeReflect {
 		if (value != null && !field.getType().isAssignableFrom(value.getClass())) throw new NoSuchFieldException("Cannot assign a " + value.getClass() + " to field " + field.getName());
 		return value;
 	}
+
+	public static Unsafe getUnsafe() {
+		return UNSAFE;
+	}
 }

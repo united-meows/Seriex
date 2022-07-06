@@ -17,6 +17,7 @@ import pisi.unitedmeows.seriex.managers.area.areas.Area;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.config.impl.server.*;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
+import pisi.unitedmeows.seriex.util.language.Language;
 import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.parallel.Future;
 import pisi.unitedmeows.yystal.utils.Pair;
@@ -39,39 +40,49 @@ public class FileManager extends Manager {
 	private final Map<String, Pair<File, Config>> fileVariablesMap = new HashMap<>();
 	public static File directory , saved;
 	public static boolean set;
+	private boolean allDone = true;
+	private Map<String, Boolean> verifier = new HashMap<>();
 
 	public FileManager(File pluginDirectory) {
 		this.directory = pluginDirectory;
 		if (!set) {
 			this.saved = pluginDirectory;
-			File settingsFile = new File(directory, SERVER + EXTENSION);
-			File translationsFile = new File(directory, TRANSLATIONS + EXTENSION);
-			File banActionsFile = new File(directory, BAN_ACTIONS + EXTENSION);
-			File maintainersFile = new File(directory, MAINTAINERS + EXTENSION);
-			File ranksFile = new File(directory, RANKS + EXTENSION);
-			File databaseFile = new File(directory, DATABASE + EXTENSION);
-			File discordFile = new File(directory, DISCORD + EXTENSION);
+			File translationsFile = new File(directory, TRANSLATIONS);
 			File worldDirectory = new File(directory, WORLD);
-			File authFile = new File(directory, AUTH + EXTENSION);
 			if (Seriex.available()) {
-				this.createFile(WORLD, worldDirectory, new WorldConfig(worldDirectory, EXTENSION, get().getServer().getWorlds().stream().toArray(World[]::new)));
+				createFile(verifier, WORLD, new WorldConfig(worldDirectory, EXTENSION, get().getServer().getWorlds().stream().toArray(World[]::new)));
 			}
-			this.createFile(DISCORD, discordFile, new DiscordConfig(discordFile));
-			this.createFile(DATABASE, databaseFile, new DatabaseConfig(databaseFile));
-			this.createFile(AUTH, authFile, new AuthConfig(authFile));
-			this.createFile(BAN_ACTIONS, banActionsFile, new BanActionsConfig(banActionsFile));
-			this.createFile(RANKS, ranksFile, new RanksConfig(ranksFile));
-			this.createFile(MAINTAINERS, maintainersFile, new MaintainersConfig(maintainersFile));
-			this.createFile(SERVER, settingsFile, new ServerConfig(settingsFile));
-			//			this.createFile(TRANSLATIONS, translationsFile, new TranslationsConfig(translationsFile));
+			createFile(verifier, TRANSLATIONS, new TranslationsConfig(translationsFile, EXTENSION, Language.values()));
+			createFile(verifier, DISCORD, new DiscordConfig());
+			createFile(verifier, DATABASE, new DatabaseConfig());
+			createFile(verifier, AUTH, new AuthConfig());
+			createFile(verifier, BAN_ACTIONS, new BanActionsConfig());
+			createFile(verifier, RANKS, new RanksConfig());
+			createFile(verifier, MAINTAINERS, new MaintainersConfig());
+			createFile(verifier, SERVER, new ServerConfig());
 			set = true;
 		}
 	}
 
 	@Override
 	public void post(Seriex seriex) {
-		File areasDirectory = new File(directory, WORLD);
-		this.createFile(AREAS, areasDirectory, new AreaConfig(areasDirectory, EXTENSION, get().areaManager().areaList.stream().toArray(Area[]::new)));
+		File areasDirectory = new File(directory, AREAS);
+		createFile(verifier, AREAS, new AreaConfig(areasDirectory, EXTENSION, get().areaManager().areaList.stream().toArray(Area[]::new)));
+		verifier.forEach((string, bool) -> {
+			allDone &= bool;
+		});
+		if (allDone) {
+			seriex.logger().fatal("Restart the server, config files have been created!");
+			System.exit(0);
+		} else {
+			verifier.forEach((string, bool) -> {
+				StringBuilder stringBuilder = new StringBuilder();
+				stringBuilder.append(string);
+				stringBuilder.append(" : ");
+				stringBuilder.append(bool);
+				seriex.logger().debug(stringBuilder.toString());
+			});
+		}
 		super.post(seriex);
 	}
 
@@ -123,7 +134,17 @@ public class FileManager extends Manager {
 		}
 	}
 
-	public boolean createFile(final String alias, final File file, Config config) {
+	public void createFile(Map<String, Boolean> map, String alias, Config config) {
+		boolean multi = config.hasMultiple();
+		File file = new File(directory, alias + (multi ? "" : EXTENSION));
+		if (!multi) {
+			config.toWrite = file;
+		}
+		boolean createFile0 = createFile0(alias, file, config);
+		map.put(alias, createFile0);
+	}
+
+	private boolean createFile0(final String alias, final File file, Config config) {
 		try {
 			boolean isDirectory = "".equals(getExtension(file.getName()));
 			logger().info("%s for %s (path %s, config %s)", String.format("Creating %s", isDirectory ? "directory" : "file"), alias, file.toPath().toAbsolutePath().toString(),

@@ -1,7 +1,5 @@
 package pisi.unitedmeows.seriex.util.config.impl.server;
 
-import java.io.File;
-
 import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.config.util.Cfg;
 
@@ -14,9 +12,8 @@ import pisi.unitedmeows.seriex.util.config.util.Cfg;
  */
 @Cfg(name = "Ranks" , manual = true , multi = false)
 public class RanksConfig extends Config {
-	public RanksConfig(File toWrite) {
+	public RanksConfig() {
 		super("Ranks", true);
-		this.toWrite = toWrite;
 	}
 
 	@Override

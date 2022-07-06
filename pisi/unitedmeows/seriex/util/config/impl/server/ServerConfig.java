@@ -1,7 +1,5 @@
 package pisi.unitedmeows.seriex.util.config.impl.server;
 
-import java.io.File;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
@@ -42,9 +40,8 @@ public class ServerConfig extends Config {
 	@ConfigField
 	public ConfigValue<String> SERVER_WEBSITE = new ConfigValue<>(this, "server.website", "https://seriex.software");
 
-	public ServerConfig(File toWrite) {
+	public ServerConfig() {
 		super("Server");
-		this.toWrite = toWrite;
 		worldSpawn.setLocked(true);
 	}
 

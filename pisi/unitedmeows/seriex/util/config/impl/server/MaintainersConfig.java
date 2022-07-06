@@ -1,6 +1,5 @@
 package pisi.unitedmeows.seriex.util.config.impl.server;
 
-import java.io.File;
 import java.util.List;
 
 import pisi.unitedmeows.seriex.util.collections.GlueList;
@@ -15,9 +14,8 @@ public class MaintainersConfig extends Config {
 	@ConfigField
 	public ConfigValue<List<String>> MAINTAINERS = new ConfigValue<>(this, "maintainers", defaultMaintainers);
 
-	public MaintainersConfig(File toWrite) {
+	public MaintainersConfig() {
 		super("Maintainers");
-		this.toWrite = toWrite;
 		defaultMaintainers.add("ghost2173");
 		defaultMaintainers.add("ipana2173");
 		defaultMaintainers.add("slowcheet4h");

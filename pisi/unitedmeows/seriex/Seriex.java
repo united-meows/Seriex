@@ -8,6 +8,7 @@ import static pisi.unitedmeows.seriex.util.config.FileManager.*;
 import static pisi.unitedmeows.seriex.util.timings.TimingsCalculator.*;
 import static pisi.unitedmeows.yystal.parallel.Async.*;
 
+import java.io.File;
 import java.util.*;
 
 import org.bukkit.Bukkit;
@@ -46,9 +47,7 @@ import pisi.unitedmeows.seriex.managers.data.DataManager;
 import pisi.unitedmeows.seriex.managers.future.FutureManager;
 import pisi.unitedmeows.seriex.managers.sign.SignManager;
 import pisi.unitedmeows.seriex.managers.sign.impl.SignCommand;
-import pisi.unitedmeows.seriex.util.ICleanup;
-import pisi.unitedmeows.seriex.util.MaintainersUtil;
-import pisi.unitedmeows.seriex.util.Try;
+import pisi.unitedmeows.seriex.util.*;
 import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.config.impl.server.DatabaseConfig;
@@ -57,7 +56,6 @@ import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.language.I18n;
 import pisi.unitedmeows.seriex.util.suggestion.WordList;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
-import pisi.unitedmeows.yystal.logger.impl.YLogger;
 
 public class Seriex extends JavaPlugin {
 	private static Optional<Seriex> instance_ = Optional.empty();
@@ -74,13 +72,15 @@ public class Seriex extends JavaPlugin {
 	private static I18n i18n;
 	private static List<ICleanup> cleanupabbleObjects = new GlueList<>();
 	private static List<Manager> managers = new GlueList<>();
+	private static List<Once> onces = new GlueList<>();
 	private static List<Listener> listeners = new GlueList<>();
 	private static List<PacketAdapter> packetAdapters = new GlueList<>();
-	private static YLogger logger = new YLogger(null, "Seriex").time(YLogger.Time.DAY_MONTH_YEAR_FULL).colored(true);
+	private static SLogger logger = new SLogger(null, "Seriex").time(SLogger.Time.DAY_MONTH_YEAR_FULL).colored(true);
 	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here so it can work async :D
 	private static boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
 	private Thread primaryThread;
 	private static final String SECRET_MESSAGE = "࣭࣢࣯࣢ࣰ࣫࢝ࣴࣞ࢝ࣥ࣢࣯࣢";
+	private boolean firstStart;
 
 	@Override
 	public void onEnable() {
@@ -172,7 +172,20 @@ public class Seriex extends JavaPlugin {
 				listeners.addAll(areaManager.areaList);
 				listeners.forEach(listener -> getPluginManager().registerEvents(listener, this));
 			}
+			once: {
+				onces.add(discordBot);
+			}
 			managers.forEach((Manager mgr) -> mgr.post(get()));
+			File firstTime = new File(getDataFolder(), "first");
+			if (!firstTime.exists()) {
+				boolean created = firstTime.createNewFile();
+				if (created) {
+					onces.forEach(Once::once);
+				} else {
+					logger().fatal("Couldnt create first file... disabling server!");
+					System.exit(0x87D);
+				}
+			}
 		}
 		catch (Exception e) {
 			loadedCorrectly = false;
@@ -294,7 +307,7 @@ public class Seriex extends JavaPlugin {
 		return primaryThread;
 	}
 
-	public static YLogger logger() {
+	public static SLogger logger() {
 		return logger;
 	}
 

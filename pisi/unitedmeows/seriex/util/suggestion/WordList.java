@@ -7,14 +7,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import javax.swing.filechooser.FileSystemView;
 
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.language.Language;
+import pisi.unitedmeows.yystal.parallel.Async;
 
 public class WordList {
 	private static final Pattern RESOURCE_PATTERN = Pattern.compile(".*");
@@ -146,57 +151,57 @@ public class WordList {
 		return Math.min(Math.min(a, b), c);
 	}
 
+	private static AtomicBoolean readAll = new AtomicBoolean(false);
+	private static long ms = System.currentTimeMillis();
+
 	// for slangs...
-	private static void readBooks(String languageTag) {
+	public static void readBooks(String languageTag) {
 		read();
-		String PATH_TO_BOOKS = "";
-		String PATH_TO_WRITE = "";
+		String desktopPath = String.format("%s/", FileSystemView.getFileSystemView().getHomeDirectory().toString());
+		String writtenFileName = languageTag + ".slang";
+		String PATH_TO_BOOKS = desktopPath + "dataset";
+		String PATH_TO_WRITE = desktopPath + writtenFileName;
 		final Pattern pattern = Pattern.compile("[0-9]");
+		Async.async_loop_condition(() -> {
+			Seriex.logger().debug("Read %s amount of words... (time passed: %s)", totalWords, System.currentTimeMillis() - ms);
+		}, 1000L, () -> !readAll.get());
 		try (Stream<Path> paths = Files.walk(Paths.get(PATH_TO_BOOKS))) {
-			long ms = System.currentTimeMillis();
 			Locale locale = Locale.forLanguageTag(languageTag); // the language tag
 			StringBuilder generalBuilder = new StringBuilder();
 			Map<String, Integer> freqMap = new HashMap<>();
 			paths.filter(f -> f.toFile().isFile()).forEach(pathString -> {
 				String string = pathString.toAbsolutePath().toString();
-				if (string.endsWith(".txt")) { // extension
+				if (string.endsWith(".txt") && string.contains(languageTag) && !string.contains(writtenFileName)) { // extension
 					File source = new File(string);
 					try (Scanner scanner = new Scanner(new FileInputStream(source), UTF_8.displayName())) {
-						scanner.useLocale(locale);
 						int currentWords = 0;
+						scanner.useLocale(locale);
 						while (scanner.hasNext()) {
 							String next = scanner.next();
-							boolean stop = false;
-							char[] charArray = next.toCharArray();
-							for (int i = 0; i < charArray.length; i++) {
-								char c = charArray[i];
-								if (c == '�') {
-									stop = true;
-									break;
-								}
-							}
-							if (!stop) {
-								next = removePunctutation(next);
-								next = next.toLowerCase(locale);
-								next = pattern.matcher(next).replaceAll("");
-								next = next.replace("\0", "");
-								if (next.length() > 2 && !next.contains(" ") && LOWERCASE_WORDS.get(languageTag).contains(next)) {
-									freqMap.put(next, freqMap.getOrDefault(next, 0) + 1);
-									strings.add(next);
-									currentWords++;
-								}
+							next = removePunctutation(next);
+							next = next.toLowerCase(locale);
+							next = pattern.matcher(next).replaceAll("");
+							next = next.replace("\0", "");
+							boolean contains = LOWERCASE_WORDS.get(languageTag).contains(next);
+							if (next.length() > 2 && !next.contains(" ")) {
+								freqMap.put(next, freqMap.getOrDefault(next, 0) + (contains ? 2 : 1));
+								strings.add(next);
+								currentWords++;
+								totalWords++;
 							}
 						}
-						Seriex.logger().debug("Read %s amount of words from %s!", currentWords, string);
-						totalWords += currentWords;
+						Seriex.logger().fatal("Read %s amount of words from %s!", currentWords, string);
 					}
 					catch (IOException e) {
 						e.printStackTrace();
 					}
 				}
 			});
+			readAll.set(true);
 			strings.forEach((String t) -> generalBuilder.append(String.format("%s:%s%n", t, freqMap.get(t))));
 			Files.write(Paths.get(PATH_TO_WRITE), generalBuilder.toString().getBytes(UTF_8));
+			Entry<String, Integer> entry = freqMap.entrySet().stream().max(Map.Entry.comparingByValue()).get();
+			Seriex.logger().info("Most used word: %s -> %s", entry.getKey(), entry.getValue());
 			Seriex.logger().fatal("Written %s words! (took %s ms)", strings.size(), System.currentTimeMillis() - ms);
 		}
 		catch (IOException e) {

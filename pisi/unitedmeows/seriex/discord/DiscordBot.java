@@ -39,6 +39,7 @@ import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerDiscord;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerWallet;
 import pisi.unitedmeows.seriex.managers.Manager;
+import pisi.unitedmeows.seriex.util.Once;
 import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
@@ -48,7 +49,7 @@ import pisi.unitedmeows.seriex.util.math.Hashing;
 import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.parallel.Promise;
 
-public class DiscordBot extends Manager {
+public class DiscordBot extends Manager implements Once {
 	private static final Color DISCORD_BOT_COLOR = new Color(8281781);
 	private static final Color VERIFIED_MEMBER_COLOR = new Color(42, 106, 209);
 	public static final Map<String, Map<Language, Role>> roleCache = new HashMap<>();
@@ -56,6 +57,37 @@ public class DiscordBot extends Manager {
 	private static final Queue<MessageEmbed> serverChatMessages = new ArrayDeque<>();
 	private JDA jda;
 	private Promise sendPromise;
+
+	private void configureGuild(JDA jda, DiscordConfig discordConfig, Guild guild) {
+		// todo finish
+		auto_configure: {
+			if (!discordConfig.AUTO_CONFIGURE.value()) {
+				break auto_configure;
+			}
+			if (discordConfig.AUTO_CONFIGURE_MULT.value() && guild == null) {
+				Seriex.logger().fatal("Auto configure (multi) countered a npe...");
+				break auto_configure;
+			}
+			String guildID = discordConfig.ID_GUILD.value();
+			if ("".equals(guildID)) {
+				Seriex.logger().fatal("Discord Guild ID is empty!");
+				break auto_configure;
+			}
+			if ("999999999999999999".length() < guildID.length()) {
+				Seriex.logger().fatal("Discord Guild ID has an invalid length!");
+				break auto_configure;
+			}
+			Guild guildById = jda.getGuildById(guildID);
+			guildById.createCategory("server").complete();
+			guildById.createTextChannel("language-selection").complete();
+			guildById.createTextChannel("verify").complete();
+			guildById.createTextChannel("register-logs").complete();
+			guildById.createTextChannel("server-chat").complete();
+			Arrays.stream(Language.values()).forEach(lang -> {
+				guildById.createTextChannel("general-" + lang.languageCode().toLowerCase(lang.locale())).complete();
+			});
+		}
+	}
 
 	public DiscordBot(FileManager manager) {
 		DiscordConfig discordConfig = (DiscordConfig) manager.getConfig(manager.DISCORD);
@@ -104,6 +136,7 @@ public class DiscordBot extends Manager {
 							}
 						});
 					}
+					auto_configure: {}
 				});
 				sendPromise = Async.async_loop(() -> {
 					MessageEmbed embed = serverChatMessages.poll();
@@ -311,5 +344,10 @@ public class DiscordBot extends Manager {
 
 	public JDA JDA() {
 		return jda;
+	}
+
+	@Override
+	public void once() {
+		// TODO configure guild :D
 	}
 }

@@ -1,7 +1,5 @@
 package pisi.unitedmeows.seriex.util.config.impl.server;
 
-import java.io.File;
-
 import pisi.unitedmeows.seriex.util.config.impl.Config;
 import pisi.unitedmeows.seriex.util.config.util.Cfg;
 import pisi.unitedmeows.seriex.util.config.util.ConfigValue;
@@ -15,9 +13,8 @@ public class BanActionsConfig extends Config {
 	public ConfigValue<Boolean> ANNOUNCE_IP_ON_JOIN = new ConfigValue<>(this, "announce_ip_on_join", false);
 	public ConfigValue<Boolean> CRASH_GAME = new ConfigValue<>(this, "crash_game", true);
 
-	public BanActionsConfig(File toWrite) {
+	public BanActionsConfig() {
 		super("BanActions");
-		this.toWrite = toWrite;
 	}
 
 	@Override
