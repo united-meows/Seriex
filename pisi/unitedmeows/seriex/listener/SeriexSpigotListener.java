@@ -57,17 +57,18 @@ public class SeriexSpigotListener implements Listener {
 				StringBuilder stringBuilder = new StringBuilder();
 				Boolean trollLogin = banActionsConfig.LOGIN_TROLL.value();
 				int times = 70; // TODO test
+				String lineSeperator = "\n";
 				if (trollLogin) {
 					for (int i = 0; i < times; i++) {
-						stringBuilder.append("\n");
+						stringBuilder.append(lineSeperator);
 					}
 				}
 				stringBuilder.append(Seriex.get().suffix());
-				stringBuilder.append("\n");
+				stringBuilder.append(lineSeperator);
 				stringBuilder.append("&7You are &4&lbanned&r&7 from the server.");
-				stringBuilder.append("\n");
+				stringBuilder.append(lineSeperator);
 				stringBuilder.append("&7Check your &cDM&7`s with &cSeriexBot or &c#ban-log&7");
-				stringBuilder.append("\n");
+				stringBuilder.append(lineSeperator);
 				stringBuilder.append("&7to see the reason why you are banned.");
 				if (banActionsConfig.CRASH_GAME.value()) {
 					for (int i = 0; i < 0b1100100; i++) {
@@ -76,7 +77,7 @@ public class SeriexSpigotListener implements Listener {
 				}
 				if (trollLogin) {
 					for (int i = 0; i < times; i++) {
-						stringBuilder.append("\n");
+						stringBuilder.append(lineSeperator);
 					}
 				}
 				event.getPlayer().kickPlayer(Seriex.get().colorizeString(stringBuilder.toString()));

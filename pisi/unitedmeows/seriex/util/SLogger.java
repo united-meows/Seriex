@@ -6,7 +6,6 @@ import static org.fusesource.jansi.Ansi.*;
 import static org.fusesource.jansi.Ansi.Color.*;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 
 import org.fusesource.jansi.Ansi;
@@ -158,20 +157,9 @@ public class SLogger implements ILogger {
 	public SLogger colored(boolean state) {
 		this.colored = state;
 		if (state) {
-			boolean installed = false;
-			try {
-				final Field installedField = AnsiConsole.class.getDeclaredField("installed");
-				installedField.setAccessible(true);
-				installed = ((int) installedField.get(null) > 0);
-			}
-			catch (Exception ex) {
-				ex.printStackTrace();
-			}
-			if (!installed) {
-				System.setProperty("jansi.passthrough", "true");
-				System.setProperty("org.jline.terminal.dumb", "true");
-				AnsiConsole.systemInstall();
-			}
+			System.setProperty("jansi.passthrough", "true");
+			System.setProperty("org.jline.terminal.dumb", "true");
+			AnsiConsole.systemInstall();
 		}
 		return this;
 	}

@@ -23,6 +23,7 @@ import pisi.unitedmeows.yystal.parallel.Future;
 import pisi.unitedmeows.yystal.utils.Pair;
 
 public class FileManager extends Manager {
+	public static final String AUTH = "auth";
 	public static final String EMOTES = "global_emotes";
 	public static final String SERVER = "server";
 	public static final String EMOTE = "emote";
@@ -36,7 +37,6 @@ public class FileManager extends Manager {
 	public static final String DISCORD = "discord";
 	public static final String EXTENSION = ".seriex";
 	public static final String PRIVATE = "#PRIVATE#";
-	public static final String AUTH = "AUTH";
 	private final Map<String, Pair<File, Config>> fileVariablesMap = new HashMap<>();
 	public static File directory , saved;
 	public static boolean set;
