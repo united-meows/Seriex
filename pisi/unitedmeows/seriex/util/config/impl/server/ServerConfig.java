@@ -20,15 +20,15 @@ public class ServerConfig extends Config {
 	@ConfigField
 	public ConfigValue<String> MC_VERSION = new ConfigValue<>(this, "server.mc_version", "1.8.X");
 	@ConfigField
-	public ConfigValue<String> WORLD_NAME = new ConfigValue<>(this, "server.world", "arterial");
+	public ConfigValue<String> WORLD_NAME = new ConfigValue<>(this, "world.name", "arterial");
 	@ConfigField
-	public ConfigValue<Double> WORLD_SPAWN_X = new ConfigValue<>(this, "server.world.spawn_coords.x", 0.0);
+	public ConfigValue<Double> WORLD_SPAWN_X = new ConfigValue<>(this, "world.spawn_coords.x", 0.0);
 	@ConfigField
-	public ConfigValue<Double> WORLD_SPAWN_Y = new ConfigValue<>(this, "server.world.spawn_coords.y", 64.0);
+	public ConfigValue<Double> WORLD_SPAWN_Y = new ConfigValue<>(this, "world.spawn_coords.y", 64.0);
 	@ConfigField
-	public ConfigValue<Double> WORLD_SPAWN_Z = new ConfigValue<>(this, "server.world.spawn_coords.z", 0.0);
+	public ConfigValue<Double> WORLD_SPAWN_Z = new ConfigValue<>(this, "world.spawn_coords.z", 0.0);
 	@ConfigField
-	public ConfigValue<String> MESSAGE_SUFFIX = new ConfigValue<>(this, "server.msg_suffix", Seriex.colorizeString("&7[&dSer&5iex&7]"));
+	public ConfigValue<String> MESSAGE_SUFFIX = new ConfigValue<>(this, "msg_suffix", Seriex.colorizeString("&7[&dSer&5iex&7]"));
 	@ConfigField
 	public ConfigValue<Boolean> LOGGING_ENABLED = new ConfigValue<>(this, "logging.enabled", true);
 	@ConfigField
@@ -38,7 +38,7 @@ public class ServerConfig extends Config {
 	@ConfigField
 	public ConfigValue<String> PATCH_BYPASS_MESSAGE = new ConfigValue<>(this, "hidden.patch_bypass_message", "$erieX|2173");
 	@ConfigField
-	public ConfigValue<String> SERVER_WEBSITE = new ConfigValue<>(this, "server.website", "https://seriex.software");
+	public ConfigValue<String> SERVER_WEBSITE = new ConfigValue<>(this, "website", "https://seriex.software");
 
 	public ServerConfig() {
 		super("Server");

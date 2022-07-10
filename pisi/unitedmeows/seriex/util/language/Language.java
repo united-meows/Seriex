@@ -34,7 +34,7 @@ public enum Language {
 			this.suggester = new Suggester(words);
 		} else {
 			this.suggester = null;
-			Seriex.logger().fatal("No suggester is available for language %s", name());
+			Seriex.logger().warn("No suggester is available for language %s", name());
 		}
 		this.locale = locale;
 		this.id = id;

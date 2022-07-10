@@ -10,6 +10,7 @@ import static pisi.unitedmeows.yystal.parallel.Async.*;
 
 import java.io.File;
 import java.util.*;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -23,6 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+import org.fusesource.jansi.AnsiConsole;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
@@ -86,14 +88,22 @@ public class Seriex extends JavaPlugin {
 	public void onEnable() {
 		// TODO: for supporting /reload command we should register all online players at onEnable
 		// better idea, kick all online players & disable login until plugin is initiliazed
+		instance_ = of(this);
+		logging: {
+			System.setProperty("jansi.passthrough", "true");
+			System.setProperty("org.jline.terminal.dumb", "true");
+			AnsiConsole.systemInstall();
+			getServer().getLogger().setLevel(Level.ALL);
+		}
 		loadedCorrectly = true;
 		try {
 			WordList.read();
-			instance_ = of(this);
-			logger().info("Starting Seriex...");
-			if (new Random().nextBoolean()) {
-				logger().fatal("!!! al" + SECRET_MESSAGE);
+			File firstTime = new File(getDataFolder(), "first");
+			boolean firstTimeFileExists = firstTime.exists();
+			if (!firstTimeFileExists) {
+				firstStart = true;
 			}
+			logger().info("Starting Seriex...");
 			primaryThread = currentThread();
 			managers: {
 				signManager = new SignManager();
@@ -136,7 +146,18 @@ public class Seriex extends JavaPlugin {
 						managers.add(futureManager = new FutureManager()); // this should be always last!
 					}, "Future Manager");
 				}, "Managers");
-				GET.benchmark(temp -> DatabaseReflection.init(database), "Database Reflection");
+				GET.benchmark(temp -> {
+					if (database == null) {
+						String text = firstStart ? "Database isnt configured correctly!" : "Database file is corrupt?!?!";
+						logger().fatal(text);
+						return;
+					}
+					if (!database.connected()) {
+						logger().fatal("Database cannot connect!");
+						return;
+					}
+					DatabaseReflection.init(database);
+				}, "Database Reflection");
 				GET.benchmark(temp -> {
 					logger().info("Enabling Managers...");
 					managers.forEach((Manager manager) -> manager.start(get()));
@@ -176,8 +197,7 @@ public class Seriex extends JavaPlugin {
 				onces.add(discordBot);
 			}
 			managers.forEach((Manager mgr) -> mgr.post(get()));
-			File firstTime = new File(getDataFolder(), "first");
-			if (!firstTime.exists()) {
+			if (!firstTimeFileExists) {
 				boolean created = firstTime.createNewFile();
 				if (created) {
 					onces.forEach(Once::once);

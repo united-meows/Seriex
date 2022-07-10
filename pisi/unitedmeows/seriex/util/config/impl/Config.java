@@ -80,6 +80,7 @@ public class Config {
 	}
 
 	protected void internalDefaultValues(Object o) {
+		Seriex.logger().debug("called loadDefaultValues for %s", name);
 		if (hasMultiple()) {
 			configs.forEach((name, pair) -> internalDefaultValues0(o, pair.item2()));
 		} else {
@@ -110,6 +111,7 @@ public class Config {
 				}
 			}
 			catch (Exception e) {
+				e.printStackTrace();
 				logger().info("Couldnt load %s`s default values?! %s", name, e.getMessage());
 			}
 		}
@@ -132,6 +134,7 @@ public class Config {
 					}
 				}
 				catch (Exception e) {
+					e.printStackTrace();
 					logger().info("Couldnt load %s fields! %s", name, e.getMessage());
 				}
 			}
@@ -150,10 +153,6 @@ public class Config {
 	public <T> T getValue(String path) {
 		if (hasMultiple()) throw new SeriexException("Config type isnt multiple! Cant invoke getValue(String path)...");
 		return getValue(path, config);
-	}
-
-	public String name() {
-		return name;
 	}
 
 	public boolean hasMultiple() {

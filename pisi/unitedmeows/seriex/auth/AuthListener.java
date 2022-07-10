@@ -100,18 +100,25 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		}
 
 		public void onLogin() {
-			PlayerW baseHook = getHooked();
-			baseHook.getHooked().updateInventory();
+			getHooked().getHooked().updateInventory();
 			state = AuthState.LOGGED_IN;
-			Seriex.get().authentication().playerMap.remove(baseHook);
+			remove();
 		}
 
 		public void onServerEnd() {
-			Seriex.get().authentication().playerMap.remove(getHooked());
+			remove();
 		}
 
 		public void onAuthInterrupted() {
-			Seriex.get().authentication().playerMap.remove(getHooked());
+			remove();
+		}
+
+		private void remove() {
+			AuthListener authentication = Seriex.get().authentication();
+			PlayerW hook = getHooked();
+			if (authentication.playerMap.containsKey(hook)) {
+				authentication.playerMap.remove(hook);
+			}
 		}
 
 		public AuthInfo(PlayerW player) {

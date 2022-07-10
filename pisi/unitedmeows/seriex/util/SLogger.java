@@ -1,20 +1,21 @@
 package pisi.unitedmeows.seriex.util;
 
-import static java.lang.System.*;
 import static java.util.Locale.*;
 import static org.fusesource.jansi.Ansi.*;
 import static org.fusesource.jansi.Ansi.Color.*;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.time.LocalDateTime;
+import java.util.logging.Level;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
-import org.fusesource.jansi.AnsiConsole;
 
-import pisi.unitedmeows.yystal.file.YFile;
+import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.yystal.logger.ILogger;
 
+// yfile is broken loololo using normal file ;(
 public class SLogger implements ILogger {
 	private Time time = Time.DAY_MONTH_YEAR_FULL;
 	private final Class<?> clazz;
@@ -22,7 +23,7 @@ public class SLogger implements ILogger {
 	private boolean prefix;
 	private boolean save;
 	private int bufferSize;
-	private YFile file;
+	private File file;
 	private String[] buffer;
 	private boolean colored = false;
 	private int bufferIndex;
@@ -54,65 +55,99 @@ public class SLogger implements ILogger {
 	}
 
 	private void flush() {
-		file.write(buffer);
-		bufferIndex = 0;
+		try (FileWriter writer = new FileWriter(this.file, true)) {
+			StringBuilder stringBuilder = new StringBuilder();
+			for (int i = 0; i < buffer.length; i++) {
+				stringBuilder.append(buffer[i]);
+				stringBuilder.append(System.lineSeparator());
+			}
+			writer.write(stringBuilder.toString());
+			bufferIndex = 0;
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			Seriex.logger().fatal("Couldnt save to log file!");
+		}
 	}
 
-	private void internalPrint(String text, String prefix_, Color textColor, boolean special) {
+	public String generateAnsiString(String text, String prefix_, Color textColor, boolean special, boolean spigot) {
+		StringBuilder builder = new StringBuilder();
+		StringBuilder lolSlowCode = new StringBuilder();
 		String value = String.format("[%s] ", prefix_);
-		if (colored) {
-			out.print(ansi().eraseScreen().fg(CYAN).bold().a("[").a(generateTime()).a("] "));
-			if (prefix) {
-				out.print(name);
-				out.print(" ");
-			}
-			if (special) {
-				out.print(ansi().bg(FATAL_COLOR).fg(textColor).a(value));
-				out.println(ansi().bg(FATAL_COLOR).fg(textColor).a(text).reset());
-			} else {
-				out.print(ansi().fg(textColor).a(value));
-				out.println(ansi().fg(textColor).a(text).reset());
-			}
-		} else {
-			final StringBuilder stringBuilder = new StringBuilder();
-			stringBuilder.append("[").append(generateTime()).append("] ");
-			if (prefix) {
-				stringBuilder.append(name).append(" ");
-			}
-			stringBuilder.append(value);
-			stringBuilder.append(text);
-			out.println(stringBuilder.toString());
+		String time = generateTime();
+		lolSlowCode.append("[").append(time).append("] ");
+		if (prefix) {
+			lolSlowCode.append(name).append(" ");
 		}
-		post(value + text);
+		lolSlowCode.append(value);
+		lolSlowCode.append(text);
+		if (!spigot) {
+			builder.append(ansi().fg(WHITE).bold().a("[").a(time).a("] "));
+		}
+		if (prefix) {
+			builder.append(name);
+			builder.append(" ");
+		}
+		if (special) {
+			if (!spigot) {
+				builder.append(ansi().bold().fg(MAGENTA).a(value).boldOff());
+			}
+			builder.append(ansi().bg(FATAL_COLOR).fg(textColor).a(text).reset());
+		} else {
+			if (!spigot) {
+				builder.append(ansi().bold().fg(MAGENTA).a(value).boldOff());
+			}
+			builder.append(ansi().fg(textColor).a(text).reset());
+		}
+		String string = lolSlowCode.toString();
+		post(string);
+		return colored ? builder.toString() : string;
 	}
 
 	@Override
 	public void info(String text) {
-		internalPrint(text, "INFO", GREEN, false);
+		if (Seriex.available()) {
+			Seriex.get().getServer().getLogger().info(generateAnsiString(text, "INFO", CYAN, false, true));
+		} else {
+			System.out.println(generateAnsiString(text, "INFO", CYAN, false, false));
+		}
 	}
 
 	@Override
 	public void warn(String text) {
-		internalPrint(text, "WARN", YELLOW, false);
+		if (Seriex.available()) {
+			Seriex.get().getServer().getLogger().warning(generateAnsiString(text, "WARN", RED, false, true));
+		} else {
+			System.out.println(generateAnsiString(text, "WARN", RED, false, false));
+		}
 	}
 
 	@Override
-	public void print(String text) {}
-
-	@Override
 	public void fatal(String text) {
-		internalPrint(text, "FATAL", BLACK, true);
+		if (Seriex.available()) {
+			Seriex.get().getServer().getLogger().log(Level.SEVERE, generateAnsiString(text, "FATAL", BLACK, true, true));
+		} else {
+			System.out.println(generateAnsiString(text, "FATAL", BLACK, true, false));
+		}
 	}
 
 	@Override
 	public void debug(String text) {
-		internalPrint(text, "DEBUG", MAGENTA, false);
+		if (Seriex.available()) {
+			Seriex.get().getServer().getLogger().fine(generateAnsiString(text, "DEBUG", YELLOW, false, true));
+		} else {
+			System.out.println(generateAnsiString(text, "DEBUG", YELLOW, false, false));
+		}
 	}
 
 	@Override
 	public void log(Enum<?> type, String text) {
 		/* do nothing */
-		// que pro
+	}
+
+	@Override
+	public void print(String text) {
+		/* do nothing */
 	}
 
 	public Time time() {
@@ -156,29 +191,16 @@ public class SLogger implements ILogger {
 
 	public SLogger colored(boolean state) {
 		this.colored = state;
-		if (state) {
-			System.setProperty("jansi.passthrough", "true");
-			System.setProperty("org.jline.terminal.dumb", "true");
-			AnsiConsole.systemInstall();
-		}
 		return this;
 	}
 
-	public SLogger outputToFile(File file, int buffer) {
-		return outputToFile(new YFile(file), buffer);
-	}
-
 	public SLogger outputToFile(File file) {
-		return outputToFile(new YFile(file), 1);
+		return outputToFile(file, 1, false);
 	}
 
-	public SLogger outputToFile(YFile file) {
-		return outputToFile(file, 1);
-	}
-
-	public SLogger outputToFile(YFile file, int bufferSize) {
+	public SLogger outputToFile(File file, int bufferSize, boolean delete) {
 		this.file = file;
-		if (file.file().exists()) {
+		if (file.exists() && delete) {
 			file.delete();
 		}
 		this.save = true;

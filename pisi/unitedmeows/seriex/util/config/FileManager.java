@@ -118,10 +118,14 @@ public class FileManager extends Manager {
 			logger().fatal("There is no file to validate.");
 		} else {
 			boolean isFileValid = true;
+			boolean exception = false;
+			byte[] readAllBytes = null;
 			try {
-				isFileValid = Files.readAllBytes(file.toPath()).length > 2;
+				readAllBytes = Files.readAllBytes(file.toPath());
+				isFileValid = readAllBytes.length > 2;
 			}
 			catch (Exception e) {
+				exception = true;
 				e.printStackTrace();
 				logger().fatal("Couldnt validate file! (%s)", e.getMessage());
 			}
@@ -130,6 +134,8 @@ public class FileManager extends Manager {
 				config.loadDefaultValues();
 				config.save();
 				config.load();
+			} else if (isFileValid && !exception) {
+				Seriex.logger().debug("byte length of %s : %s", config.name, readAllBytes == null ? -1 : readAllBytes.length);
 			}
 		}
 	}
@@ -146,13 +152,18 @@ public class FileManager extends Manager {
 
 	private boolean createFile0(final String alias, final File file, Config config) {
 		try {
+			boolean megaRetardMode = false;
 			boolean isDirectory = "".equals(getExtension(file.getName()));
-			logger().info("%s for %s (path %s, config %s)", String.format("Creating %s", isDirectory ? "directory" : "file"), alias, file.toPath().toAbsolutePath().toString(),
-						config == null ? "no config [directory]" : config.name());
+			if (megaRetardMode) {
+				logger().info("%s for %s (path %s, config %s)", String.format("Creating %s", isDirectory ? "directory" : "file"), alias, file.toPath().toAbsolutePath().toString(),
+							config == null ? "no config [directory]" : config.name);
+			}
 			boolean created = isDirectory ? file.mkdirs() : file.createNewFile();
-			logger().info("%s for %s (path %s, config %s)",
-						created ? String.format("Created %s", isDirectory ? "directory" : "file") : String.format("Couldnt create %s", isDirectory ? "directory" : "file"), alias,
-						file.toPath().toAbsolutePath().toString(), config == null ? "no config [directory]" : config.name());
+			if (megaRetardMode) {
+				logger().info("%s for %s (path %s, config %s)",
+							created ? String.format("Created %s", isDirectory ? "directory" : "file") : String.format("Couldnt create %s", isDirectory ? "directory" : "file"), alias,
+							file.toPath().toAbsolutePath().toString(), config == null ? "no config [directory]" : config.name);
+			}
 			if (config != null) {
 				if (created) {
 					config.loadDefaultValues();
@@ -162,9 +173,13 @@ public class FileManager extends Manager {
 			Pair<File, Config> value = new Pair<>(file, config);
 			boolean noIssuesSoFar = true;
 			try {
-				logger().debug("Tuple value of %s -> [%s, %s]", alias, value.item1(), value.item2());
+				if (megaRetardMode) {
+					logger().debug("Tuple value of %s -> [%s, %s]", alias, value.item1(), value.item2());
+				}
 				this.fileVariablesMap.put(alias, value);
-				logger().debug("Ok now getting the value of %s -> [%s, %s]", alias, getFile(alias), getConfig(alias));
+				if (megaRetardMode) {
+					logger().debug("Ok now getting the value of %s -> [%s, %s]", alias, getFile(alias), getConfig(alias));
+				}
 			}
 			catch (Exception e) {
 				noIssuesSoFar = false;

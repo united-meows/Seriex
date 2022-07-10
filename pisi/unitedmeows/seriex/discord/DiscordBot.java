@@ -324,7 +324,11 @@ public class DiscordBot extends Manager implements Once {
 			jda = builder.build();
 		}
 		catch (LoginException e) {
-			e.printStackTrace();
+			if (discordConfig.BOT_TOKEN.value().equals(Seriex.get().fileManager().PRIVATE)) {
+				Seriex.logger().fatal("No token found in config!");
+			} else {
+				e.printStackTrace();
+			}
 		}
 	}
 
