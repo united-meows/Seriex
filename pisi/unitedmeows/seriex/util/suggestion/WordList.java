@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 import javax.swing.filechooser.FileSystemView;
 
 import org.reflections.Reflections;
-import org.reflections.scanners.ResourcesScanner;
+import org.reflections.scanners.Scanners;
 
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.language.Language;
@@ -30,7 +30,7 @@ public class WordList {
 	static int totalWords = 0;
 
 	public static void read() {
-		Reflections reflections = new Reflections("pisi.unitedmeows.seriex.util.suggestion.resources", new ResourcesScanner());
+		Reflections reflections = new Reflections("pisi.unitedmeows.seriex.util.suggestion.resources", Scanners.Resources);
 		Map<String, Integer> wordCount = new HashMap<>();
 		Map<String, Integer> slangCount = new HashMap<>();
 		reflections.getResources(RESOURCE_PATTERN).forEach(tempString -> {
@@ -76,8 +76,12 @@ public class WordList {
 				e1.printStackTrace();
 			}
 		});
-		for (Language language : Language.values()) {
-			LOWERCASE_WORDS.putIfAbsent(language.languageCode(), new HashSet<>());
+		Language[] values = Language.values();
+		for (int i = 0; i < values.length; i++) {
+			Language language = values[i];
+			if (!LOWERCASE_WORDS.containsKey(language.languageCode())) {
+				LOWERCASE_WORDS.put(language.languageCode(), new HashSet<>());
+			}
 		}
 		wordCount.forEach((locale, wordAmount) -> {
 			Seriex.logger().info("Read %s amount of words from locale %s", wordAmount, locale);
