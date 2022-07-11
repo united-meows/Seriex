@@ -69,7 +69,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 			for (int i = 0; i < length; i++) {
 				String name = columnNames[i];
 				Field field = clazz.getDeclaredField(name);
-				String valueOfField = field.get(clazz).toString();
+				String valueOfField = field.get(struct).toString();
 				FieldType fieldType = unefficientCodeTime.get(name);
 				boolean isNotNullable = !fieldType.nullable;
 				if ("player_id".equals(name)) {
@@ -158,7 +158,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 			for (int j = 0; j < length; j++) {
 				String columnName = columnNames[j];
 				Field field = clazz.getDeclaredField(columnName);
-				String valueOfField = field.get(clazz).toString();
+				String valueOfField = field.get(struct).toString();
 				if (!unefficientCodeTime.get(columnName).nullable && valueOfField == null) {
 					valueOfField = "null";
 					// todo fatal log

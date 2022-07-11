@@ -35,6 +35,7 @@ public class DatabaseReflection {
 
 	public static void init(SeriexDB db) {
 		try {
+			if (!db.connected()) return; // for debugging, in onEnable we already dont call init if it isnt connected
 			Reflections reflections = new Reflections("pisi.unitedmeows.seriex.database.structs.impl");
 			Set<Class<? extends IStruct>> classes = reflections.getSubTypesOf(IStruct.class);
 			for (Class<? extends IStruct> clazz : classes) {
@@ -107,7 +108,11 @@ public class DatabaseReflection {
 
 	private static Pair<List<Map<String, Object>>, Class<? extends IStruct>> sendRequest(YSQLCommand command, String tableName, SeriexDB db) {
 		Pair<IStruct, Class<? extends IStruct>> table = DatabaseReflection.getReverseTable(tableName);
-		return new Pair<>(db.select(command, table.item1().getColumns()), table.item2());
+		IStruct item1 = table.item1();
+		Class<? extends IStruct> item2 = table.item2();
+		String[] columns = item1.getColumns();
+		List<Map<String, Object>> select = db.select(command, columns);
+		return new Pair<>(select, item2);
 	}
 
 	private static void setFields(List<Map<String, Object>> query, Class<? extends IStruct> clazz, IStruct struct) {

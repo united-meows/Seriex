@@ -139,10 +139,16 @@ public class DiscordBot extends Manager implements Once {
 					auto_configure: {}
 				});
 				sendPromise = Async.async_loop(() -> {
+					if (serverChatMessages.isEmpty()) return;
 					MessageEmbed embed = serverChatMessages.poll();
-					event.getJDA().getGuilds().forEach((Guild guild) -> {
+					if (embed == null) return;
+					String configID = discordConfig.ID_GUILD.value();
+					Guild guild = event.getJDA().getGuildById(configID);
+					if (guild != null) {
 						guild.getTextChannelById(discordConfig.ID_SERVER_CHAT.value()).sendMessageEmbeds(embed);
-					});
+					} else {
+						Seriex.logger().fatal("Cant find guild with the id %s", configID);
+					}
 				}, 1000);
 				super.onReady(event);
 			}

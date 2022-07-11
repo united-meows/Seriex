@@ -1,8 +1,9 @@
 package pisi.unitedmeows.seriex.util.suggestion.suggesters;
 
-import java.util.Comparator;
+import static pisi.unitedmeows.seriex.util.suggestion.WordList.*;
+import static pisi.unitedmeows.seriex.util.suggestion.suggesters.EditDistance.*;
 
-import pisi.unitedmeows.seriex.util.suggestion.WordList;
+import java.util.Comparator;
 
 public class ProximityComparator implements Comparator<String> {
 	private final String string;
@@ -13,11 +14,11 @@ public class ProximityComparator implements Comparator<String> {
 
 	@Override
 	public int compare(String str1, String str2) {
-		int ed1 = EditDistance.damerauLevenshtein(string, str1);
-		int ed2 = EditDistance.damerauLevenshtein(string, str2);
+		int ed1 = damerauLevenshtein(string, str1);
+		int ed2 = damerauLevenshtein(string, str2);
 		if (Math.abs(ed1 - ed2) < 1) {
-			Integer freq1 = WordList.FREQUENCY.get(str1);
-			Integer freq2 = WordList.FREQUENCY.get(str2);
+			Integer freq1 = FREQUENCY.get(str1);
+			Integer freq2 = FREQUENCY.get(str2);
 			if (freq1 == null && freq2 == null) return 0;
 			else if (freq1 == null) return 1;
 			else if (freq2 == null) return -1;

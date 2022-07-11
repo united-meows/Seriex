@@ -9,7 +9,7 @@ import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 
 public class DatabaseTest {
 	public static void main(String... args) {
-		SeriexDB seriexDB = new SeriexDB("seriex", "seriexdb123", "seriex", "79.110.234.147", 3306);
+		SeriexDB seriexDB = new SeriexDB(args[0], args[1], args[2], args[3], Integer.parseInt(args[4]));
 		startWatcher();
 		init(seriexDB);
 		logger().debug(String.format("DatabaseReflection#init took %d ms", stopWatcher()));
