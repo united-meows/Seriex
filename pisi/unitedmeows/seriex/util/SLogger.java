@@ -134,7 +134,7 @@ public class SLogger implements ILogger {
 	@Override
 	public void debug(String text) {
 		if (Seriex.available()) {
-			Seriex.get().getServer().getLogger().fine(generateAnsiString(text, "DEBUG", YELLOW, false, true));
+			Seriex.get().getServer().getLogger().info(generateAnsiString(text, "DEBUG", YELLOW, false, true));
 		} else {
 			System.out.println(generateAnsiString(text, "DEBUG", YELLOW, false, false));
 		}

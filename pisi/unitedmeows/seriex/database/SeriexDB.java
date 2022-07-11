@@ -158,10 +158,12 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 			for (int j = 0; j < length; j++) {
 				String columnName = columnNames[j];
 				Field field = clazz.getDeclaredField(columnName);
-				String valueOfField = field.get(struct).toString();
-				if (!unefficientCodeTime.get(columnName).nullable && valueOfField == null) {
-					valueOfField = "null";
-					// todo fatal log
+				boolean isFieldNullable = unefficientCodeTime.get(columnName).nullable;
+				Object object = field.get(struct);
+				String valueOfField = object == null ? "NULL" : object.toString();
+				if (!isFieldNullable && "NULL".equals(valueOfField)) {
+					valueOfField = "NULL";
+					Seriex.logger().fatal("Non nullable field %s has a null value!", columnName);
 				}
 				if (j == length - 1) {
 					builder.append(String.format("%s)", valueOfField.toString()));
