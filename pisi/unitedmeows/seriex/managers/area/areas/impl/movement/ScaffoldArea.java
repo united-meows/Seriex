@@ -23,7 +23,7 @@ public class ScaffoldArea extends BasicArea {
 	public void onMove(PlayerMoveEvent event) {
 		Player player = event.getPlayer();
 		if (isInArea(player)) {
-			Seriex.get().sendMessage(player, "you are in scaffold area :DDD");
+			Seriex.get().msg(player, "you are in scaffold area :DDD");
 		}
 	}
 }

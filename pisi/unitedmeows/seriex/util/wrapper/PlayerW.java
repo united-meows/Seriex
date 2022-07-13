@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.UserSnowflake;
 import pisi.unitedmeows.seriex.Seriex;
@@ -70,7 +71,18 @@ public class PlayerW extends HookClass<Player> {
 		DiscordBot discordBot = Seriex.get().discordBot();
 		String guildID = discordConfig.ID_GUILD.value();
 		Map<Language, Role> map = discordBot.roleCache.get(guildID);
-		discordBot.JDA().getGuildById(guildID).getMember(UserSnowflake.fromId(playerDiscord.discord_id)).getRoles().stream().filter(map::containsValue).forEach(role -> {
+		Member member = discordBot.JDA().getGuildById(guildID).getMember(UserSnowflake.fromId(playerDiscord.discord_id));
+		List<Role> roles = member.getRoles();
+		if (roles.isEmpty()) {
+			Seriex.get().kick(getHooked(), "You have no roles.");
+			return;
+		}
+		boolean onlyHasVerified = roles.size() == 1 && roles.get(0) == discordBot.verifiedRole.get(guildID);
+		if (onlyHasVerified) {
+			Seriex.get().kick(getHooked(), "You have no language roles selected.");
+			return;
+		}
+		roles.stream().filter(map::containsValue).forEach(role -> {
 			Set<Language> collect = map.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), role)).map(Map.Entry::getKey).collect(Collectors.toSet());
 			// maybe save this in db?
 			selectedLanguages.addAll(collect);

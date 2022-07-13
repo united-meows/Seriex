@@ -301,9 +301,7 @@ public class Seriex extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		getOnlinePlayers().forEach(player -> {
-			player.kickPlayer(colorizeString(String.format("%s%n&7Restarting the server...", suffix())));
-		});
+		getOnlinePlayers().forEach((Player player) -> kick(player, "Restarting the server..."));
 		cleanupabbleObjects.forEach(ICleanup::cleanup);
 		instance_ = Optional.empty();
 		Try.safe(temp -> System.gc(), "Couldnt invoke Java garbage cleaner!");
@@ -350,13 +348,21 @@ public class Seriex extends JavaPlugin {
 		return new HashSet<>(anticheats);
 	}
 
-	public Player sendMessage(Player player, String message, Object... args) {
+	public Player msg(Player player, String message, Object... args) {
 		if (args.length == 0) {
 			player.sendMessage(colorizeString(String.format("%s &7%s", suffix(), message)));
 		} else {
-			player.sendMessage(colorizeString(String.format("%s &7%s %s", suffix(), message, args)));
+			player.sendMessage(colorizeString(String.format(String.format("%s &7%s", suffix(), message), args)));
 		}
 		return player;
+	}
+
+	public void kick(Player player, String message, Object... args) {
+		if (args.length == 0) {
+			player.kickPlayer(colorizeString(String.format("%s\n&7%s", suffix(), message)));
+		} else {
+			player.kickPlayer(colorizeString(String.format(String.format("%s &7%s", suffix(), message), args)));
+		}
 	}
 
 	public String suffix() {

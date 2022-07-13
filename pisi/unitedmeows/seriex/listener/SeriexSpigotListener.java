@@ -88,7 +88,7 @@ public class SeriexSpigotListener implements Listener {
 					// Player %s (IP: %s) tried to join the server, but is banned.
 					// ^^ default message of vv
 					// TODO ban_actions.ip_announcement <- add to translation config
-					Seriex.get().sendMessage(player, Seriex.get().I18n().getString("ban_actions.ip_announcement", hooked), name, hooked.getMaskedIP(hooked.getIP()));
+					Seriex.get().msg(player, Seriex.get().I18n().getString("ban_actions.ip_announcement", hooked), name, hooked.getMaskedIP(hooked.getIP()));
 				});
 			}
 			if (banActionsConfig.DISABLE_DISCORD.value()) {

@@ -94,7 +94,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 			joinMessageRunnable = AnimatedTitle.animatedTitle(player, cachedWelcome, null);
 			if (baseHook.isGuest() && false) {
 				// TODO translations & guest support
-				Seriex.get().sendMessage(player, "You automatically logged in because you are in a guest account!");
+				Seriex.get().msg(player, "You automatically logged in because you are in a guest account!");
 				onLogin();
 			}
 		}
@@ -176,7 +176,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 			// TODO set ("auth.command_not_allowed") in TranslationConfig
 			// The command %s is not allowed! <- default message
 			String value = Seriex.get().I18n().getString("auth.command_not_allowed", Seriex.get().dataManager().user(player));
-			Seriex.get().sendMessage(player, value);
+			Seriex.get().msg(player, value);
 		}
 	}
 
@@ -188,7 +188,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 			// TODO set ("auth.chat_not_allowed") in TranslationConfig
 			// In order to chat you must be authenticated! <- default message
 			String value = Seriex.get().I18n().getString("auth.chat_not_allowed", Seriex.get().dataManager().user(player));
-			Seriex.get().sendMessage(player, value);
+			Seriex.get().msg(player, value);
 		} else {
 			event.getRecipients().removeIf(this::waitingForLogin);
 			if (event.getRecipients().isEmpty()) {
@@ -314,7 +314,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		event.setJoinMessage(null);
 		Seriex.get().getServer().getOnlinePlayers().forEach(onlinePlayer -> {
 			String value = Seriex.get().I18n().getString("join_message", Seriex.get().dataManager().user(onlinePlayer));
-			Seriex.get().sendMessage(onlinePlayer, "&7( &a+ &7) " + value);
+			Seriex.get().msg(onlinePlayer, "&7( &a+ &7) " + value);
 		});
 		Async.async_w(() -> {
 			Location worldSpawn = getServerConfig().getWorldSpawn();
@@ -333,7 +333,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		event.setQuitMessage(null);
 		Seriex.get().getServer().getOnlinePlayers().forEach(onlinePlayer -> {
 			String value = Seriex.get().I18n().getString("leave_message", Seriex.get().dataManager().user(onlinePlayer));
-			Seriex.get().sendMessage(onlinePlayer, "&7( &c- &7) " + value);
+			Seriex.get().msg(onlinePlayer, "&7( &c- &7) " + value);
 		});
 		if (!waitingForLogin(player)) return;
 		getAuthInfo(player).onAuthInterrupted();

@@ -52,7 +52,7 @@ public class DiscordBot extends Manager implements Once {
 	private static final Color DISCORD_BOT_COLOR = new Color(8281781);
 	private static final Color VERIFIED_MEMBER_COLOR = new Color(42, 106, 209);
 	public static final Map<String, Map<Language, Role>> roleCache = new HashMap<>();
-	private static final Map<String, Role> verifiedRole = new HashMap<>();
+	public static final Map<String, Role> verifiedRole = new HashMap<>();
 	private static final Queue<MessageEmbed> serverChatMessages = new ArrayDeque<>();
 	private JDA jda;
 	private Promise sendPromise;
@@ -268,9 +268,6 @@ public class DiscordBot extends Manager implements Once {
 								.addActionRows(ActionRow.of(subject), ActionRow.of(body))
 								.build();
 					event.replyModal(modal).queue();
-					String userId = event.getMember().getId();
-					event.getGuild().addRoleToMember(UserSnowflake.fromId(userId),
-								verifiedRole.get(event.getGuild().getId()));
 					// @ENABLE_FORMATTING
 				}
 				super.onButtonInteraction(event);
@@ -278,7 +275,8 @@ public class DiscordBot extends Manager implements Once {
 
 			@Override
 			public void onModalInteraction(ModalInteractionEvent event) {
-				if (!Objects.equals(event.getGuild().getId(), discordConfig.ID_GUILD.value())) return;
+				String guildID = event.getGuild().getId();
+				if (!Objects.equals(guildID, discordConfig.ID_GUILD.value())) return;
 				if ("verify_panel".equals(event.getModalId())) {
 					Supplier<Stream<ModalMapping>> stream = event.getInteraction().getValues()::stream;
 					Optional<ModalMapping> optional_username = stream.get().filter(modalMapping -> "username".equals(modalMapping.getId())).findAny();
@@ -319,7 +317,8 @@ public class DiscordBot extends Manager implements Once {
 						structPlayerDiscord.joinedAs = user.getName() + "#" + user.getDiscriminator();
 						structPlayerDiscord.linkMS = System.currentTimeMillis();
 						structPlayerDiscord.player_id = databaseID;
-						if (Seriex.get().database().getPlayerDiscord(UserSnowflake.fromId(idLong)) != null) {
+						UserSnowflake snowflake = UserSnowflake.fromId(idLong);
+						if (Seriex.get().database().getPlayerDiscord(snowflake) != null) {
 							event.reply("You are already registered?").setEphemeral(true).queue();
 							return;
 						}
@@ -331,6 +330,8 @@ public class DiscordBot extends Manager implements Once {
 							event.reply("Couldnt register! (0x3)").setEphemeral(true).queue();
 							return;
 						}
+						Role guildVerifiedRole = verifiedRole.get(guildID);
+						event.getGuild().addRoleToMember(snowflake, guildVerifiedRole).queue();
 						event.reply(String.format("Registered as %s!", username)).setEphemeral(true).queue();
 						Member member = event.getMember();
 						event.getGuild().getTextChannelById(discordConfig.ID_REGISTER_LOGS.value())

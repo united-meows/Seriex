@@ -47,7 +47,7 @@ public class LoginInventory {
 				return AnvilGUI.Response.text(value);
 			}
 		}).preventClose().text(defaultText).itemLeft(forgor).itemRight(loginItem).onLeftInputClick(player -> {
-			Seriex.get().sendMessage(player, "Open a ticket on discord using the #ticket channel.");
+			Seriex.get().msg(player, "Open a ticket on discord using the #ticket channel.");
 		}).plugin(Seriex.get());
 		plugin.open(_w.getHooked());
 	}
