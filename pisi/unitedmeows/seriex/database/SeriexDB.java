@@ -69,9 +69,12 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 			for (int i = 0; i < length; i++) {
 				String name = columnNames[i];
 				Field field = clazz.getDeclaredField(name);
-				String valueOfField = field.get(struct).toString();
 				FieldType fieldType = unefficientCodeTime.get(name);
-				boolean isNotNullable = !fieldType.nullable;
+				boolean isFieldNullable = fieldType.nullable;
+				Object object = field.get(struct);
+				String nullStr = "NULL";
+				String valueOfField = object == null ? nullStr : object.toString();
+				boolean isFieldString = fieldType == FieldType.STRING && !nullStr.equals(valueOfField);
 				if ("player_id".equals(name)) {
 					try {
 						playerID = Integer.parseInt(valueOfField);
@@ -83,11 +86,10 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 				if ("player_id".equals(name)) {
 					continue;
 				}
-				if (isNotNullable && valueOfField == null) {
-					valueOfField = "null";
-					Seriex.logger().fatal("Value is not nullable but value of field is null! %s", name, fieldType.name());
+				if (!isFieldNullable && nullStr.equals(valueOfField)) {
+					valueOfField = nullStr;
+					Seriex.logger().fatal("Non nullable field %s has a null value!", name);
 				}
-				boolean isFieldString = fieldType == FieldType.STRING;
 				builder.append(name);
 				builder.append(" = ");
 				if (isFieldString) {
@@ -102,7 +104,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 				}
 			}
 			if (playerID != -2173) {
-				builder.append("WHERE player_id = ");
+				builder.append(" WHERE player_id = ");
 				builder.append(playerID);
 				builder.append(";");
 				execute(builder.toString());
@@ -158,17 +160,27 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 			for (int j = 0; j < length; j++) {
 				String columnName = columnNames[j];
 				Field field = clazz.getDeclaredField(columnName);
-				boolean isFieldNullable = unefficientCodeTime.get(columnName).nullable;
+				FieldType fieldType = unefficientCodeTime.get(columnName);
+				boolean isFieldNullable = fieldType.nullable;
 				Object object = field.get(struct);
-				String valueOfField = object == null ? "NULL" : object.toString();
-				if (!isFieldNullable && "NULL".equals(valueOfField)) {
-					valueOfField = "NULL";
+				String nullStr = "NULL";
+				String valueOfField = object == null ? nullStr : object.toString();
+				if (!isFieldNullable && nullStr.equals(valueOfField)) {
+					valueOfField = nullStr;
 					Seriex.logger().fatal("Non nullable field %s has a null value!", columnName);
 				}
+				boolean isFieldString = fieldType == FieldType.STRING && !nullStr.equals(valueOfField);
+				if (isFieldString) {
+					builder.append("'");
+				}
+				builder.append(valueOfField.toString());
+				if (isFieldString) {
+					builder.append("'");
+				}
 				if (j == length - 1) {
-					builder.append(String.format("%s)", valueOfField.toString()));
+					builder.append(")");
 				} else {
-					builder.append(String.format("%s, ", valueOfField.toString()));
+					builder.append(", ");
 				}
 			}
 			// INSERT INTO player(player_id, api_access, username, password, token, gAuth, salt)

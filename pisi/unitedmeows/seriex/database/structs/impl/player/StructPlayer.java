@@ -1,6 +1,7 @@
 package pisi.unitedmeows.seriex.database.structs.impl.player;
 
 import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.database.SeriexDB;
 import pisi.unitedmeows.seriex.database.structs.IStruct;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.database.util.annotation.Column;
@@ -40,6 +41,22 @@ public class StructPlayer implements IStruct {
 	@Override
 	public YSQLCommand[] setColumns() {
 		return DatabaseReflection.setAndGetColumns(this.getClass());
+	}
+
+	/**
+	 * testing uses only
+	 */
+	@Deprecated
+	public void create(SeriexDB db) {
+		db.createStruct(this);
+	}
+
+	/**
+	 * testing uses only
+	 */
+	@Deprecated
+	public void update(SeriexDB db) {
+		db.updateStruct(this);
 	}
 
 	@Override

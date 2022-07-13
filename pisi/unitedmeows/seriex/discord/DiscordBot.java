@@ -297,7 +297,6 @@ public class DiscordBot extends Manager implements Once {
 						//	final byte[] bytes = UUID.nameUUIDFromBytes(username.getBytes(UTF_8)).toString().getBytes(UTF_8);
 						//	String sha256 = "0x2173" + DigestUtils.sha256Hex(bytes);
 						structPlayerWallet.player_wallet = "0x" + Primitives.unsignedInt(username.hashCode());
-						structPlayerWallet.create();
 						boolean structPlayerCreated = Seriex.get().database().createStruct(structPlayer, "WHERE NOT EXISTS (SELECT * FROM %s WHERE username='%d')".replace("%d", username));
 						if (!structPlayerCreated) {
 							event.reply("Couldnt register (0x1)!").setEphemeral(true).queue();
@@ -315,6 +314,7 @@ public class DiscordBot extends Manager implements Once {
 							event.reply("Couldnt register (0x2)!").setEphemeral(true).queue();
 							return;
 						}
+						structPlayerWallet.create();
 						event.reply(String.format("Registered as %s!", username)).setEphemeral(true).queue();
 						Member member = event.getMember();
 						event.getGuild().getTextChannelById(discordConfig.ID_REGISTER_LOGS.value())
