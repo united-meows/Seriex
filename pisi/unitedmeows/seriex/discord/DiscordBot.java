@@ -292,7 +292,6 @@ public class DiscordBot extends Manager implements Once {
 						structPlayer.firstLogin = true;
 						structPlayer.password = Hashing.hashedString(structPlayer.salt + password);
 						StructPlayerWallet structPlayerWallet = new StructPlayerWallet();
-						structPlayerWallet.player_id = structPlayer.player_id;
 						structPlayerWallet.coins = 0;
 						//	final byte[] bytes = UUID.nameUUIDFromBytes(username.getBytes(UTF_8)).toString().getBytes(UTF_8);
 						//	String sha256 = "0x2173" + DigestUtils.sha256Hex(bytes);
@@ -305,13 +304,21 @@ public class DiscordBot extends Manager implements Once {
 							event.reply("Couldnt register! (0x1)").setEphemeral(true).queue();
 							return;
 						}
+						// TODO find better fix for desync player_ids...
+						StructPlayer databaseStructPlayer = Seriex.get().database().getPlayer(username);
+						if (databaseStructPlayer == null) {
+							event.reply("what the fuck (0x0)").setEphemeral(true).queue(); // should never happen
+							return;
+						}
+						int databaseID = databaseStructPlayer.player_id;
+						structPlayerWallet.player_id = databaseID; // create is called later so we can do this
 						StructPlayerDiscord structPlayerDiscord = new StructPlayerDiscord();
 						long idLong = event.getMember().getIdLong();
 						structPlayerDiscord.discord_id = idLong;
 						User user = event.getMember().getUser();
 						structPlayerDiscord.joinedAs = user.getName() + "#" + user.getDiscriminator();
 						structPlayerDiscord.linkMS = System.currentTimeMillis();
-						structPlayerDiscord.player_id = structPlayer.player_id;
+						structPlayerDiscord.player_id = databaseID;
 						if (Seriex.get().database().getPlayerDiscord(UserSnowflake.fromId(idLong)) != null) {
 							event.reply("You are already registered?").setEphemeral(true).queue();
 							return;

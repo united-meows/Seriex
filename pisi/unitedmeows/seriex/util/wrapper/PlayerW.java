@@ -35,7 +35,7 @@ public class PlayerW extends HookClass<Player> {
 	private StructPlayerDiscord playerDiscord;
 	private HashMap<String, IAttributeHolder> attributeHolders;
 	@RegisterAttribute(name = "name")
-	private IAttributeHolder nameAtr = hooked::getName;
+	private IAttributeHolder nameAtr = () -> hooked.getName();
 	@RegisterAttribute(name = "id")
 	private IAttributeHolder idAtr = () -> String.valueOf(playerInfo.player_id);
 	@RegisterAttribute(name = "token")
@@ -45,7 +45,7 @@ public class PlayerW extends HookClass<Player> {
 	@RegisterAttribute(name = "password")
 	public IAttributeHolder passwordAtr = () -> playerInfo.password;
 	@RegisterAttribute(name = "world")
-	private IAttributeHolder worldAtr = getHooked().getWorld()::getName;
+	private IAttributeHolder worldAtr = () -> hooked.getWorld().getName();
 	// the language text will be translated into
 	private Language selectedLanguage = Language.ENGLISH;
 	// this is for discord
@@ -53,6 +53,7 @@ public class PlayerW extends HookClass<Player> {
 	public long playMS;
 
 	public PlayerW(final Player _player) {
+		// field init
 		hooked = _player;
 		final String name = hooked.getName();
 		playerInfo = Seriex.get().database().getPlayer(_player.getName());
