@@ -297,9 +297,12 @@ public class DiscordBot extends Manager implements Once {
 						//	final byte[] bytes = UUID.nameUUIDFromBytes(username.getBytes(UTF_8)).toString().getBytes(UTF_8);
 						//	String sha256 = "0x2173" + DigestUtils.sha256Hex(bytes);
 						structPlayerWallet.player_wallet = "0x" + Primitives.unsignedInt(username.hashCode());
-						boolean structPlayerCreated = Seriex.get().database().createStruct(structPlayer, "WHERE NOT EXISTS (SELECT * FROM %s WHERE username='%d')".replace("%d", username));
-						if (!structPlayerCreated) {
-							event.reply("Couldnt register (0x1)!").setEphemeral(true).queue();
+						if (Seriex.get().database().getPlayer(username) != null) {
+							event.reply("A player with the username " + username + " already exists!").setEphemeral(true).queue();
+							return;
+						}
+						if (!structPlayer.create()) {
+							event.reply("Couldnt register! (0x1)").setEphemeral(true).queue();
 							return;
 						}
 						StructPlayerDiscord structPlayerDiscord = new StructPlayerDiscord();
@@ -309,12 +312,18 @@ public class DiscordBot extends Manager implements Once {
 						structPlayerDiscord.joinedAs = user.getName() + "#" + user.getDiscriminator();
 						structPlayerDiscord.linkMS = System.currentTimeMillis();
 						structPlayerDiscord.player_id = structPlayer.player_id;
-						boolean structPlayerDiscordCreated = Seriex.get().database().createStruct(structPlayer, "WHERE NOT EXISTS (SELECT * FROM %s WHERE discord_id='%d')".replace("%d", idLong + ""));
-						if (!structPlayerDiscordCreated) {
-							event.reply("Couldnt register (0x2)!").setEphemeral(true).queue();
+						if (Seriex.get().database().getPlayerDiscord(UserSnowflake.fromId(idLong)) != null) {
+							event.reply("You are already registered?").setEphemeral(true).queue();
 							return;
 						}
-						structPlayerWallet.create();
+						if (!structPlayerDiscord.create()) {
+							event.reply("Couldnt register! (0x2)").setEphemeral(true).queue();
+							return;
+						}
+						if (!structPlayerWallet.create()) {
+							event.reply("Couldnt register! (0x3)").setEphemeral(true).queue();
+							return;
+						}
 						event.reply(String.format("Registered as %s!", username)).setEphemeral(true).queue();
 						Member member = event.getMember();
 						event.getGuild().getTextChannelById(discordConfig.ID_REGISTER_LOGS.value())

@@ -123,7 +123,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 		}
 	}
 
-	public boolean createStruct(IStruct struct, String... extraCommands) {
+	public boolean createStruct(IStruct struct) {
 		//  	based on
 		//		return execute(new YSQLCommand(
 		//				    "INSERT INTO player_settings "
@@ -185,11 +185,14 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 			}
 			// INSERT INTO player(player_id, api_access, username, password, token, gAuth, salt)
 			// VALUES(1, 31, "probablyThisDoesntwork", "pass", "tokenqwe", "gAuthEX", "saltEx")
-			// WHERE NOT EXISTS (SELECT * FROM player WHERE username='username') <- extra command usually
-			if (extraCommands.length != 0) {
-				builder.append(String.format(extraCommands[0], table));
+			String build = builder.toString();
+			boolean execute = execute(new YSQLCommand(build));
+			if (!execute) {
+				Seriex.logger().debug("Couldnt execute but no exceptions...?");
+				Seriex.logger().debug("Fully executed command:");
+				Seriex.logger().debug(build);
 			}
-			return execute(new YSQLCommand(builder.toString()));
+			return true;
 		}
 		catch (Exception e) {
 			e.printStackTrace();

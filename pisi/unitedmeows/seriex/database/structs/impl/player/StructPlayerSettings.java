@@ -37,13 +37,13 @@ public class StructPlayerSettings implements IStruct {
 	}
 
 	@Override
-	public void create() {
-		Seriex.get().database().createStruct(this);
+	public boolean create() {
+		return Seriex.get().database().createStruct(this);
 	}
 
 	@Override
-	public void update() {
-		Seriex.get().database().updateStruct(this);
+	public boolean update() {
+		return Seriex.get().database().updateStruct(this);
 	}
 
 	@Override

@@ -8,11 +8,11 @@ public interface IStruct {
 
 	YSQLCommand[] setColumns();
 
-	default void create() {
-		throw new SeriexException("Override create!!");
+	default boolean create() {
+		throw new SeriexException("Override create!");
 	}
 
-	default void update() {
-		throw new SeriexException("Override update!!");
+	default boolean update() {
+		throw new SeriexException("Override update!");
 	}
 }
