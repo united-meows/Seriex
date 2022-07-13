@@ -52,7 +52,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		final PlayerW playerW = Seriex.get().dataManager().user(event.getPlayer());
 		final AuthInfo authentication = new AuthInfo(playerW);
