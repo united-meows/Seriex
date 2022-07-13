@@ -63,7 +63,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 
 	@Override
 	public void cleanup() throws SeriexException {
-		playerMap.forEach((PlayerW k, AuthInfo v) -> v.onServerEnd());
+		playerMap.forEach((PlayerW player, AuthInfo info) -> info.onServerEnd());
 		playerMap.clear();
 	}
 
