@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.UserSnowflake;
@@ -68,10 +69,25 @@ public class PlayerW extends HookClass<Player> {
 		}
 		DiscordConfig discordConfig = (DiscordConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().DISCORD);
 		playerDiscord = Seriex.get().database().getPlayerDiscord(_player.getName());
+		if (playerDiscord == null) {
+			// todo remove
+			Seriex.get().kick(getHooked(), "ur discord is null");
+			return;
+		}
 		DiscordBot discordBot = Seriex.get().discordBot();
 		String guildID = discordConfig.ID_GUILD.value();
 		Map<Language, Role> map = discordBot.roleCache.get(guildID);
-		Member member = discordBot.JDA().getGuildById(guildID).getMember(UserSnowflake.fromId(playerDiscord.discord_id));
+		Guild guildById = discordBot.JDA().getGuildById(guildID);
+		UserSnowflake snowflake = UserSnowflake.fromId(playerDiscord.discord_id);
+		Member member = guildById.getMember(snowflake);
+		Seriex.logger().debug((guildById == null) + "");
+		Seriex.logger().debug((snowflake == null) + "");
+		Seriex.logger().debug((member == null) + " " + playerDiscord.discord_id);
+		if (member == null) {
+			// todo remove
+			Seriex.get().kick(getHooked(), "ur null");
+			return;
+		}
 		List<Role> roles = member.getRoles();
 		if (roles.isEmpty()) {
 			Seriex.get().kick(getHooked(), "You have no roles.");

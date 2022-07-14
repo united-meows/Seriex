@@ -205,7 +205,8 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 	}
 
 	public StructPlayerDiscord getPlayerDiscord(String username) {
-		return getPlayerDiscord(new YSQLCommand("SELECT * FROM player_discord WHERE player_discord_id=^ LIMIT 1").putString(username));
+		int pID = getPlayer(username).player_id;
+		return getPlayerDiscord(new YSQLCommand("SELECT * FROM player_discord WHERE player_id=^ LIMIT 1").putInt(pID));
 	}
 
 	public StructPlayerDiscord getPlayerDiscord(UserSnowflake snowflake) {

@@ -30,8 +30,10 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.Compression;
-import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerDiscord;
@@ -91,8 +93,10 @@ public class DiscordBot extends Manager implements Once {
 	public DiscordBot(FileManager manager) {
 		DiscordConfig discordConfig = (DiscordConfig) manager.getConfig(manager.DISCORD);
 		ServerConfig serverConfig = (ServerConfig) manager.getConfig(manager.SERVER);
-		JDABuilder builder = JDABuilder.createDefault(discordConfig.BOT_TOKEN.value());
-		builder.disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE);
+		JDABuilder builder = JDABuilder.createDefault(discordConfig.BOT_TOKEN.value())
+					.enableIntents(EnumSet.allOf(GatewayIntent.class))
+					.setChunkingFilter(ChunkingFilter.ALL)
+					.setMemberCachePolicy(MemberCachePolicy.ALL);
 		builder.setBulkDeleteSplittingEnabled(true);
 		builder.setCompression(Compression.NONE);
 		try {
