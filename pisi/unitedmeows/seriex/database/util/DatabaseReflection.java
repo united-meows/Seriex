@@ -27,7 +27,6 @@ public class DatabaseReflection {
 	 * the map`s value is: <br>
 	 * A pair that stores all columns` names (String[])
 	 * A list that stores all field`s names & fieldTypes in a pair
-	 * 
 	 */
 	private static Map<Class<? extends IStruct>, Pair<String[], List<Pair<String, FieldType>>>> cache = new HashMap<>();
 	private static Map<Class<? extends IStruct>, String> tables = new HashMap<>();

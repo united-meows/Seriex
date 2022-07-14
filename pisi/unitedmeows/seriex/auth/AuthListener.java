@@ -52,13 +52,16 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		}
 	}
 
+	@EventHandler
+	public void onPreJoin(AsyncPlayerPreLoginEvent event) {}
+
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		final PlayerW playerW = Seriex.get().dataManager().user(event.getPlayer());
-		final AuthInfo authentication = new AuthInfo(playerW);
-		playerMap.put(playerW, authentication);
-		authentication.onJoin();
-		Pispigot.playerSystem(event.getPlayer()).subscribeAll(this);
+		Player player = event.getPlayer();
+		if (!canApplyProtection(player)) {
+			computeAuthInfo(player);
+		}
+		Pispigot.playerSystem(player).subscribeAll(this);
 	}
 
 	@Override
@@ -141,8 +144,22 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		return playerMap.get(Seriex.get().dataManager().user(player));
 	}
 
+	public AuthInfo computeAuthInfo(Player player) {
+		return playerMap.computeIfAbsent(Seriex.get().dataManager().user(player), computedPlayer -> {
+			AuthInfo authInfo = new AuthInfo(computedPlayer);
+			authInfo.onJoin();
+			playerMap.put(computedPlayer, authInfo);
+			return authInfo;
+		});
+	}
+
+	public boolean canApplyProtection(Player player) {
+		return getAuthInfo(player) != null;
+	}
+
 	public boolean waitingForLogin(Player player) {
-		return getAuthInfo(player).state == AuthState.WAITING;
+		AuthInfo authInfo = getAuthInfo(player);
+		return canApplyProtection(player) && authInfo.state == AuthState.WAITING;
 	}
 
 	private TranslationsConfig getTranslationConfig() {

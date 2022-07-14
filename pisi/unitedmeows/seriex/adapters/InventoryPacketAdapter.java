@@ -17,6 +17,7 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.reflect.StructureModifier;
 
 import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.auth.AuthListener;
 
 public class InventoryPacketAdapter extends PacketAdapter {
 	public InventoryPacketAdapter() {

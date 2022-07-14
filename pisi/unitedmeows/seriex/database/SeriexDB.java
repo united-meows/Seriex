@@ -218,11 +218,11 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 	}
 
 	public StructPlayerSettings getPlayerSettings(int playerId) {
-		return getPlayerSettings(new YSQLCommand("SELECT * FROM player_settings WHERE player_settings_id=^ LIMIT 1").putInt(playerId));
+		return getPlayerSettings(new YSQLCommand("SELECT * FROM player_settings WHERE player_id=^ LIMIT 1").putInt(playerId));
 	}
 
 	public StructPlayerSettings getPlayerSettings(String username) {
-		return getPlayerSettings(new YSQLCommand("SELECT * FROM player_settings WHERE player_settings_id IN (SELECT player_id FROM playerw WHERE username=^)").putString(username));
+		return getPlayerSettings(new YSQLCommand("SELECT * FROM player_settings WHERE player_settings_id IN (SELECT player_id FROM player WHERE username=^)").putString(username));
 	}
 
 	public StructPlayerLastLogin getLastLogin(int playerId) {

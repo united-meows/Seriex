@@ -117,7 +117,7 @@ public class SeriexSpigotListener implements Listener {
 				// slowcheet4h detected!!!
 				isLoki = true;
 			}
-			StructPlayerSettings playerSettings = Seriex.get().database().getPlayerSettings(playerStruct.player_id);
+			StructPlayerSettings playerSettings = Seriex.get().database().getPlayerSettings(player.getName());
 			playerSettings.selectedLanguage = isLoki ? Language.ENGLISH.languageCode() : Language.fromCode(response.getCountryCode(), Language.ENGLISH).languageCode();
 			if (hooked.isGuest()) {
 				playerSettings.guest = true;
