@@ -6,8 +6,6 @@ import static com.comphenix.protocol.events.ListenerPriority.*;
 import static org.bukkit.ChatColor.*;
 import static pisi.unitedmeows.seriex.Seriex.*;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.bukkit.ChatColor;
 
 import com.comphenix.protocol.ProtocolManager;
@@ -58,7 +56,7 @@ public class MOTDAdapter {
 					versionName.append("-2173");
 					wrappedServerPing.setVersionName(versionName.toString());
 				}
-				catch (final InvocationTargetException e) {
+				catch (final Exception e) {
 					e.printStackTrace();
 				}
 				event.setCancelled(true);

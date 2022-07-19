@@ -6,16 +6,44 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.entity.*;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityInteractEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerBedEnterEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import pisi.unitedmeows.eventapi.event.listener.Listener;
@@ -37,6 +65,8 @@ import pisi.unitedmeows.yystal.parallel.Async;
 public class AuthListener extends Manager implements org.bukkit.event.Listener {
 	private Map<PlayerW, AuthInfo> playerMap = new HashMap<>();
 	private Method getShooter;
+	private Method subscribe;
+	private Pispigot pispigot;
 	private boolean shooterIsLivingEntity;
 
 	@Override
@@ -59,9 +89,14 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		if (!canApplyProtection(player)) {
+			// TODOH set player state to default when minigames are added
 			computeAuthInfo(player);
+			Seriex.logger().debug("[LOGIN] - computed auth info");
+			player.teleport(getServerConfig().getWorldSpawn());
+			Seriex.logger().debug("[LOGIN] - teleported to world spawn");
 		}
 		Pispigot.playerSystem(player).subscribeAll(this);
+		Seriex.logger().debug("[LOGIN] - subscribed to pispigot");
 	}
 
 	@Override
@@ -74,6 +109,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		Pispigot.playerSystem(playerW.getHooked()).unsubscribeAll(this);
 		final AuthInfo authentication = playerMap.get(playerW);
 		authentication.onLogin();
+		Seriex.logger().debug("[LOGIN] - stopping auth");
 	}
 
 	protected static String[] cachedWelcome = null;
@@ -83,16 +119,18 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		private long startMS = System.currentTimeMillis() , endMS;
 		private AuthState state = AuthState.WAITING;
 		private long benchmark;
-		private BukkitRunnable joinMessageRunnable , loginMessageRunnable;
+		private BukkitRunnable joinMessageRunnable;
 
 		public void onJoin() {
 			PlayerW baseHook = getHooked();
+			baseHook.denyMovement();
 			Player player = baseHook.getHooked();
 			Seriex.get().inventoryPacketAdapter().sendBlankInventoryPacket(player);
 			LoginInventory.open(baseHook, Seriex.get().authentication());
 			if (cachedWelcome == null) {
 				// TODO translations
 				cachedWelcome = AnimatedTitle.animateText("Welcome to Seriex!", "Seriex", "&d", "&5&l");
+				Seriex.logger().debug("[LOGIN] - cached welcome");
 			}
 			joinMessageRunnable = AnimatedTitle.animatedTitle(player, cachedWelcome, null);
 			if (baseHook.isGuest() && false) {
@@ -103,8 +141,12 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		}
 
 		public void onLogin() {
-			getHooked().getHooked().updateInventory();
+			Seriex.logger().debug("onLogin?");
+			PlayerW baseHook = getHooked();
+			baseHook.allowMovement();
+			baseHook.getHooked().updateInventory();
 			state = AuthState.LOGGED_IN;
+			joinMessageRunnable.run();
 			remove();
 		}
 
@@ -221,8 +263,9 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		Location from = event.getFrom();
 		Location to = event.getTo();
 		if (from.getBlockX() == to.getBlockX() && from.getBlockZ() == to.getBlockZ() && from.getY() - to.getY() >= 0.0D) return;
-		if (getAuthInfo(player).spawnLocation.distance(from) > getAuthConfig().ALLOWED_MOVEMENT_DELTA.value()) {
-			event.setTo(event.getFrom());
+		Location spawnLocation = getAuthInfo(player).spawnLocation;
+		if (spawnLocation.distance(from) > getAuthConfig().ALLOWED_MOVEMENT_DELTA.value()) {
+			player.teleport(spawnLocation);
 		}
 	}
 

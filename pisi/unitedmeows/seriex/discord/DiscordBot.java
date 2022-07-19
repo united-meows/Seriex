@@ -1,9 +1,19 @@
 package pisi.unitedmeows.seriex.discord;
 
-import static pisi.unitedmeows.seriex.Seriex.*;
+import static pisi.unitedmeows.seriex.Seriex.logger;
 
 import java.awt.Color;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Queue;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -14,7 +24,13 @@ import org.bukkit.entity.Player;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
@@ -93,9 +109,7 @@ public class DiscordBot extends Manager implements Once {
 	public DiscordBot(FileManager manager) {
 		DiscordConfig discordConfig = (DiscordConfig) manager.getConfig(manager.DISCORD);
 		ServerConfig serverConfig = (ServerConfig) manager.getConfig(manager.SERVER);
-		JDABuilder builder = JDABuilder.createDefault(discordConfig.BOT_TOKEN.value())
-					.enableIntents(EnumSet.allOf(GatewayIntent.class))
-					.setChunkingFilter(ChunkingFilter.ALL)
+		JDABuilder builder = JDABuilder.createDefault(discordConfig.BOT_TOKEN.value()).enableIntents(EnumSet.allOf(GatewayIntent.class)).setChunkingFilter(ChunkingFilter.ALL)
 					.setMemberCachePolicy(MemberCachePolicy.ALL);
 		builder.setBulkDeleteSplittingEnabled(true);
 		builder.setCompression(Compression.NONE);
@@ -273,6 +287,8 @@ public class DiscordBot extends Manager implements Once {
 								.build();
 					event.replyModal(modal).queue();
 					// @ENABLE_FORMATTING
+				} else {
+					Seriex.get().logger().fatal("Unsupported modal component id: %s", event.getComponentId());
 				}
 				super.onButtonInteraction(event);
 			}
@@ -286,20 +302,20 @@ public class DiscordBot extends Manager implements Once {
 					Optional<ModalMapping> optional_username = stream.get().filter(modalMapping -> "username".equals(modalMapping.getId())).findAny();
 					Optional<ModalMapping> optional_password = stream.get().filter(modalMapping -> "password".equals(modalMapping.getId())).findAny();
 					if (optional_username.isPresent() && optional_password.isPresent()) {
-						String username = optional_username.get().getAsString();
-						String password = optional_password.get().getAsString();
+						String modalUsername = optional_username.get().getAsString();
+						String modalPassword = optional_password.get().getAsString();
 						StructPlayer structPlayer = new StructPlayer();
-						structPlayer.username = username;
+						structPlayer.username = modalUsername;
 						structPlayer.salt = Hashing.randomString(8);
 						structPlayer.firstLogin = true;
-						structPlayer.password = Hashing.hashedString(structPlayer.salt + password);
+						structPlayer.password = Hashing.hashedString(structPlayer.salt + modalPassword);
 						StructPlayerWallet structPlayerWallet = new StructPlayerWallet();
 						structPlayerWallet.coins = 0;
 						//	final byte[] bytes = UUID.nameUUIDFromBytes(username.getBytes(UTF_8)).toString().getBytes(UTF_8);
 						//	String sha256 = "0x2173" + DigestUtils.sha256Hex(bytes);
-						structPlayerWallet.player_wallet = "0x" + Primitives.unsignedInt(username.hashCode());
-						if (Seriex.get().database().getPlayer(username) != null) {
-							event.reply("A player with the username " + username + " already exists!").setEphemeral(true).queue();
+						structPlayerWallet.player_wallet = "0x" + Primitives.unsignedInt(modalUsername.hashCode());
+						if (Seriex.get().database().getPlayer(modalUsername) != null) {
+							event.reply("A player with the username " + modalUsername + " already exists!").setEphemeral(true).queue();
 							return;
 						}
 						if (!structPlayer.create()) {
@@ -307,7 +323,7 @@ public class DiscordBot extends Manager implements Once {
 							return;
 						}
 						// TODO find better fix for desync player_ids...
-						StructPlayer databaseStructPlayer = Seriex.get().database().getPlayer(username);
+						StructPlayer databaseStructPlayer = Seriex.get().database().getPlayer(modalUsername);
 						if (databaseStructPlayer == null) {
 							event.reply("what the fuck (0x0)").setEphemeral(true).queue(); // should never happen
 							return;
@@ -322,10 +338,6 @@ public class DiscordBot extends Manager implements Once {
 						structPlayerDiscord.linkMS = System.currentTimeMillis();
 						structPlayerDiscord.player_id = databaseID;
 						UserSnowflake snowflake = UserSnowflake.fromId(idLong);
-						if (Seriex.get().database().getPlayerDiscord(snowflake) != null) {
-							event.reply("You are already registered?").setEphemeral(true).queue();
-							return;
-						}
 						if (!structPlayerDiscord.create()) {
 							event.reply("Couldnt register! (0x2)").setEphemeral(true).queue();
 							return;
@@ -336,10 +348,10 @@ public class DiscordBot extends Manager implements Once {
 						}
 						Role guildVerifiedRole = verifiedRole.get(guildID);
 						event.getGuild().addRoleToMember(snowflake, guildVerifiedRole).queue();
-						event.reply(String.format("Registered as %s!", username)).setEphemeral(true).queue();
+						event.reply(String.format("Registered as %s!", modalUsername)).setEphemeral(true).queue();
 						Member member = event.getMember();
 						event.getGuild().getTextChannelById(discordConfig.ID_REGISTER_LOGS.value())
-									.sendMessage(String.format("%s#%s (%s) registered as %s", member.getEffectiveName(), member.getUser().getDiscriminator(), member.getId(), username)).queue();
+									.sendMessage(String.format("%s#%s (%s) registered as %s", member.getEffectiveName(), member.getUser().getDiscriminator(), member.getId(), modalUsername)).queue();
 					} else {
 						event.reply("Couldn`t register, try again!").setEphemeral(true).queue();
 					}

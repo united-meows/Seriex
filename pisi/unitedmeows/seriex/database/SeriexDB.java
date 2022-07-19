@@ -8,7 +8,12 @@ import java.util.Map;
 import net.dv8tion.jda.api.entities.UserSnowflake;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.structs.IStruct;
-import pisi.unitedmeows.seriex.database.structs.impl.player.*;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerDiscord;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerFirstLogin;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerLastLogin;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerSettings;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerWallet;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.database.util.DatabaseReflection.FieldType;
 import pisi.unitedmeows.seriex.util.ICleanup;
@@ -213,6 +218,10 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 		return getPlayerDiscord(new YSQLCommand("SELECT * FROM player_discord WHERE discord_id=^ LIMIT 1").putString(snowflake.getId()));
 	}
 
+	public StructPlayerDiscord getPlayerDiscordFromID(String idString) {
+		return getPlayerDiscord(new YSQLCommand("SELECT * FROM player_discord WHERE discord_id=^ LIMIT 1").putString(idString));
+	}
+
 	public StructPlayer getPlayerFromToken(String token) {
 		return getPlayer(new YSQLCommand("SELECT * FROM player WHERE token=^ LIMIT 1").putString(token));
 	}
@@ -222,7 +231,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 	}
 
 	public StructPlayerSettings getPlayerSettings(String username) {
-		return getPlayerSettings(new YSQLCommand("SELECT * FROM player_settings WHERE player_settings_id IN (SELECT player_id FROM player WHERE username=^)").putString(username));
+		return getPlayerSettings(new YSQLCommand("SELECT * FROM player_settings WHERE player_id IN (SELECT player_id FROM player WHERE username=^)").putString(username));
 	}
 
 	public StructPlayerLastLogin getLastLogin(int playerId) {

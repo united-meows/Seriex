@@ -10,49 +10,33 @@ import be.maximvdw.title.Title;
 import pisi.unitedmeows.seriex.Seriex;
 
 public class AnimatedTitle {
-	public static BukkitRunnable animatedTitle(Player player, String[] mainTitle, String[] subTitle) {
-		int speed = 1;
-		Title title = new Title("");
+	public static BukkitRunnable animatedTitle(final Player player, final String[] mainTitle, final String[] subTitle) {
+		final int speed = 20;
+		final Title title = new Title("");
 		title.setFadeInTime(0);
-		title.setStayTime(40 + speed);
-		BukkitRunnable bukkitRunnable = new BukkitRunnable() {
+		title.setStayTime(20 + speed);
+		final BukkitRunnable bukkitRunnable = new BukkitRunnable() {
 			int mainTicks = 0 , subTicks = 0;
+			boolean goInReverse = false;
 			boolean titleReverse = false , subReverse = false;
 
 			@Override
 			public void run() {
-				if (mainTicks + 1 >= mainTitle.length) {
-					titleReverse = true;
-					mainTicks--;
-				} else {
-					if (titleReverse) {
-						if (mainTicks <= 0) {
-							titleReverse = false;
-							mainTicks++;
-						} else {
-							mainTicks--;
-						}
-					} else {
-						mainTicks++;
-					}
+				if (mainTicks + 1 < mainTitle.length) {
+					mainTicks++;
 				}
 				if (subTitle != null && subTitle.length != 0) {
-					if (subTicks + 1 >= subTitle.length) {
-						subReverse = true;
-						subTicks--;
-					} else {
-						if (titleReverse) {
-							if (subTicks <= 0) {
-								subReverse = false;
-								subTicks++;
-							} else {
-								subTicks--;
-							}
-						} else {
-							subTicks++;
-						}
+					if (subTicks + 1 < subTitle.length) {
+						subTicks++;
 					}
 					title.setSubtitle(subTitle[subTicks]);
+				}
+				if (subTitle == null || subTitle.length == 0) {
+					if (mainTicks == mainTitle.length - 1) {
+						cancel();
+					}
+				} else if (mainTicks == mainTitle.length - 1 && subTicks == subTitle.length - 1) {
+					cancel();
 				}
 				title.setTitle(mainTitle[mainTicks]);
 				title.send(player);
@@ -63,29 +47,29 @@ public class AnimatedTitle {
 	}
 
 	// TODO optimize this shit kekw
-	public static String[] animateText(String kek, String highlightedWord, String primaryColor, String highlightColor) {
-		String cool = "&r&l&k!il&r";
+	public static String[] animateText(final String kek, final String highlightedWord, final String primaryColor, final String highlightColor) {
+		final String cool = "&r&l&k!il&r";
 		final String coolSuffix = " " + cool;
 		final String coolPrefix = cool + " ";
-		char[] charArray = kek.toCharArray();
-		Set<String> frames = new LinkedHashSet<>();
+		final char[] charArray = kek.toCharArray();
+		final Set<String> frames = new LinkedHashSet<>();
 		for (int i = 0; i < charArray.length; i++) {
-			String message = kek.substring(0, i + 1);
-			char[] highlightedChars = highlightedWord.toCharArray();
+			final String message = kek.substring(0, i + 1);
+			final char[] highlightedChars = highlightedWord.toCharArray();
 			if (charArray.length - 1 == i) {
 				frames.add(primaryColor + kek);
 			}
 			for (int j = 0; j < highlightedChars.length; j++) {
-				String highlightedBefore = primaryColor + highlightedWord.substring(0, j);
-				String highlightedChar = highlightColor + highlightedWord.substring(j, j + 1);
-				String highlightedAfter = primaryColor + highlightedWord.substring(j + 1);
-				String newHighlighted = highlightedBefore + highlightedChar + highlightedAfter;
-				String string = i == charArray.length - 1 ? message.replace(highlightedWord, newHighlighted) : message;
-				String replace = primaryColor + string;
+				final String highlightedBefore = primaryColor + highlightedWord.substring(0, j);
+				final String highlightedChar = highlightColor + highlightedWord.substring(j, j + 1);
+				final String highlightedAfter = primaryColor + highlightedWord.substring(j + 1);
+				final String newHighlighted = highlightedBefore + highlightedChar + highlightedAfter;
+				final String string = i == charArray.length - 1 ? message.replace(highlightedWord, newHighlighted) : message;
+				final String replace = primaryColor + string;
 				frames.add(replace);
 			}
 		}
-		Set<String> realFrames = new LinkedHashSet<>();
+		final Set<String> realFrames = new LinkedHashSet<>();
 		frames.forEach(string -> realFrames.add(coolPrefix + string + coolSuffix));
 		return realFrames.stream().toArray(String[]::new);
 	}

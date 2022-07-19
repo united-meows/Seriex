@@ -30,65 +30,70 @@ public class WordList {
 	static int totalWords = 0;
 
 	public static void read() {
-		Reflections reflections = new Reflections("pisi.unitedmeows.seriex.util.suggestion.resources", Scanners.Resources);
-		Map<String, Integer> wordCount = new HashMap<>();
-		Map<String, Integer> slangCount = new HashMap<>();
-		reflections.getResources(RESOURCE_PATTERN).forEach(tempString -> {
-			String realString = "/" + tempString;
-			String[] split = realString.split("/");
-			String string = split[split.length - 1];
-			String locale = string.substring(0, string.indexOf('.'));
-			String extension = string.substring(string.indexOf('.') + 1);
-			boolean isWords = "words".equals(extension);
-			try (InputStream inputStream = WordList.class.getResourceAsStream(realString)) {
-				Set<String> localeSet = new HashSet<>();
-				try (BufferedReader bf = new BufferedReader(new InputStreamReader(inputStream, UTF_8))) {
-					if (isWords) {
-						String readLine = "";
-						int a = 0;
-						while ((readLine = bf.readLine()) != null) {
-							if (PATTERN.matcher(readLine).find() && !readLine.contains(" ")) {
-								localeSet.add(readLine.toLowerCase(Locale.forLanguageTag(locale)));
-								a++;
+		try {
+			Reflections reflections = new Reflections("pisi.unitedmeows.seriex.util.suggestion.resources", Scanners.Resources);
+			Map<String, Integer> wordCount = new HashMap<>();
+			Map<String, Integer> slangCount = new HashMap<>();
+			reflections.getResources(RESOURCE_PATTERN).forEach(tempString -> {
+				String realString = "/" + tempString;
+				String[] split = realString.split("/");
+				String string = split[split.length - 1];
+				String locale = string.substring(0, string.indexOf('.'));
+				String extension = string.substring(string.indexOf('.') + 1);
+				boolean isWords = "words".equals(extension);
+				try (InputStream inputStream = WordList.class.getResourceAsStream(realString)) {
+					Set<String> localeSet = new HashSet<>();
+					try (BufferedReader bf = new BufferedReader(new InputStreamReader(inputStream, UTF_8))) {
+						if (isWords) {
+							String readLine = "";
+							int a = 0;
+							while ((readLine = bf.readLine()) != null) {
+								if (PATTERN.matcher(readLine).find() && !readLine.contains(" ")) {
+									localeSet.add(readLine.toLowerCase(Locale.forLanguageTag(locale)));
+									a++;
+								}
 							}
-						}
-						wordCount.put(locale, a);
-						LOWERCASE_WORDS.put(locale, localeSet);
-					} else {
-						String readLine = "";
-						int a = 0;
-						while ((readLine = bf.readLine()) != null) {
-							if (PATTERN.matcher(readLine).find() && !readLine.contains(" ")) {
-								String lowerCase = readLine.toLowerCase(Locale.forLanguageTag(locale));
-								String[] splitMoment = lowerCase.split(":");
-								FREQUENCY.put(splitMoment[0], Integer.parseInt(splitMoment[1]));
-								a++;
+							wordCount.put(locale, a);
+							LOWERCASE_WORDS.put(locale, localeSet);
+						} else {
+							String readLine = "";
+							int a = 0;
+							while ((readLine = bf.readLine()) != null) {
+								if (PATTERN.matcher(readLine).find() && !readLine.contains(" ")) {
+									String lowerCase = readLine.toLowerCase(Locale.forLanguageTag(locale));
+									String[] splitMoment = lowerCase.split(":");
+									FREQUENCY.put(splitMoment[0], Integer.parseInt(splitMoment[1]));
+									a++;
+								}
+								slangCount.put(locale, a);
 							}
-							slangCount.put(locale, a);
 						}
 					}
+					catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
-				catch (IOException e) {
-					e.printStackTrace();
+				catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			});
+			Language[] values = Language.values();
+			for (int i = 0; i < values.length; i++) {
+				Language language = values[i];
+				if (!LOWERCASE_WORDS.containsKey(language.languageCode())) {
+					LOWERCASE_WORDS.put(language.languageCode(), new HashSet<>());
 				}
 			}
-			catch (IOException e1) {
-				e1.printStackTrace();
-			}
-		});
-		Language[] values = Language.values();
-		for (int i = 0; i < values.length; i++) {
-			Language language = values[i];
-			if (!LOWERCASE_WORDS.containsKey(language.languageCode())) {
-				LOWERCASE_WORDS.put(language.languageCode(), new HashSet<>());
-			}
+			wordCount.forEach((locale, wordAmount) -> {
+				Seriex.logger().info("Read %s amount of words from locale %s", wordAmount, locale);
+			});
+			slangCount.forEach((locale, slangAmount) -> {
+				Seriex.logger().info("Read %s amount of slang from locale %s", slangAmount, locale);
+			});
 		}
-		wordCount.forEach((locale, wordAmount) -> {
-			Seriex.logger().info("Read %s amount of words from locale %s", wordAmount, locale);
-		});
-		slangCount.forEach((locale, slangAmount) -> {
-			Seriex.logger().info("Read %s amount of slang from locale %s", slangAmount, locale);
-		});
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static String removePunctutation(final String input) {

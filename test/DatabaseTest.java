@@ -14,6 +14,8 @@ public class DatabaseTest {
 		startWatcher();
 		init(seriexDB);
 		logger().debug(String.format("DatabaseReflection#init took %d ms", stopWatcher()));
+		logger().debug(seriexDB.getPlayer("ghost2173").toString());
+		if (true) return;
 		startWatcher();
 		StructPlayer structPlayer = new StructPlayer();
 		String username = "tempUser";

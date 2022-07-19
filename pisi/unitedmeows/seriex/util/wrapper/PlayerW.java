@@ -1,7 +1,12 @@
 package pisi.unitedmeows.seriex.util.wrapper;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -11,6 +16,7 @@ import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -52,7 +58,9 @@ public class PlayerW extends HookClass<Player> {
 	private Language selectedLanguage = Language.ENGLISH;
 	// this is for discord
 	private Set<Language> selectedLanguages;
+	public MovementValuesWrapper prevValues;
 	public long playMS;
+	public boolean loggedIn;
 
 	public PlayerW(final Player _player) {
 		// field init
@@ -183,6 +191,41 @@ public class PlayerW extends HookClass<Player> {
 				}.runTaskLater(Seriex.get(), i);
 			}
 		}
+	}
+
+	public void denyMovement() {
+		Player player = getHooked();
+		if (prevValues == null) {
+			prevValues = new MovementValuesWrapper(player.getWalkSpeed(), player.getFlySpeed(), player.getFoodLevel(), player.isSprinting());
+		} else {
+			Seriex.logger().fatal("Already denied movement for %s!", player.getName());
+		}
+		player.setWalkSpeed(0.0F);
+		player.setFlySpeed(0.0F);
+		player.setFoodLevel(0);
+		player.setSprinting(false);
+		player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 200));
+	}
+
+	public void allowMovement() {
+		Player player = getHooked();
+		if (prevValues == null) {
+			Seriex.logger().fatal("Movement was not denied for %s!", player.getName());
+			return;
+		}
+		if (Math.abs(prevValues.walkSpeed) <= 1E-4F) {
+			prevValues.walkSpeed = 0.2F;
+			prevValues.flySpeed = 0.1F;
+			prevValues.foodLevel = 20;
+			prevValues.isSprinting = true;
+			Seriex.logger().fatal("Movement values was broken for %s!", player.getName());
+		}
+		player.setWalkSpeed(prevValues.walkSpeed);
+		player.setFlySpeed(prevValues.flySpeed);
+		player.setFoodLevel(prevValues.foodLevel);
+		player.setSprinting(prevValues.isSprinting);
+		player.removePotionEffect(PotionEffectType.JUMP);
+		prevValues = null;
 	}
 
 	public boolean isGuest() {

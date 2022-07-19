@@ -34,13 +34,16 @@ public class DatabaseReflection {
 
 	public static void init(SeriexDB db) {
 		try {
-			if (!db.connected()) return; // for debugging, in onEnable we already dont call init if it isnt connected
+			if (!db.connected()) {
+				Seriex.logger().fatal("Database isnt connected! [x2]");
+				return; // for debugging, in onEnable we already dont call init if it isnt connected
+			}
 			Reflections reflections = new Reflections("pisi.unitedmeows.seriex.database.structs.impl");
 			Set<Class<? extends IStruct>> classes = reflections.getSubTypesOf(IStruct.class);
 			for (Class<? extends IStruct> clazz : classes) {
 				boolean annotationPresent = clazz.isAnnotationPresent(Struct.class);
 				if (!annotationPresent) {
-					System.out.println("Skipping class " + clazz.getName() + " no annotation found.");
+					Seriex.logger().fatal("Skipping class %s no annotation found.", clazz.getName());
 					continue;
 				}
 				Struct column = clazz.getAnnotation(Struct.class);
@@ -66,7 +69,9 @@ public class DatabaseReflection {
 						uncommon.add(s);
 					}
 				}
-				System.out.println(name + " " + uncommon);
+				if (!uncommon.isEmpty()) {
+					Seriex.logger().info("Removed uncommon tables: %s", Arrays.toString(uncommon.toArray()));
+				}
 				uncommon.forEach((String column_) -> db.execute(remove(name, column_)));
 				YSQLCommand[] commands = setAndGetColumns(clazz);
 				for (int i = 0; i < commands.length; i++) {
@@ -153,8 +158,11 @@ public class DatabaseReflection {
 					name = field.getName();
 				}
 				FieldType found = null;
-				for (FieldType fieldType : FieldType.values()) {
-					if (field.getType().isAssignableFrom(fieldType.type)) {
+				FieldType[] values = FieldType.values();
+				Class<?> type = field.getType();
+				for (int j = 0; j < values.length; j++) {
+					FieldType fieldType = values[j];
+					if (type.isAssignableFrom(fieldType.type)) {
 						found = fieldType;
 						break;
 					}

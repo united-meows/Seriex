@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -221,6 +222,7 @@ public class SeriexSpigotListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onInteract(PlayerInteractEvent interactEvent) {
+		Player player = interactEvent.getPlayer();
 		switch (interactEvent.getAction()) {
 			case RIGHT_CLICK_BLOCK: {
 				if (!(interactEvent.getClickedBlock() instanceof Sign)) {
@@ -230,20 +232,23 @@ public class SeriexSpigotListener implements Listener {
 				org.bukkit.material.Sign materialSign = (org.bukkit.material.Sign) sign.getData();
 				String line1 = ChatColor.stripColor(sign.getLine(0)).substring(1);
 				line1 = line1.substring(0, line1.length() - 1);
+				player.sendMessage("al line kanka: " + line1);
 				List<SignCommand> signCommands = Seriex.get().signManager().signCommands();
 				for (int i = 0; i < signCommands.size(); i++) {
 					SignCommand signCommand = signCommands.get(i);
 					if (signCommand.trigger().equalsIgnoreCase(line1)) {
-						signCommand.runRight(Seriex.get().dataManager().user(interactEvent.getPlayer()), sign, materialSign);
+						signCommand.runRight(Seriex.get().dataManager().user(player), sign, materialSign);
 						break;
 					}
 				}
+				interactEvent.setCancelled(true);
 				break;
 			}
 			case LEFT_CLICK_BLOCK: {
 				if (!(interactEvent.getClickedBlock() instanceof Sign)) {
 					break;
 				}
+				if (player.getGameMode() == GameMode.CREATIVE && player.isSneaking()) return;
 				Sign sign = (Sign) interactEvent.getClickedBlock();
 				org.bukkit.material.Sign materialSign = (org.bukkit.material.Sign) sign.getData();
 				String line1 = ChatColor.stripColor(sign.getLine(0)).substring(1);
@@ -252,10 +257,11 @@ public class SeriexSpigotListener implements Listener {
 				for (int i = 0; i < signCommands.size(); i++) {
 					SignCommand signCommand = signCommands.get(i);
 					if (signCommand.trigger().equalsIgnoreCase(line1)) {
-						signCommand.runLeft(Seriex.get().dataManager().user(interactEvent.getPlayer()), sign, materialSign);
+						signCommand.runLeft(Seriex.get().dataManager().user(player), sign, materialSign);
 						break;
 					}
 				}
+				interactEvent.setCancelled(true);
 				break;
 			}
 			default:

@@ -47,7 +47,9 @@ public final class ItemBuilder {
 		if (lore == null) {
 			lore = new ArrayList<>();
 		}
-		lore.add(ChatColor.translateAlternateColorCodes('&', name));
+		if (name != null) {
+			lore.add(ChatColor.translateAlternateColorCodes('&', name));
+		}
 		meta.setLore(lore);
 		this.is.setItemMeta(meta);
 		return this;

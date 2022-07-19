@@ -22,21 +22,26 @@ public class I18n implements ICleanup {
 	private Map<String, String> cache = new WeakHashMap<>(100, 0.5F);
 
 	public String getString(String message, PlayerW player) {
-		FileManager fileManager = get().fileManager();
-		TranslationsConfig config = (TranslationsConfig) fileManager.getConfig(TRANSLATIONS);
-		return cache.computeIfAbsent(message, (String msg) -> {
-			try {
+		try {
+			FileManager fileManager = get().fileManager();
+			TranslationsConfig config = (TranslationsConfig) fileManager.getConfig(TRANSLATIONS);
+			return cache.computeIfAbsent(message, (String msg) -> {
 				Language language = player.selectedLanguage();
 				String languageCode = language.languageCode();
 				Pair<File, CommentedConfig> pair = config.getConfigs().get(languageCode);
 				String value = config.getValue(msg, pair.item2());
+				if (value == null) { // missing key
+					Seriex.logger().fatal("Translation key %s for language %s is missing!", message, player.selectedLanguage().languageCode());
+					return msg;
+				}
 				return value;
-			}
-			catch (Exception e) {
-				Seriex.logger().fatal("Translations are not working correctly.");
-				return msg;
-			}
-		});
+			});
+		}
+		catch (Exception e) { // config / filemanager issue
+			e.printStackTrace();
+			Seriex.logger().fatal("Translation API is broken?");
+			return message;
+		}
 	}
 
 	@Override

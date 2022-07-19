@@ -1,15 +1,18 @@
 package pisi.unitedmeows.seriex;
 
-import static java.lang.System.*;
-import static java.lang.Thread.*;
-import static java.util.Optional.*;
-import static org.bukkit.Bukkit.*;
-import static pisi.unitedmeows.seriex.util.config.FileManager.*;
-import static pisi.unitedmeows.seriex.util.timings.TimingsCalculator.*;
-import static pisi.unitedmeows.yystal.parallel.Async.*;
+import static java.lang.System.setProperty;
+import static java.lang.Thread.currentThread;
+import static java.util.Optional.of;
+import static org.bukkit.Bukkit.getOnlinePlayers;
+import static pisi.unitedmeows.seriex.util.config.FileManager.DATABASE;
+import static pisi.unitedmeows.seriex.util.timings.TimingsCalculator.GET;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -49,7 +52,11 @@ import pisi.unitedmeows.seriex.managers.data.DataManager;
 import pisi.unitedmeows.seriex.managers.future.FutureManager;
 import pisi.unitedmeows.seriex.managers.sign.SignManager;
 import pisi.unitedmeows.seriex.managers.sign.impl.SignCommand;
-import pisi.unitedmeows.seriex.util.*;
+import pisi.unitedmeows.seriex.util.ICleanup;
+import pisi.unitedmeows.seriex.util.MaintainersUtil;
+import pisi.unitedmeows.seriex.util.Once;
+import pisi.unitedmeows.seriex.util.SLogger;
+import pisi.unitedmeows.seriex.util.Try;
 import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.config.impl.server.DatabaseConfig;
@@ -58,28 +65,29 @@ import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.language.I18n;
 import pisi.unitedmeows.seriex.util.suggestion.WordList;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
+import pisi.unitedmeows.yystal.parallel.Async;
 
 public class Seriex extends JavaPlugin {
 	private static Optional<Seriex> instance_ = Optional.empty();
 	private CommandSystem commandSystem;
-	private static FileManager fileManager;
-	private static DataManager dataManager;
-	private static FutureManager futureManager;
-	private static SignManager signManager;
-	private static SeriexDB database;
-	private static DiscordBot discordBot;
-	private static AuthListener authListener;
-	private static AreaManager areaManager;
-	private static InventoryPacketAdapter inventoryPacketAdapter;
-	private static I18n i18n;
-	private static List<ICleanup> cleanupabbleObjects = new GlueList<>();
-	private static List<Manager> managers = new GlueList<>();
-	private static List<Once> onces = new GlueList<>();
-	private static List<Listener> listeners = new GlueList<>();
-	private static List<PacketAdapter> packetAdapters = new GlueList<>();
+	private FileManager fileManager;
+	private DataManager dataManager;
+	private FutureManager futureManager;
+	private SignManager signManager;
+	private SeriexDB database;
+	private DiscordBot discordBot;
+	private AuthListener authListener;
+	private AreaManager areaManager;
+	private InventoryPacketAdapter inventoryPacketAdapter;
+	private I18n i18n;
+	private List<ICleanup> cleanupabbleObjects = new GlueList<>();
+	private List<Manager> managers = new GlueList<>();
+	private List<Once> onces = new GlueList<>();
+	private List<Listener> listeners = new GlueList<>();
+	private List<PacketAdapter> packetAdapters = new GlueList<>();
 	private static SLogger logger = new SLogger(null, "Seriex").time(SLogger.Time.DAY_MONTH_YEAR_FULL).colored(true);
 	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here so it can work async :D
-	private static boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
+	private boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
 	private Thread primaryThread;
 	private static final String SECRET_MESSAGE = "࣭࣢࣯࣢ࣰ࣫࢝ࣴࣞ࢝ࣥ࣢࣯࣢";
 	private boolean firstStart;
@@ -88,6 +96,17 @@ public class Seriex extends JavaPlugin {
 	public void onEnable() {
 		// TODO: for supporting /reload command we should register all online players at onEnable
 		// better idea, kick all online players & disable login until plugin is initiliazed
+		debug_check: {
+			String[] pluginsToCheck = {
+				"Pispigot"
+			};
+			for (int i = 0; i < pluginsToCheck.length; i++) {
+				String pluginName = pluginsToCheck[i];
+				if (getServer().getPluginManager().getPlugin(pluginName) == null) {
+					Seriex.logger().fatal("The plugin %s is missing somehow?", pluginName);
+				}
+			}
+		}
 		instance_ = of(this);
 		logging: {
 			System.setProperty("jansi.passthrough", "true");
@@ -140,7 +159,7 @@ public class Seriex extends JavaPlugin {
 						// @ENABLE_FORMATTING
 					}, "Database");
 					GET.benchmark(yes -> {
-						cleanupabbleObjects.add(new I18n());
+						cleanupabbleObjects.add(i18n = new I18n());
 					}, "I18N");
 					GET.benchmark(yes -> {
 						managers.add(futureManager = new FutureManager()); // this should be always last!
@@ -182,16 +201,16 @@ public class Seriex extends JavaPlugin {
 			async_stuff: {
 				// 🤞 🤞 🤞 🤞 🤞
 				logger().info("Starting threads...");
-				async_loop(futureManager::updateFutures, 1);
+				Async.async_loop(futureManager::updateFutures, 1);
 			}
 			listeners: {
 				logger().info("Registering listeners...");
 				listeners.add(new SeriexSpigotListener());
-				AreaManager areaManager = new AreaManager();
-				this.areaManager = areaManager;
+				listeners.add(authListener);
+				areaManager = new AreaManager();
 				listeners.add(areaManager);
 				listeners.addAll(areaManager.areaList);
-				listeners.forEach(listener -> getPluginManager().registerEvents(listener, this));
+				listeners.forEach(listener -> getServer().getPluginManager().registerEvents(listener, this));
 			}
 			once: {
 				onces.add(discordBot);
@@ -229,6 +248,7 @@ public class Seriex extends JavaPlugin {
 		/* sign manager */
 		signs: {
 			SignManager.create("spawn pig").counting(10).onRight((PlayerW player, SignCommand sign) -> {
+				msg(player.getHooked(), "right click :D");
 				final Sign block = (Sign) sign.global().getIfPresent("current_signMaterial");
 				final org.bukkit.block.Sign signBlock = (org.bukkit.block.Sign) sign.global().getIfPresent("current_sign");
 				BlockFace blockFace = block.getFacing();
@@ -324,7 +344,7 @@ public class Seriex extends JavaPlugin {
 		return logger;
 	}
 
-	public static I18n I18n() {
+	public I18n I18n() {
 		return i18n;
 	}
 
