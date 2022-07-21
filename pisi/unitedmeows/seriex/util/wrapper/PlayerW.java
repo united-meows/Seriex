@@ -28,6 +28,7 @@ import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerDiscord;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerSettings;
 import pisi.unitedmeows.seriex.discord.DiscordBot;
+import pisi.unitedmeows.seriex.minigames.Minigame;
 import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
 import pisi.unitedmeows.seriex.util.language.Language;
 import pisi.unitedmeows.seriex.util.placeholder.annotations.RegisterAttribute;
@@ -61,6 +62,8 @@ public class PlayerW extends HookClass<Player> {
 	public MovementValuesWrapper prevValues;
 	public long playMS;
 	public boolean loggedIn;
+    public PlayerState playerState;
+    public Minigame currentMinigame;
 
 	public boolean has2FA() {
 		return playerInfo != null && playerInfo.gAuth != null && !"-".equals(playerInfo.gAuth);
@@ -88,7 +91,7 @@ public class PlayerW extends HookClass<Player> {
 		}
 		DiscordBot discordBot = Seriex.get().discordBot();
 		String guildID = discordConfig.ID_GUILD.value();
-		Map<Language, Role> map = discordBot.roleCache.get(guildID);
+		Map<Language, Role> map = DiscordBot.roleCache.get(guildID);
 		Guild guildById = discordBot.JDA().getGuildById(guildID);
 		UserSnowflake snowflake = UserSnowflake.fromId(playerDiscord.discord_id);
 		Member member = guildById.getMember(snowflake);
@@ -102,7 +105,7 @@ public class PlayerW extends HookClass<Player> {
 			Seriex.get().kick(getHooked(), "You have no roles.");
 			return;
 		}
-		boolean onlyHasVerified = roles.size() == 1 && roles.get(0) == discordBot.verifiedRole.get(guildID);
+		boolean onlyHasVerified = roles.size() == 1 && roles.get(0) == DiscordBot.verifiedRole.get(guildID);
 		if (onlyHasVerified) {
 			Seriex.get().kick(getHooked(), "You have no language roles selected.");
 			return;
@@ -122,6 +125,7 @@ public class PlayerW extends HookClass<Player> {
 		}
 		attributeHolders = new HashMap<>();
 		registerAttributes();
+        playerState = PlayerState.SPAWN;
 	}
 
 	private void registerAttributes() {
@@ -300,4 +304,6 @@ public class PlayerW extends HookClass<Player> {
 	public Player getHooked() {
 		return super.getHooked();
 	}
+
+
 }

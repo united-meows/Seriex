@@ -64,6 +64,7 @@ import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.language.I18n;
 import pisi.unitedmeows.seriex.util.suggestion.WordList;
+import pisi.unitedmeows.seriex.util.wrapper.PlayerState;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 import pisi.unitedmeows.yystal.parallel.Async;
 
@@ -370,6 +371,7 @@ public class Seriex extends JavaPlugin {
 
 	public Player msg(Player player, String message, Object... args) {
 		if (args.length == 0) {
+
 			player.sendMessage(colorizeString(String.format("%s &7%s", suffix(), message)));
 		} else {
 			player.sendMessage(colorizeString(String.format(String.format("%s &7%s", suffix(), message), args)));
