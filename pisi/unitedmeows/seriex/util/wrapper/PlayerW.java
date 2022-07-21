@@ -62,6 +62,10 @@ public class PlayerW extends HookClass<Player> {
 	public long playMS;
 	public boolean loggedIn;
 
+	public boolean has2FA() {
+		return playerInfo != null && playerInfo.gAuth != null && !"-".equals(playerInfo.gAuth);
+	}
+
 	public PlayerW(final Player _player) {
 		// field init
 		hooked = _player;
@@ -88,9 +92,6 @@ public class PlayerW extends HookClass<Player> {
 		Guild guildById = discordBot.JDA().getGuildById(guildID);
 		UserSnowflake snowflake = UserSnowflake.fromId(playerDiscord.discord_id);
 		Member member = guildById.getMember(snowflake);
-		Seriex.logger().debug((guildById == null) + "");
-		Seriex.logger().debug((snowflake == null) + "");
-		Seriex.logger().debug((member == null) + " " + playerDiscord.discord_id);
 		if (member == null) {
 			// todo remove
 			Seriex.get().kick(getHooked(), "ur null");

@@ -15,10 +15,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.entity.Player;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -35,6 +37,7 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
@@ -43,6 +46,7 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.ItemComponent;
 import net.dv8tion.jda.api.interactions.components.Modal;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
@@ -51,6 +55,7 @@ import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.auth.gauth.GAuth;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerDiscord;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerWallet;
@@ -67,10 +72,11 @@ import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.parallel.Promise;
 
 public class DiscordBot extends Manager implements Once {
-	private static final Color DISCORD_BOT_COLOR = new Color(8281781);
-	private static final Color VERIFIED_MEMBER_COLOR = new Color(42, 106, 209);
 	public static final Map<String, Map<Language, Role>> roleCache = new HashMap<>();
 	public static final Map<String, Role> verifiedRole = new HashMap<>();
+	private static final Color DISCORD_BOT_COLOR = new Color(8281781);
+	private static final Color VERIFIED_MEMBER_COLOR = new Color(42, 106, 209);
+	private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{2,16}$");
 	private static final Queue<MessageEmbed> serverChatMessages = new ArrayDeque<>();
 	private JDA jda;
 	private Promise sendPromise;
@@ -270,20 +276,25 @@ public class DiscordBot extends Manager implements Once {
 				if (!Objects.equals(event.getGuild().getId(), discordConfig.ID_GUILD.value())) return;
 				if ("register".equals(event.getComponentId())) {
 					// @DISABLE_FORMATTING
-					TextInput subject = TextInput
+					TextInput usernameInput = TextInput
 								.create("username", "Username", TextInputStyle.SHORT)
 								.setPlaceholder("Your in-game username.")
+								.setRequired(true)
 								.setRequiredRange(3, 16)
 								.build();
-					TextInput body =
+					TextInput passwordInput =
 								TextInput
 								.create("password", "Password", TextInputStyle.SHORT)
 								.setPlaceholder("Your password. (At least 8, maximum of 16 characters.)")
+								.setRequired(true)
 								.setMinLength(8)
 								.setMaxLength(16).build();
 					Modal modal = Modal
 								.create("verify_panel", "Verification")
-								.addActionRows(ActionRow.of(subject), ActionRow.of(body))
+								.addActionRows(
+											ActionRow.of(usernameInput),
+											ActionRow.of(passwordInput)
+											)
 								.build();
 					event.replyModal(modal).queue();
 					// @ENABLE_FORMATTING
@@ -291,6 +302,56 @@ public class DiscordBot extends Manager implements Once {
 					Seriex.get().logger().fatal("Unsupported modal component id: %s", event.getComponentId());
 				}
 				super.onButtonInteraction(event);
+			}
+
+			@Override
+			public void onSelectMenuInteraction(SelectMenuInteractionEvent event) {
+				String guildID = event.getGuild().getId();
+				if (!Objects.equals(guildID, discordConfig.ID_GUILD.value())) return;
+				if (event.getComponentId().startsWith("2FA-")) {
+					String username = event.getComponentId().replace("2FA-", "");
+					StructPlayer player = Seriex.get().database().getPlayer(username);
+					if (event.getValues().isEmpty()) {
+						event.reply("what").setEphemeral(true).queue();
+						return;
+					}
+					if (event.getValues().size() == 1) {
+						boolean hasGoogleAuth = "google".equals(event.getValues().get(0));
+						if (hasGoogleAuth) {
+							if (!StringUtils.isEmpty(player.gAuth)) {
+								event.reply("You cant change your 2FA selection.").setEphemeral(true).queue();
+								return;
+							}
+							String secretKey = GAuth.generateSecretKey();
+							StringBuilder lol = new StringBuilder();
+							lol.append("```\n");
+							lol.append("Heres your secret key: `");
+							lol.append(secretKey);
+							lol.append("`.\n");
+							lol.append("```\n");
+							lol.append("How to add your secret key to the authenticator app:\n");
+							lol.append("> Open your Google Authenticator app\n");
+							lol.append("> Press the '+' button and select 'Manual entry'\n");
+							lol.append("> Enter your username and in the 'Key' field paste your secret key\n");
+							lol.append("> Save\n");
+							lol.append("> You should now see your entry in the list with 6-digits code that is changing every 30 seconds.\n");
+							event.reply(lol.toString()).setEphemeral(true).queue();
+							player.gAuth = secretKey;
+							player.update();
+						} else {
+							if (!"-".equals(player.gAuth)) {
+								event.reply("Continuing with no 2FA.").setEphemeral(true).queue();
+								player.gAuth = "-";
+								player.update();
+							} else {
+								event.reply("You cant change your 2FA selection.").setEphemeral(true).queue();
+							}
+						}
+					} else {
+						event.reply("how did you select more than 1??").setEphemeral(true).queue();
+					}
+				}
+				super.onSelectMenuInteraction(event);
 			}
 
 			@Override
@@ -303,7 +364,15 @@ public class DiscordBot extends Manager implements Once {
 					Optional<ModalMapping> optional_password = stream.get().filter(modalMapping -> "password".equals(modalMapping.getId())).findAny();
 					if (optional_username.isPresent() && optional_password.isPresent()) {
 						String modalUsername = optional_username.get().getAsString();
+						if (!USERNAME_PATTERN.matcher(modalUsername).find()) {
+							event.reply(String.format("Invalid username %s!", modalUsername)).setEphemeral(true).queue();
+							return;
+						}
 						String modalPassword = optional_password.get().getAsString();
+						if (modalPassword.contains(" ")) {
+							event.reply("Password cannot contain spaces!").setEphemeral(true).queue();
+							return;
+						}
 						StructPlayer structPlayer = new StructPlayer();
 						structPlayer.username = modalUsername;
 						structPlayer.salt = Hashing.randomString(8);
@@ -315,7 +384,7 @@ public class DiscordBot extends Manager implements Once {
 						//	String sha256 = "0x2173" + DigestUtils.sha256Hex(bytes);
 						structPlayerWallet.player_wallet = "0x" + Primitives.unsignedInt(modalUsername.hashCode());
 						if (Seriex.get().database().getPlayer(modalUsername) != null) {
-							event.reply("A player with the username " + modalUsername + " already exists!").setEphemeral(true).queue();
+							event.reply(String.format("A player with the username %s already exists!", modalUsername)).setEphemeral(true).queue();
 							return;
 						}
 						if (!structPlayer.create()) {
@@ -325,7 +394,7 @@ public class DiscordBot extends Manager implements Once {
 						// TODO find better fix for desync player_ids...
 						StructPlayer databaseStructPlayer = Seriex.get().database().getPlayer(modalUsername);
 						if (databaseStructPlayer == null) {
-							event.reply("what the fuck (0x0)").setEphemeral(true).queue(); // should never happen
+							event.reply("what the fuck (0x0)").setEphemeral(true).queue();  // should never happen
 							return;
 						}
 						int databaseID = databaseStructPlayer.player_id;
@@ -347,8 +416,12 @@ public class DiscordBot extends Manager implements Once {
 							return;
 						}
 						Role guildVerifiedRole = verifiedRole.get(guildID);
+						List<String> defaultValue = new ArrayList<>();
+						defaultValue.add("none");
 						event.getGuild().addRoleToMember(snowflake, guildVerifiedRole).queue();
-						event.reply(String.format("Registered as %s!", modalUsername)).setEphemeral(true).queue();
+						SelectMenu twoFA = SelectMenu.create("2FA-" + modalUsername).setPlaceholder("Choose 2FA method").setRequiredRange(1, 1).setDefaultValues(defaultValue)
+									.addOption("Google 2FA", "google").addOption("None", "none").build();
+						event.reply(String.format("Registered as %s! Please select your 2FA method (Select wisely cannot be changed later!)", modalUsername)).addActionRow(twoFA).setEphemeral(true).queue();
 						Member member = event.getMember();
 						event.getGuild().getTextChannelById(discordConfig.ID_REGISTER_LOGS.value())
 									.sendMessage(String.format("%s#%s (%s) registered as %s", member.getEffectiveName(), member.getUser().getDiscriminator(), member.getId(), modalUsername)).queue();
