@@ -32,17 +32,7 @@ public class DataManager extends Manager {
 
 	public void removeUser(Player player) {
 		Seriex.logger().info("Removed %s from the database!", player.getName());
-		//		for (Entry<Player, PlayerW> entry : userMap.entrySet()) {
-		//			Player key = entry.getKey();
-		//			if (key == player) {
-		//				userMap.remove(key);
-		//				break;
-		//			}
-		//		}
-		// TODO maybe make it more efficient
-		if (userMap.containsKey(player)) {
-			userMap.remove(player);
-		}
+		userMap.remove(player);
 	}
 
 	/**
@@ -53,9 +43,7 @@ public class DataManager extends Manager {
 	 */
 	public void removeUser(PlayerW user) {
 		Optional<Player> player = userMap.entrySet().stream().filter((Entry<Player, PlayerW> entry) -> entry.getValue() == user).map(Entry::getKey).findAny();
-		if (player.isPresent()) {
-			removeUser(player.get());
-		}
+		player.ifPresent(this::removeUser);
 	}
 
 	@Override

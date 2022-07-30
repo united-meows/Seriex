@@ -29,7 +29,7 @@ public class IPApi {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			Seriex.logger().fatal("Couldnt get response from IPAPI!");
+			Seriex.logger().fatal("Couldnt get response from IP API!");
 			return null;
 		}
 	}

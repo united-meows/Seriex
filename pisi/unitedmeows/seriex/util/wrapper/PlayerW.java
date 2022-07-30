@@ -62,8 +62,8 @@ public class PlayerW extends HookClass<Player> {
 	public MovementValuesWrapper prevValues;
 	public long playMS;
 	public boolean loggedIn;
-    public PlayerState playerState;
-    public Minigame currentMinigame;
+	public PlayerState playerState;
+	public Minigame currentMinigame;
 
 	public boolean has2FA() {
 		return playerInfo != null && playerInfo.gAuth != null && !"-".equals(playerInfo.gAuth);
@@ -80,6 +80,7 @@ public class PlayerW extends HookClass<Player> {
 			return; // bug fix
 		}
 		if (selectedLanguages == null) {
+			// todo enumset
 			selectedLanguages = new HashSet<>();
 		}
 		DiscordConfig discordConfig = (DiscordConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().DISCORD);
@@ -94,10 +95,16 @@ public class PlayerW extends HookClass<Player> {
 		Map<Language, Role> map = DiscordBot.roleCache.get(guildID);
 		Guild guildById = discordBot.JDA().getGuildById(guildID);
 		UserSnowflake snowflake = UserSnowflake.fromId(playerDiscord.discord_id);
-		Member member = guildById.getMember(snowflake);
+		Member member = null;
+		if (guildById != null) {
+			member = guildById.getMember(snowflake);
+		} else {
+			Seriex.logger().fatal("Couldn't find guild by the id %s", guildID);
+			return;
+		}
 		if (member == null) {
 			// todo remove
-			Seriex.get().kick(getHooked(), "ur null");
+			Seriex.get().kick(getHooked(), "what tf");
 			return;
 		}
 		List<Role> roles = member.getRoles();
@@ -125,7 +132,7 @@ public class PlayerW extends HookClass<Player> {
 		}
 		attributeHolders = new HashMap<>();
 		registerAttributes();
-        playerState = PlayerState.SPAWN;
+		playerState = PlayerState.SPAWN;
 	}
 
 	private void registerAttributes() {
@@ -198,7 +205,7 @@ public class PlayerW extends HookClass<Player> {
 		}
 	}
 
-	public void denyMovement() {
+	public final void denyMovement() {
 		Player player = getHooked();
 		if (prevValues == null) {
 			prevValues = new MovementValuesWrapper(player.getWalkSpeed(), player.getFlySpeed(), player.getFoodLevel(), player.isSprinting());
@@ -212,7 +219,7 @@ public class PlayerW extends HookClass<Player> {
 		player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 200));
 	}
 
-	public void allowMovement() {
+	public final void allowMovement() {
 		Player player = getHooked();
 		if (prevValues == null) {
 			Seriex.logger().fatal("Movement was not denied for %s!", player.getName());
@@ -265,7 +272,9 @@ public class PlayerW extends HookClass<Player> {
 				// if you want to mask to the first dot
 				// make the 2 -> 3
 				// after that ip`s will look like 127.x.x.x
-				finalIp.append(splitIp[i] + ".");
+				// appending differently avoids object allocation (til)
+				finalIp.append(splitIp[i]);
+				finalIp.append(".");
 			} else {
 				for (int j = 0; j < splitIp[i].length(); j++) {
 					if (j == 0) {
@@ -273,7 +282,8 @@ public class PlayerW extends HookClass<Player> {
 							finalIp.append(maskChar);
 							first = true;
 						} else {
-							finalIp.append("." + maskChar);
+							finalIp.append(".");
+							finalIp.append(maskChar);
 						}
 					} else {
 						finalIp.append(maskChar);
@@ -304,6 +314,4 @@ public class PlayerW extends HookClass<Player> {
 	public Player getHooked() {
 		return super.getHooked();
 	}
-
-
 }

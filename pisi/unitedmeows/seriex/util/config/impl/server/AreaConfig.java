@@ -43,7 +43,7 @@ public class AreaConfig extends Config {
 	public ConfigValue<Integer> warpZ = new ConfigValue<>(this, "warp.z", 0);
 
 	public AreaConfig(File toWrite, String extension, Area... areas) {
-		super("Area", true, MULTIPLE, toWrite);
+		super("Area", false, MULTIPLE, toWrite);
 		Arrays.stream(areas).forEach(area -> {
 			File file = new File(String.format("%s/%s%s", toWrite, area.name(), extension));
 			configs.put(area.name(), new Pair<>(file, inMemoryConcurrent()));

@@ -87,7 +87,7 @@ public class Seriex extends JavaPlugin {
 	private List<Once> onces = new GlueList<>();
 	private List<Listener> listeners = new GlueList<>();
 	private List<PacketAdapter> packetAdapters = new GlueList<>();
-	private static SLogger logger = new SLogger(null, "Seriex").time(SLogger.Time.DAY_MONTH_YEAR_FULL).colored(true);
+	private static SLogger logger = new SLogger(null, "Seriex" /* todo: unhardcode this */).time(SLogger.Time.DAY_MONTH_YEAR_FULL).colored(true);
 	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here so it can work async :D
 	private boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
 	private Thread primaryThread;
@@ -119,8 +119,8 @@ public class Seriex extends JavaPlugin {
 		try {
 			WordList.read();
 			File firstTime = new File(getDataFolder(), "first" + FileManager.EXTENSION);
-			boolean firstTimeFileExists = firstTime.exists();
-			if (!firstTimeFileExists) {
+			boolean firstTimeFileDoesNotExists = !firstTime.exists();
+			if (firstTimeFileDoesNotExists) {
 				firstStart = true;
 			}
 			logger().info("Starting Seriex...");
@@ -210,6 +210,7 @@ public class Seriex extends JavaPlugin {
 				listeners.add(new SeriexSpigotListener());
 				listeners.add(authListener);
 				areaManager = new AreaManager();
+				managers.add(areaManager);
 				listeners.add(areaManager);
 				listeners.addAll(areaManager.areaList);
 				listeners.forEach(listener -> getServer().getPluginManager().registerEvents(listener, this));
@@ -218,7 +219,7 @@ public class Seriex extends JavaPlugin {
 				onces.add(discordBot);
 			}
 			managers.forEach((Manager mgr) -> mgr.post(get()));
-			if (!firstTimeFileExists) {
+			if (firstTimeFileDoesNotExists) {
 				boolean created = firstTime.createNewFile();
 				if (created) {
 					onces.forEach(Once::once);
@@ -281,7 +282,7 @@ public class Seriex extends JavaPlugin {
 					return;
 				}
 				Location oneBlockAheadOfSign = locationOfSign.add(offsetX, 0, offsetZ);
-				List<Location> pigLocations = new ArrayList<>();
+				List<Location> pigLocations = new ArrayList<>(amountOfPigs);
 				int indexOfMiddlePig = amountOfPigs - (amountOfPigs >> 1);
 				for (double i = 0; i <= amountOfPigs; i++) {
 					if (i < indexOfMiddlePig) {

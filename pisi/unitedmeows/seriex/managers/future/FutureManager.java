@@ -1,6 +1,8 @@
 package pisi.unitedmeows.seriex.managers.future;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.managers.Manager;
@@ -12,6 +14,8 @@ import pisi.unitedmeows.yystal.parallel.Future;
 // note: you cant delete futures until they are done get real
 public class FutureManager extends Manager {
 	private List<Future<?>> futures = new GlueList<>();
+
+	private AtomicBoolean stopLoopingThread = new AtomicBoolean(false);
 
 	@Override
 	public void start(Seriex seriex) {
@@ -38,16 +42,17 @@ public class FutureManager extends Manager {
 				synchronized (mainThread) {
 					mainThread.notifyAll();
 				}
+				stopLoopingThread.set(true);
 			}
 			// maybe?
 			done = checkFutures(done);
-		}, 50L, () -> true);
+		}, 50L, () -> !stopLoopingThread.get());
 		while (!done) {
 			Seriex.logger().info("Waiting for futures to be finished.");
 			// runs once
 			synchronized (mainThread) {
 				try {
-					mainThread.wait();
+					mainThread.wait(Duration.ofSeconds(30).toMillis());
 				}
 				catch (InterruptedException e) {
 					e.printStackTrace();
@@ -63,8 +68,7 @@ public class FutureManager extends Manager {
 
 	private boolean checkFutures(boolean done) {
 		for (int i = 0; i < futures.size(); i++) {
-			Future<?> future = futures.get(i);
-			done &= future.hasSet();
+			done &= futures.get(i).hasSet();
 		}
 		return done;
 	}

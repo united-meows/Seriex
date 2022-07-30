@@ -9,6 +9,6 @@ public enum TimingsCalculator {
 	public void benchmark(final IExec exec, final String name) {
 		final long ms = System.currentTimeMillis();
 		exec.run();
-		Seriex.logger().debug(String.format("Loaded %s in %d ms!", name, (System.currentTimeMillis() - ms)));
+		Seriex.logger().debug(String.format("Loaded %s in %d ms!", name, Long.valueOf(System.currentTimeMillis() - ms)));
 	}
 }

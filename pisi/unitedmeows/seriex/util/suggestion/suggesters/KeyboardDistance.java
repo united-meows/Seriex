@@ -7,8 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 public class KeyboardDistance {
+	// TODO make this language based
 	static final String[] KEYBOARD_ROWS = new String[] {
-				"1234567890-+", "qwertyuiop[]", "asdfghjkl;'\\", "zxcvbnm,./"
+		"1234567890-+", "qwertyuiop[]", "asdfghjkl;'\\", "zxcvbnm,./"
 	};
 	static final Map<Character, Point> letterToPosition = new HashMap<>();
 	static {

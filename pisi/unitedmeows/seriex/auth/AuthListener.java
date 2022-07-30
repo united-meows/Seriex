@@ -131,7 +131,9 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 			LoginInventory.open(baseHook, Seriex.get().authentication());
 			if (cachedWelcome == null) {
 				// TODO translations
-				cachedWelcome = AnimatedTitle.animateText("Welcome to Seriex!", "Seriex", "&d", "&5&l");
+				ServerConfig config = (ServerConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().SERVER);
+				String serverName = config.SERVER_NAME.value();
+				cachedWelcome = AnimatedTitle.animateText("Welcome to " + serverName + "!", serverName, "&d", "&5&l");
 			}
 			joinMessageRunnable = AnimatedTitle.animatedTitle(player, cachedWelcome, null);
 			// TODO translations & guest support

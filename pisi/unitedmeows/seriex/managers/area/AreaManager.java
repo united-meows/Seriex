@@ -3,6 +3,7 @@ package pisi.unitedmeows.seriex.managers.area;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,6 +18,8 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.managers.area.areas.Area;
+import pisi.unitedmeows.seriex.managers.area.areas.Area.Category;
+import pisi.unitedmeows.seriex.managers.area.areas.base.BasicArea;
 import pisi.unitedmeows.seriex.managers.area.areas.util.ImplementArea;
 import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.config.FileManager;
@@ -29,10 +32,10 @@ public class AreaManager extends Manager implements Listener {
 	public Map<String, Pair<ImplementArea, Class<? extends Area>>> classMap = new HashMap<>();
 
 	@Override
-	public void start(Seriex seriex) {
+	public void post(Seriex seriex) {
 		classMap.clear(); // reload & restart
 		Reflections sorry = new Reflections("pisi.unitedmeows.seriex.managers.area.areas.impl");
-		Set<Class<? extends Area>> areaClasses = sorry.getSubTypesOf(Area.class);
+		Set<Class<? extends BasicArea>> areaClasses = sorry.getSubTypesOf(BasicArea.class);
 		areaClasses.stream().forEach(areaClass -> {
 			try {
 				boolean annotationPresent = areaClass.isAnnotationPresent(ImplementArea.class);
@@ -56,7 +59,8 @@ public class AreaManager extends Manager implements Listener {
 				Pair<ImplementArea, Class<? extends Area>> pair2 = classMap.get(baseClassName);
 				Class<? extends Area> baseClass = pair2.item2();
 				ImplementArea annotation = pair2.item1();
-				Area clazz = baseClass.getConstructor(areaConfig.getClass(), config.getClass(), annotation.category().getClass()).newInstance(areaConfig, config, annotation.category());
+				Category category = Category.valueOf(baseClass.getPackage().getName().split("impl.")[1].toUpperCase(Locale.ENGLISH));
+				Area clazz = baseClass.getConstructor(areaConfig.getClass(), config.getClass(), category.getClass()).newInstance(areaConfig, config, category);
 				areaList.add(clazz);
 			}
 			catch (Exception e) {

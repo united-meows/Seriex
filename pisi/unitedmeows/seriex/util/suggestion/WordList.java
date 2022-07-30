@@ -1,13 +1,23 @@
 package pisi.unitedmeows.seriex.util.suggestion;
 
-import static java.nio.charset.StandardCharsets.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -22,8 +32,10 @@ import pisi.unitedmeows.seriex.util.language.Language;
 import pisi.unitedmeows.yystal.parallel.Async;
 
 public class WordList {
-	private static final Pattern RESOURCE_PATTERN = Pattern.compile(".*");
 	private static final Pattern PATTERN = Pattern.compile("\\p{L}+");
+	private static final Pattern NUMBERS_PATTERN = Pattern.compile("\\d");
+	private static final Pattern RESOURCE_PATTERN = Pattern.compile(".*");
+	private static final Pattern OTHER_PATTERN = Pattern.compile("\0", Pattern.LITERAL);
 	public static Map<String, Set<String>> LOWERCASE_WORDS = new HashMap<>();
 	public static Map<String, Integer> FREQUENCY = new HashMap<>();
 	private static Set<String> strings = new HashSet<>();
@@ -108,40 +120,6 @@ public class WordList {
 		return builder.toString();
 	}
 
-	static String removeNumbers(char[] ch) {
-		int m = 0;
-		char[] chr = new char[ch.length];
-		char[] k = {
-			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-		};
-		for (int i = 0; i < ch.length; i++) {
-			for (int j = 0; j < k.length; j++) {
-				if (ch[i] == k[j]) {
-					m--;
-					break;
-				} else {
-					chr[m] = ch[i];
-				}
-			}
-			m++;
-		}
-		String st = String.valueOf(chr);
-		return st;
-	}
-
-	public static void transform(File source, String srcEncoding, File target, String tgtEncoding) throws IOException {
-		try (
-					BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(source), srcEncoding));
-					BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(target), tgtEncoding))
-		) {
-			char[] buffer = new char[16384];
-			int read;
-			while ((read = br.read(buffer)) != -1) {
-				bw.write(buffer, 0, read);
-			}
-		}
-	}
-
 	public static void swap(char[] arr, int idx1, int idx2) {
 		char temp = arr[idx1];
 		arr[idx1] = arr[idx2];
@@ -170,7 +148,6 @@ public class WordList {
 		String writtenFileName = languageTag + ".slang";
 		String PATH_TO_BOOKS = desktopPath + "dataset";
 		String PATH_TO_WRITE = desktopPath + writtenFileName;
-		final Pattern pattern = Pattern.compile("[0-9]");
 		Async.async_loop_condition(() -> {
 			Seriex.logger().debug("Read %s amount of words... (time passed: %s)", totalWords, System.currentTimeMillis() - ms);
 		}, 1000L, () -> !readAll.get());
@@ -182,15 +159,15 @@ public class WordList {
 				String string = pathString.toAbsolutePath().toString();
 				if (string.endsWith(".txt") && string.contains(languageTag) && !string.contains(writtenFileName)) { // extension
 					File source = new File(string);
-					try (Scanner scanner = new Scanner(new FileInputStream(source), UTF_8.displayName())) {
+					try (Scanner scanner = new Scanner(Files.newInputStream(source.toPath()), UTF_8.displayName())) {
 						int currentWords = 0;
 						scanner.useLocale(locale);
 						while (scanner.hasNext()) {
 							String next = scanner.next();
 							next = removePunctutation(next);
 							next = next.toLowerCase(locale);
-							next = pattern.matcher(next).replaceAll("");
-							next = next.replace("\0", "");
+							next = NUMBERS_PATTERN.matcher(next).replaceAll("");
+							next = OTHER_PATTERN.matcher(next).replaceAll("");
 							boolean contains = LOWERCASE_WORDS.get(languageTag).contains(next);
 							if (next.length() > 2 && !next.contains(" ")) {
 								freqMap.put(next, freqMap.getOrDefault(next, 0) + (contains ? 2 : 1));
@@ -209,8 +186,13 @@ public class WordList {
 			readAll.set(true);
 			strings.forEach((String t) -> generalBuilder.append(String.format("%s:%s%n", t, freqMap.get(t))));
 			Files.write(Paths.get(PATH_TO_WRITE), generalBuilder.toString().getBytes(UTF_8));
-			Entry<String, Integer> entry = freqMap.entrySet().stream().max(Map.Entry.comparingByValue()).get();
-			Seriex.logger().info("Most used word: %s -> %s", entry.getKey(), entry.getValue());
+			Optional<Entry<String, Integer>> max = freqMap.entrySet().stream().max(Entry.comparingByValue());
+			if (max.isPresent()) {
+				Entry<String, Integer> entry = max.get();
+				Seriex.logger().info("Most used word: %s -> %s", entry.getKey(), entry.getValue());
+			} else {
+				Seriex.logger().fatal("There isnt any most used word...?");
+			}
 			Seriex.logger().fatal("Written %s words! (took %s ms)", strings.size(), System.currentTimeMillis() - ms);
 		}
 		catch (IOException e) {

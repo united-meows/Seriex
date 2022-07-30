@@ -72,7 +72,7 @@ public class FileManager extends Manager {
 			createFile(verifier, BAN_ACTIONS, new BanActionsConfig());
 			createFile(verifier, RANKS, new RanksConfig());
 			createFile(verifier, MAINTAINERS, new MaintainersConfig());
-			createFile(verifier, AREAS, null);
+			// todo use @Cfg to get configs from reflection ✌
 			set = true;
 		}
 	}
@@ -80,7 +80,7 @@ public class FileManager extends Manager {
 	@Override
 	public void post(Seriex seriex) {
 		File areasDirectory = new File(directory, AREAS);
-		createFile(verifier, AREAS, new AreaConfig(areasDirectory, EXTENSION, get().areaManager().areaList.stream().toArray(Area[]::new)));
+		createFile(verifier, AREAS, new AreaConfig(areasDirectory, EXTENSION, get().areaManager().areaList.toArray(new Area[0])));
 		verifier.forEach((string, bool) -> {
 			allDone &= bool;
 		});
@@ -154,9 +154,9 @@ public class FileManager extends Manager {
 	}
 
 	public void createFile(Map<String, Boolean> map, String alias, Config config) {
-		boolean multi = config.hasMultiple();
+		boolean multi = config != null && config.hasMultiple();
 		File file = new File(directory, alias + (multi ? "" : EXTENSION));
-		if (!multi) {
+		if (!multi && config != null) {
 			config.toWrite = file;
 		}
 		boolean createFile0 = createFile0(alias, file, config);

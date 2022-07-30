@@ -7,12 +7,11 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import com.electronwill.nightconfig.core.CommentedConfig;
 
 import pisi.unitedmeows.seriex.Seriex;
-import pisi.unitedmeows.seriex.managers.area.areas.Area.Category;
 import pisi.unitedmeows.seriex.managers.area.areas.base.BasicArea;
 import pisi.unitedmeows.seriex.managers.area.areas.util.ImplementArea;
 import pisi.unitedmeows.seriex.util.config.impl.server.AreaConfig;
 
-@ImplementArea(name = "scaffold" , category = Category.MOVEMENT)
+@ImplementArea(name = "scaffold")
 public class ScaffoldArea extends BasicArea {
 	// called using reflections
 	public ScaffoldArea(AreaConfig areaConfig, CommentedConfig commentedConfig, Category category) {

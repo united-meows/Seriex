@@ -19,7 +19,7 @@ import pisi.unitedmeows.yystal.utils.Pair;
 
 public class I18n implements ICleanup {
 	// todo ycache / caffeine
-	private Map<String, String> cache = new WeakHashMap<>(100, 0.5F);
+	private final Map<String, String> cache = new WeakHashMap<>(100, 0.5F);
 
 	public String getString(String message, PlayerW player) {
 		try {

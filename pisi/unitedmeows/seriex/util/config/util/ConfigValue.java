@@ -8,7 +8,7 @@ import pisi.unitedmeows.seriex.util.config.impl.Config;
  * @apiNote keys are TOML keys.
  */
 public class ConfigValue<X> {
-	private String key;
+	private final String key;
 	private X value;
 	private Config base;
 

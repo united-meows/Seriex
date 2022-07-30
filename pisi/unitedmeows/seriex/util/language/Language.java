@@ -1,11 +1,10 @@
 package pisi.unitedmeows.seriex.util.language;
 
-import static pisi.unitedmeows.seriex.util.suggestion.WordList.*;
+import static pisi.unitedmeows.seriex.util.suggestion.WordList.LOWERCASE_WORDS;
 
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
-import java.util.function.Function;
 
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.util.suggestion.suggesters.Suggester;
@@ -16,16 +15,11 @@ public enum Language {
 	RUSSIAN(new Locale("ru"), 0b100, 55356, 56823, 55356, 56826),
 	AZERBAIJAN(new Locale("az"), 0b1000, 55356, 56806, 55356, 56831);
 
-	private String languageCode;
-	private Locale locale;
-	private String unicode;
-	private Suggester suggester;
-	private int id;
-	private Function<int[], String> function = array -> {
-		StringBuilder stringBuilder = new StringBuilder();
-		Arrays.stream(array).forEach((int number) -> stringBuilder.append((char) number));
-		return stringBuilder.toString();
-	};
+	private final String languageCode;
+	private final Locale locale;
+	private final String unicode;
+	private final Suggester suggester;
+	private final int id;
 
 	Language(Locale locale, int id, int... unicode) {
 		this.languageCode = locale.toString();
@@ -38,7 +32,9 @@ public enum Language {
 		}
 		this.locale = locale;
 		this.id = id;
-		this.unicode = function.apply(unicode);
+		StringBuilder stringBuilder = new StringBuilder();
+		Arrays.stream(unicode).forEach((int number) -> stringBuilder.append((char) number));
+		this.unicode = stringBuilder.toString();
 	}
 
 	public Locale locale() {

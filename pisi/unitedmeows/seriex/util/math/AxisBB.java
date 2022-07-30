@@ -143,11 +143,11 @@ public class AxisBB implements Iterable<Block> {
 	}
 
 	public boolean intersectsWith(final AxisBB other) {
-		return other.maxX > this.minX && other.minX < this.maxX ? (other.maxY > this.minY && other.minY < this.maxY ? other.maxZ > this.minZ && other.minZ < this.maxZ : false) : false;
+		return other.maxX > this.minX && other.minX < this.maxX && (other.maxY > this.minY && other.minY < this.maxY ? other.maxZ > this.minZ && other.minZ < this.maxZ : false);
 	}
 
 	public boolean isLocInside(final Location vec) {
-		return vec.getX() > this.minX && vec.getX() < this.maxX ? (vec.getY() > this.minY && vec.getY() < this.maxY ? vec.getZ() > this.minZ && vec.getZ() < this.maxZ : false) : false;
+		return vec.getX() > this.minX && vec.getX() < this.maxX && (vec.getY() > this.minY && vec.getY() < this.maxY ? vec.getZ() > this.minZ && vec.getZ() < this.maxZ : false);
 	}
 
 	public double getAverageEdgeLength() {
@@ -169,24 +169,8 @@ public class AxisBB implements Iterable<Block> {
 
 	@Override
 	public String toString() {
-		StringBuilder stringBuilder = new StringBuilder();
 		String delimiter = ", ";
-		stringBuilder.append("box@");
-		stringBuilder.append(worldName);
-		stringBuilder.append("[");
-		stringBuilder.append(this.minX);
-		stringBuilder.append(delimiter);
-		stringBuilder.append(this.minY);
-		stringBuilder.append(delimiter);
-		stringBuilder.append(this.minZ);
-		stringBuilder.append(" -> ");
-		stringBuilder.append(this.maxX);
-		stringBuilder.append(delimiter);
-		stringBuilder.append(this.maxY);
-		stringBuilder.append(delimiter);
-		stringBuilder.append(this.maxZ);
-		stringBuilder.append("]");
-		return stringBuilder.toString();
+		return "box@" + worldName + "[" + this.minX + delimiter + this.minY + delimiter + this.minZ + " -> " + this.maxX + delimiter + this.maxY + delimiter + this.maxZ + "]";
 	}
 
 	public AxisBB offsetAndUpdate(final int par1, final int par3, final int par5) {

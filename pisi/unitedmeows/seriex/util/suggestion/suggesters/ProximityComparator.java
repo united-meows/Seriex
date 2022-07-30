@@ -13,7 +13,7 @@ public class ProximityComparator implements Comparator<String> {
 	}
 
 	@Override
-	public int compare(String str1, String str2) {
+	public final int compare(String str1, String str2) {
 		int ed1 = damerauLevenshtein(string, str1);
 		int ed2 = damerauLevenshtein(string, str2);
 		if (Math.abs(ed1 - ed2) < 1) {

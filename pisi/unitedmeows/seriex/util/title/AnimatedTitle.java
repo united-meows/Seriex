@@ -17,9 +17,6 @@ public class AnimatedTitle {
 		title.setStayTime(20 + speed);
 		final BukkitRunnable bukkitRunnable = new BukkitRunnable() {
 			int mainTicks = 0 , subTicks = 0;
-			boolean goInReverse = false;
-			boolean titleReverse = false , subReverse = false;
-
 			@Override
 			public void run() {
 				if (mainTicks + 1 < mainTitle.length) {
@@ -60,12 +57,13 @@ public class AnimatedTitle {
 				frames.add(primaryColor + kek);
 			}
 			for (int j = 0; j < highlightedChars.length; j++) {
-				final String highlightedBefore = primaryColor + highlightedWord.substring(0, j);
-				final String highlightedChar = highlightColor + highlightedWord.substring(j, j + 1);
-				final String highlightedAfter = primaryColor + highlightedWord.substring(j + 1);
-				final String newHighlighted = highlightedBefore + highlightedChar + highlightedAfter;
+				// with stringbuilder we get one less object :DDDDDDDDD
+				final String highlightedBefore = new StringBuilder().append(primaryColor).append(highlightedWord.substring(0, j)).toString();
+				final String highlightedChar = new StringBuilder().append(highlightColor).append(highlightedWord.substring(j, j + 1)).toString();
+				final String highlightedAfter = new StringBuilder().append(primaryColor).append(highlightedWord.substring(j + 1)).toString();
+				final String newHighlighted = new StringBuilder().append(highlightedBefore).append(highlightedChar).append(highlightedAfter).toString();
 				final String string = i == charArray.length - 1 ? message.replace(highlightedWord, newHighlighted) : message;
-				final String replace = primaryColor + string;
+				final String replace = new StringBuilder().append(primaryColor).append(string).toString();
 				frames.add(replace);
 			}
 		}

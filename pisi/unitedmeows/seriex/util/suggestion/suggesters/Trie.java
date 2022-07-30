@@ -92,7 +92,7 @@ public class Trie {
 		}
 		for (Iterator<Entry<Character, Node>> iterator = root.children.entrySet().iterator(); iterator.hasNext();) {
 			Entry<Character, Node> e = iterator.next();
-			DFS(e.getValue(), prefix + e.getKey(), list);
+			DFS(e.getValue(), new StringBuilder().append(prefix).append(e.getKey()).toString(), list);
 		}
 	}
 }
