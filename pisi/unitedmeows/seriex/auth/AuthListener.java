@@ -1,5 +1,8 @@
 package pisi.unitedmeows.seriex.auth;
 
+import static pisi.unitedmeows.seriex.auth.gauth.GAuth.*;
+
+import java.awt.image.BufferedImage;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +53,9 @@ import pisi.unitedmeows.eventapi.event.listener.Listener;
 import pisi.unitedmeows.pispigot.Pispigot;
 import pisi.unitedmeows.pispigot.event.impl.client.C14PacketTabComplete;
 import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.auth.gauth.GAuth;
 import pisi.unitedmeows.seriex.managers.Manager;
+import pisi.unitedmeows.seriex.util.config.FileManager;
 import pisi.unitedmeows.seriex.util.config.impl.server.AuthConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.TranslationsConfig;
@@ -60,6 +65,7 @@ import pisi.unitedmeows.seriex.util.title.AnimatedTitle;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 import pisi.unitedmeows.yystal.clazz.HookClass;
 import pisi.unitedmeows.yystal.parallel.Async;
+import pisi.unitedmeows.yystal.utils.kThread;
 
 // TODO finish
 public class AuthListener extends Manager implements org.bukkit.event.Listener {
@@ -91,12 +97,9 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		if (!canApplyProtection(player)) {
 			// TODOH set player state to default when minigames are added
 			computeAuthInfo(player);
-			Seriex.logger().debug("[LOGIN] - computed auth info");
 			player.teleport(getServerConfig().getWorldSpawn());
-			Seriex.logger().debug("[LOGIN] - teleported to world spawn");
 		}
 		Pispigot.playerSystem(player).subscribeAll(this);
-		Seriex.logger().debug("[LOGIN] - subscribed to pispigot");
 	}
 
 	@Override
@@ -109,7 +112,6 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 		Pispigot.playerSystem(playerW.getHooked()).unsubscribeAll(this);
 		final AuthInfo authentication = playerMap.get(playerW);
 		authentication.onLogin();
-		Seriex.logger().debug("[LOGIN] - stopping auth");
 	}
 
 	protected static String[] cachedWelcome = null;
@@ -130,24 +132,49 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 			if (cachedWelcome == null) {
 				// TODO translations
 				cachedWelcome = AnimatedTitle.animateText("Welcome to Seriex!", "Seriex", "&d", "&5&l");
-				Seriex.logger().debug("[LOGIN] - cached welcome");
 			}
 			joinMessageRunnable = AnimatedTitle.animatedTitle(player, cachedWelcome, null);
-			if (baseHook.isGuest() && false) {
-				// TODO translations & guest support
-				Seriex.get().msg(player, "You automatically logged in because you are in a guest account!");
-				onLogin();
-			}
+			// TODO translations & guest support
 		}
 
-		public void onLogin() {
-			Seriex.logger().debug("onLogin?");
+		public void onRealLogin() {
 			PlayerW baseHook = getHooked();
 			baseHook.allowMovement();
 			baseHook.getHooked().updateInventory();
 			state = AuthState.LOGGED_IN;
 			joinMessageRunnable.run();
 			remove();
+		}
+
+		public void onLogin() {
+			if (getHooked().has2FA()) {
+				Async.async(() -> {
+					PlayerW hooked = getHooked();
+					synchronized (hooked.playerInfo()) {
+						String secretKey = hooked.playerInfo().gAuth;
+						String lastCode = null;
+						boolean first = true;
+						while (true) {
+							String code = getTOTPCode(secretKey);
+							if (!code.equals(lastCode)) {
+								FileManager fileManager = Seriex.get().fileManager();
+								ServerConfig serverConfig = (ServerConfig) fileManager.getConfig(fileManager.SERVER);
+								Player baseHook = hooked.getHooked();
+								String googleAuthenticatorBarCode = getGoogleAuthenticatorBarCode(secretKey, baseHook.getName(), serverConfig.SERVER_NAME.value());
+								BufferedImage QRCode = createQRCode(googleAuthenticatorBarCode);
+								GAuth.generateAndGiveMap(baseHook, QRCode, !first);
+								if (first) {
+									first = false;
+								}
+							}
+							lastCode = code;
+							kThread.sleep(1000L);
+						}
+					}
+				});
+				return;
+			}
+			onRealLogin();
 		}
 
 		public void onServerEnd() {

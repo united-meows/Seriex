@@ -1,8 +1,9 @@
 package test;
 
-import static pisi.unitedmeows.seriex.Seriex.*;
-import static pisi.unitedmeows.seriex.database.util.DatabaseReflection.*;
-import static pisi.unitedmeows.yystal.YYStal.*;
+import static pisi.unitedmeows.seriex.Seriex.logger;
+import static pisi.unitedmeows.seriex.database.util.DatabaseReflection.init;
+import static pisi.unitedmeows.yystal.YYStal.startWatcher;
+import static pisi.unitedmeows.yystal.YYStal.stopWatcher;
 
 import pisi.unitedmeows.seriex.database.SeriexDB;
 import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
@@ -15,7 +16,7 @@ public class DatabaseTest {
 		init(seriexDB);
 		logger().debug(String.format("DatabaseReflection#init took %d ms", stopWatcher()));
 		logger().debug(seriexDB.getPlayer("ghost2173").toString());
-		if (true) return;
+		if (args.length != 6) return;
 		startWatcher();
 		StructPlayer structPlayer = new StructPlayer();
 		String username = "tempUser";

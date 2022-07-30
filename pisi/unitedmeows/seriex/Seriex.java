@@ -52,6 +52,7 @@ import pisi.unitedmeows.seriex.managers.data.DataManager;
 import pisi.unitedmeows.seriex.managers.future.FutureManager;
 import pisi.unitedmeows.seriex.managers.sign.SignManager;
 import pisi.unitedmeows.seriex.managers.sign.impl.SignCommand;
+import pisi.unitedmeows.seriex.minigames.MinigameManager;
 import pisi.unitedmeows.seriex.util.ICleanup;
 import pisi.unitedmeows.seriex.util.MaintainersUtil;
 import pisi.unitedmeows.seriex.util.Once;
@@ -64,12 +65,11 @@ import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.language.I18n;
 import pisi.unitedmeows.seriex.util.suggestion.WordList;
-import pisi.unitedmeows.seriex.util.wrapper.PlayerState;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 import pisi.unitedmeows.yystal.parallel.Async;
 
 public class Seriex extends JavaPlugin {
-	private static Optional<Seriex> instance_ = Optional.empty();
+	private static final ThreadLocal<Optional<Seriex>> instance_ = ThreadLocal.withInitial(Optional::empty);
 	private CommandSystem commandSystem;
 	private FileManager fileManager;
 	private DataManager dataManager;
@@ -79,6 +79,7 @@ public class Seriex extends JavaPlugin {
 	private DiscordBot discordBot;
 	private AuthListener authListener;
 	private AreaManager areaManager;
+	private MinigameManager minigameManager;
 	private InventoryPacketAdapter inventoryPacketAdapter;
 	private I18n i18n;
 	private List<ICleanup> cleanupabbleObjects = new GlueList<>();
@@ -90,7 +91,6 @@ public class Seriex extends JavaPlugin {
 	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here so it can work async :D
 	private boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
 	private Thread primaryThread;
-	private static final String SECRET_MESSAGE = "࣭࣢࣯࣢ࣰ࣫࢝ࣴࣞ࢝ࣥ࣢࣯࣢";
 	private boolean firstStart;
 
 	@Override
@@ -108,7 +108,7 @@ public class Seriex extends JavaPlugin {
 				}
 			}
 		}
-		instance_ = of(this);
+		instance_.set(of(this));
 		logging: {
 			System.setProperty("jansi.passthrough", "true");
 			System.setProperty("org.jline.terminal.dumb", "true");
@@ -118,7 +118,7 @@ public class Seriex extends JavaPlugin {
 		loadedCorrectly = true;
 		try {
 			WordList.read();
-			File firstTime = new File(getDataFolder(), "first");
+			File firstTime = new File(getDataFolder(), "first" + FileManager.EXTENSION);
 			boolean firstTimeFileExists = firstTime.exists();
 			if (!firstTimeFileExists) {
 				firstStart = true;
@@ -130,25 +130,26 @@ public class Seriex extends JavaPlugin {
 				authListener = new AuthListener();
 				setProperty("nightconfig.preserveInsertionOrder", "true");
 				FormatDetector.registerExtension("seriex", TomlFormat.instance());
-				GET.benchmark(temp -> {
+				GET.benchmark(() -> {
 					logger().info("Loading Managers...");
-					GET.benchmark(yes -> {
+					GET.benchmark(() -> {
 						managers.add(signManager);
 					}, "Sign Manager");
-					GET.benchmark(yes -> {
-						managers.add(fileManager = new FileManager(getDataFolder()));
-					}, "File Manager");
-					GET.benchmark(yes -> {
+					GET.benchmark(() -> {
+						managers.add(minigameManager = new MinigameManager());
+					}, "Minigame Manager");
+					GET.benchmark(() -> managers.add(fileManager = new FileManager(getDataFolder())), "File Manager");
+					GET.benchmark(() -> {
 						managers.add(dataManager = new DataManager());
 					}, "Data Manager");
-					GET.benchmark(yes -> {
+					GET.benchmark(() -> {
 						// 0 iq ersin moment
 						managers.add(new MaintainersUtil());
 					}, "Maintainers Util");
-					GET.benchmark(yes -> {
+					GET.benchmark(() -> {
 						managers.add(discordBot = new DiscordBot(fileManager));
 					}, "Discord Bot");
-					GET.benchmark(yes -> {
+					GET.benchmark(() -> {
 						// @DISABLE_FORMATTING
 						DatabaseConfig config = (DatabaseConfig) fileManager.getConfig(DATABASE);
 						cleanupabbleObjects.add(database = new SeriexDB(
@@ -159,14 +160,14 @@ public class Seriex extends JavaPlugin {
 									config.DATABASE_PORT.value()));
 						// @ENABLE_FORMATTING
 					}, "Database");
-					GET.benchmark(yes -> {
+					GET.benchmark(() -> {
 						cleanupabbleObjects.add(i18n = new I18n());
 					}, "I18N");
-					GET.benchmark(yes -> {
+					GET.benchmark(() -> {
 						managers.add(futureManager = new FutureManager()); // this should be always last!
 					}, "Future Manager");
 				}, "Managers");
-				GET.benchmark(temp -> {
+				GET.benchmark(() -> {
 					if (database == null) {
 						String text = firstStart ? "Database isnt configured correctly!" : "Database file is corrupt?!?!";
 						logger().fatal(text);
@@ -178,7 +179,7 @@ public class Seriex extends JavaPlugin {
 					}
 					DatabaseReflection.init(database);
 				}, "Database Reflection");
-				GET.benchmark(temp -> {
+				GET.benchmark(() -> {
 					logger().info("Enabling Managers...");
 					managers.forEach((Manager manager) -> manager.start(get()));
 				}, "Enabled Managers");
@@ -191,10 +192,10 @@ public class Seriex extends JavaPlugin {
 				}
 				packetAdapters.clear();
 				ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
-				GET.benchmark(yes -> {
+				GET.benchmark(() -> {
 					packetAdapters.add(inventoryPacketAdapter = new InventoryPacketAdapter());
 				}, "Inventory Packet Adapter");
-				GET.benchmark(yes -> {
+				GET.benchmark(() -> {
 					packetAdapters.add(new MOTDAdapter().createAdapter(protocolManager));
 				}, "MOTD Packet Adapter");
 				packetAdapters.forEach(protocolManager::addPacketListener);
@@ -324,17 +325,17 @@ public class Seriex extends JavaPlugin {
 	public void onDisable() {
 		getOnlinePlayers().forEach((Player player) -> kick(player, "Restarting the server..."));
 		cleanupabbleObjects.forEach(ICleanup::cleanup);
-		instance_ = Optional.empty();
+		instance_.remove();
 		Try.safe(temp -> System.gc(), "Couldnt invoke Java garbage cleaner!");
 		super.onDisable();
 	}
 
 	public static boolean available() {
-		return instance_.isPresent();
+		return instance_.get().isPresent();
 	}
 
 	public static Seriex get() {
-		return instance_.orElseThrow(() -> new SeriexException("Seriex isnt loaded properly!"));
+		return instance_.get().orElseThrow(() -> new SeriexException("Seriex isnt loaded properly!"));
 	}
 
 	public Thread primaryThread() {
@@ -371,7 +372,6 @@ public class Seriex extends JavaPlugin {
 
 	public Player msg(Player player, String message, Object... args) {
 		if (args.length == 0) {
-
 			player.sendMessage(colorizeString(String.format("%s &7%s", suffix(), message)));
 		} else {
 			player.sendMessage(colorizeString(String.format(String.format("%s &7%s", suffix(), message), args)));
@@ -428,5 +428,9 @@ public class Seriex extends JavaPlugin {
 
 	public InventoryPacketAdapter inventoryPacketAdapter() {
 		return inventoryPacketAdapter;
+	}
+
+	public MinigameManager minigameManager() {
+		return minigameManager;
 	}
 }

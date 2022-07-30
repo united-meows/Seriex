@@ -7,13 +7,13 @@ import pisi.unitedmeows.seriex.util.timings.TimingsCalculator;
 
 public class SuggestionTest {
 	public static void main(String... args) {
-		TimingsCalculator.GET.benchmark(func -> {
+		TimingsCalculator.GET.benchmark(() -> {
 			WordList.read();
 		}, "Words");
 		String suggestionWord = "merhqba";
 		String autocompleteWord = "merhab";
 		Suggester suggester = new Suggester(WordList.LOWERCASE_WORDS.get("tr"));
-		TimingsCalculator.GET.benchmark(func -> {
+		TimingsCalculator.GET.benchmark(() -> {
 			suggester.suggestions(suggestionWord, 50).forEach(Seriex.logger()::fatal);
 			Seriex.logger().fatal("------");
 			suggester.autocomplete(autocompleteWord, 3).forEach(Seriex.logger()::fatal);

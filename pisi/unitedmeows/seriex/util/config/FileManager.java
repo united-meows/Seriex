@@ -1,8 +1,9 @@
 package pisi.unitedmeows.seriex.util.config;
 
-import static java.nio.charset.StandardCharsets.*;
-import static org.apache.commons.io.FilenameUtils.*;
-import static pisi.unitedmeows.seriex.Seriex.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.FilenameUtils.getExtension;
+import static pisi.unitedmeows.seriex.Seriex.get;
+import static pisi.unitedmeows.seriex.Seriex.logger;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -15,7 +16,16 @@ import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.managers.area.areas.Area;
 import pisi.unitedmeows.seriex.util.config.impl.Config;
-import pisi.unitedmeows.seriex.util.config.impl.server.*;
+import pisi.unitedmeows.seriex.util.config.impl.server.AreaConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.AuthConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.BanActionsConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.DatabaseConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.MaintainersConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.MinigameConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.RanksConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.TranslationsConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.WorldConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import pisi.unitedmeows.seriex.util.language.Language;
 import pisi.unitedmeows.yystal.parallel.Async;
@@ -35,6 +45,7 @@ public class FileManager extends Manager {
 	public static final String TRANSLATIONS = "translations";
 	public static final String DATABASE = "database";
 	public static final String DISCORD = "discord";
+	public static final String MINIGAME = "minigame";
 	public static final String EXTENSION = ".seriex";
 	public static final String PRIVATE = "#PRIVATE#";
 	private final Map<String, Pair<File, Config>> fileVariablesMap = new HashMap<>();
@@ -49,8 +60,10 @@ public class FileManager extends Manager {
 			this.saved = pluginDirectory;
 			File translationsFile = new File(directory, TRANSLATIONS);
 			File worldDirectory = new File(directory, WORLD);
+			File minigameDirectory = new File(directory, MINIGAME);
 			if (Seriex.available()) {
 				createFile(verifier, WORLD, new WorldConfig(worldDirectory, EXTENSION, get().getServer().getWorlds().stream().toArray(World[]::new)));
+				createFile(verifier, MINIGAME, new MinigameConfig(minigameDirectory, EXTENSION, get().minigameManager().minigames()));
 			}
 			createFile(verifier, TRANSLATIONS, new TranslationsConfig(translationsFile, EXTENSION, Language.values()));
 			createFile(verifier, DISCORD, new DiscordConfig());
@@ -59,7 +72,7 @@ public class FileManager extends Manager {
 			createFile(verifier, BAN_ACTIONS, new BanActionsConfig());
 			createFile(verifier, RANKS, new RanksConfig());
 			createFile(verifier, MAINTAINERS, new MaintainersConfig());
-			createFile(verifier, SERVER, new ServerConfig());
+			createFile(verifier, AREAS, null);
 			set = true;
 		}
 	}

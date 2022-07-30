@@ -1,6 +1,6 @@
 package pisi.unitedmeows.seriex.util.config.impl.server;
 
-import static com.electronwill.nightconfig.core.CommentedConfig.*;
+import static com.electronwill.nightconfig.core.CommentedConfig.inMemoryConcurrent;
 
 import java.io.File;
 import java.util.Arrays;
@@ -18,7 +18,6 @@ public class TranslationsConfig extends Config {
 			File file = new File(String.format("%s/%s%s", toWrite, language.languageCode(), extension));
 			configs.put(language.languageCode(), new Pair<>(file, inMemoryConcurrent()));
 		});
-		this.manual = true;
 	}
 
 	@Override

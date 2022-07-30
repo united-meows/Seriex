@@ -1,7 +1,7 @@
 package pisi.unitedmeows.seriex.util.config.impl.server;
 
-import static com.electronwill.nightconfig.core.CommentedConfig.*;
-import static pisi.unitedmeows.seriex.util.config.impl.server.WorldConfig.WorldType.*;
+import static com.electronwill.nightconfig.core.CommentedConfig.inMemoryConcurrent;
+import static pisi.unitedmeows.seriex.util.config.impl.server.WorldConfig.WorldType.NULL;
 
 import java.io.File;
 import java.util.Arrays;
@@ -21,7 +21,7 @@ public class WorldConfig extends Config {
 	public ConfigValue<WorldType> WORLD_TPYE = new ConfigValue<>(this, "world.type", NULL);
 
 	public WorldConfig(File toWrite, String extension, World... worlds) {
-		super("World", true, ConfigType.MULTIPLE, toWrite);
+		super("World", false, ConfigType.MULTIPLE, toWrite);
 		Arrays.stream(worlds).forEach(world -> {
 			File file = new File(String.format("%s/%s%s", toWrite, world.getName(), extension));
 			configs.put(world.getName(), new Pair<>(file, inMemoryConcurrent()));
