@@ -1,8 +1,8 @@
 package pisi.unitedmeows.seriex.util.wrapper;
 
 import java.lang.reflect.Field;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -74,20 +74,19 @@ public class PlayerW extends HookClass<Player> {
 		hooked = _player;
 		final String name = hooked.getName();
 		playerInfo = Seriex.get().database().getPlayer(_player.getName());
+		DiscordConfig discordConfig = (DiscordConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().DISCORD);
 		if (playerInfo == null) {
 			Seriex.logger().warn("Database values of player %s was missing! (maybe not verified?)", name);
-			_player.kickPlayer(ChatColor.YELLOW + "Please verify :DDDD or your db values are corrupted" /* @ghost make this cool */);
+			Seriex.get().kick(_player, "Please verify on discord!\n%s%s", ChatColor.BLUE, discordConfig.INVITE_LINK.value());
 			return; // bug fix
 		}
 		if (selectedLanguages == null) {
-			// todo enumset
-			selectedLanguages = new HashSet<>();
+			selectedLanguages = EnumSet.noneOf(Language.class);
 		}
-		DiscordConfig discordConfig = (DiscordConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().DISCORD);
 		playerDiscord = Seriex.get().database().getPlayerDiscord(_player.getName());
 		if (playerDiscord == null) {
 			// todo remove
-			Seriex.get().kick(getHooked(), "ur discord is null");
+			Seriex.get().kick(getHooked(), "Please contact an maintainer... [0xDISCORD]");
 			return;
 		}
 		DiscordBot discordBot = Seriex.get().discordBot();
@@ -103,8 +102,7 @@ public class PlayerW extends HookClass<Player> {
 			return;
 		}
 		if (member == null) {
-			// todo remove
-			Seriex.get().kick(getHooked(), "what tf");
+			Seriex.get().kick(getHooked(), "Please contact an maintainer... [0xMEMBER]");
 			return;
 		}
 		List<Role> roles = member.getRoles();
@@ -112,7 +110,19 @@ public class PlayerW extends HookClass<Player> {
 			Seriex.get().kick(getHooked(), "You have no roles.");
 			return;
 		}
-		boolean onlyHasVerified = roles.size() == 1 && roles.get(0) == DiscordBot.verifiedRole.get(guildID);
+		boolean hasVerifiedRole = false;
+		boolean hasAnyLanguageRole = false;
+		for (int i = 0; i < roles.size(); i++) {
+			Role role = roles.get(i);
+			if (!hasVerifiedRole && role == DiscordBot.verifiedRole.get(guildID)) {
+				hasVerifiedRole = true;
+			}
+			if (!hasAnyLanguageRole && map.containsValue(role)) {
+				hasAnyLanguageRole = true;
+			}
+		}
+		// this fixes adding roles like "not a random" etc...
+		boolean onlyHasVerified = hasVerifiedRole && !hasAnyLanguageRole;
 		if (onlyHasVerified) {
 			Seriex.get().kick(getHooked(), "You have no language roles selected.");
 			return;

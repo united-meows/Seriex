@@ -87,9 +87,9 @@ public class Seriex extends JavaPlugin {
 	private List<Once> onces = new GlueList<>();
 	private List<Listener> listeners = new GlueList<>();
 	private List<PacketAdapter> packetAdapters = new GlueList<>();
-	private static SLogger logger = new SLogger(null, "Seriex" /* todo: unhardcode this */).time(SLogger.Time.DAY_MONTH_YEAR_FULL).colored(true);
-	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here so it can work async :D
-	private boolean loadedCorrectly; // i have an idea but it wont probably work, so this field maybe is unnecessary...
+	private static SLogger logger = new SLogger(null, "Seriex" /* todo: un-hardcode this */).time(SLogger.Time.DAY_MONTH_YEAR_FULL).colored(true);
+	private Set<Anticheat> anticheats = new HashSet<>(); // this has to be here, so it can work async :D
+	private boolean loadedCorrectly; // i have an idea, but it won't probably work, so this field maybe is unnecessary...
 	private Thread primaryThread;
 	private boolean firstStart;
 

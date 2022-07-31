@@ -93,7 +93,7 @@ public class DiscordBot extends Manager implements Once {
 				break auto_configure;
 			}
 			String guildID = discordConfig.ID_GUILD.value();
-			if (guildID != null && guildID.isEmpty()) {
+			if (guildID == null || guildID.isEmpty()) {
 				Seriex.logger().fatal("Discord Guild ID is empty!");
 				break auto_configure;
 			}
@@ -175,7 +175,6 @@ public class DiscordBot extends Manager implements Once {
 					Guild guild = event.getJDA().getGuildById(configID);
 					String serverChatID = discordConfig.ID_SERVER_CHAT.value();
 					if (guild != null) {
-						// todoh add null check
 						TextChannel textChannelById = guild.getTextChannelById(serverChatID);
 						if (textChannelById != null) {
 							textChannelById.sendMessageEmbeds(embed);
