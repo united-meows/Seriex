@@ -14,13 +14,13 @@ public class TomlTest {
 		System.setProperty("nightconfig.preserveInsertionOrder", "true");
 		List<List<Integer>> list = new ArrayList<>();
 		List<Integer> min = new ArrayList<>();
-		min.add(1);
-		min.add(2);
-		min.add(3);
+		for (int i = 1; i <= 3; i++) {
+			min.add(i);
+		}
 		List<Integer> max = new ArrayList<>();
-		max.add(4);
-		max.add(5);
-		max.add(6);
+		for (int i = 3; i <= 6; i++) {
+			min.add(i);
+		}
 		list.add(min);
 		list.add(max);
 		config.set("kumalala", list);

@@ -3,7 +3,11 @@ package pisi.unitedmeows.seriex.util.unsafe;
 import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexError;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 import sun.misc.Unsafe;
@@ -11,6 +15,10 @@ import sun.misc.Unsafe;
 // todo: find original author
 @SuppressWarnings("all")
 public class UnsafeReflect {
+	private static final Map<String, Field> stringToFieldMap = new HashMap<>();
+	private static final Map<String, Long> stringToOffset = new HashMap<>();
+	private static final Map<String, Object> stringToObject = new HashMap<>();
+	private static final List<String> initCheck = new GlueList<>();
 	private static final Unsafe UNSAFE = AccessController.doPrivileged((PrivilegedAction<Unsafe>) () -> {
 		try {
 			Field field = Unsafe.class.getDeclaredField("theUnsafe");
@@ -45,11 +53,27 @@ public class UnsafeReflect {
 	}
 
 	private static Object getFieldValue0(Class<?> clazz, String fieldName) throws NoSuchFieldException {
-		UNSAFE.ensureClassInitialized(clazz);
-		Field field = clazz.getDeclaredField(fieldName);
+		long ms = System.currentTimeMillis();
+		String name = clazz.getName();
+		if (!initCheck.contains(name)) {
+			UNSAFE.ensureClassInitialized(clazz);
+			initCheck.add(name);
+		}
+		Field field = stringToFieldMap.computeIfAbsent(fieldName, fieldName_ -> {
+			try {
+				Field declaredField = clazz.getDeclaredField(fieldName_);
+				declaredField.setAccessible(true);
+				return declaredField;
+			}
+			catch (NoSuchFieldException
+						| SecurityException e) {
+				e.printStackTrace();
+				return null;
+			}
+		});
 		Class<?> type = field.getType();
-		long staticFieldOffset = UNSAFE.staticFieldOffset(field);
-		Object staticFieldBase = UNSAFE.staticFieldBase(field);
+		long staticFieldOffset = stringToOffset.computeIfAbsent(fieldName, troll -> UNSAFE.staticFieldOffset(field));
+		Object staticFieldBase = stringToObject.computeIfAbsent(fieldName, troll -> UNSAFE.staticFieldBase(field));
 		if (!type.isPrimitive()) return UNSAFE.getObject(staticFieldBase, staticFieldOffset);
 		else if (type.equals(boolean.class)) return UNSAFE.getBoolean(staticFieldBase, staticFieldOffset);
 		else if (type.equals(char.class)) return UNSAFE.getChar(staticFieldBase, staticFieldOffset);
@@ -63,10 +87,25 @@ public class UnsafeReflect {
 	}
 
 	private static void setFieldValue0(Class<?> clazz, String fieldName, Object value) throws NoSuchFieldException {
-		UNSAFE.ensureClassInitialized(clazz);
-		Field field = clazz.getDeclaredField(fieldName);
-		long staticFieldOffset = UNSAFE.staticFieldOffset(field);
-		Object staticFieldBase = UNSAFE.staticFieldBase(field);
+		String name = clazz.getName();
+		if (!initCheck.contains(name)) {
+			UNSAFE.ensureClassInitialized(clazz);
+			initCheck.add(name);
+		}
+		Field field = stringToFieldMap.computeIfAbsent(fieldName, fieldName_ -> {
+			try {
+				Field declaredField = clazz.getDeclaredField(fieldName_);
+				declaredField.setAccessible(true);
+				return declaredField;
+			}
+			catch (NoSuchFieldException
+						| SecurityException e) {
+				e.printStackTrace();
+				return null;
+			}
+		});
+		long staticFieldOffset = stringToOffset.computeIfAbsent(fieldName, troll -> UNSAFE.staticFieldOffset(field));
+		Object staticFieldBase = stringToObject.computeIfAbsent(fieldName, troll -> UNSAFE.staticFieldBase(field));
 		Class<?> type = field.getType();
 		if (!type.isPrimitive()) {
 			UNSAFE.putObject(staticFieldBase, staticFieldOffset, validFor(value, field));

@@ -3,23 +3,15 @@ package test.impl;
 import static pisi.unitedmeows.seriex.util.unsafe.UnsafeReflect.getFieldValue;
 
 import pisi.unitedmeows.seriex.Seriex;
-import pisi.unitedmeows.seriex.util.cache.BasicCache;
+import pisi.unitedmeows.seriex.util.web.ConnectionUtils;
 
 public class UnsafeReflectTest {
-	@SuppressWarnings("all")
-	public static void main(String... args) throws NoSuchFieldException,SecurityException,IllegalArgumentException,IllegalAccessException {
+	public static void main(String... args) throws NoSuchFieldException {
 		int times = 10_000_000;
-		long totalUnsafeMS = 0L;
-		BasicCache<Boolean> unsafe = new BasicCache<>((boolean) getFieldValue(Seriex.class, "loadedCorrectly"));
+		long startMS = System.currentTimeMillis();
 		for (int i = 0; i < times; i++) {
-			boolean value = (boolean) getFieldValue(Seriex.class, "loadedCorrectly");
-			unsafe.setLocked(unsafe.get() == value);
-			long unsafeMS = System.currentTimeMillis();
-			if (value != unsafe.get()) {
-				unsafe.set(value);
-			}
-			totalUnsafeMS += System.currentTimeMillis() - unsafeMS;
+			getFieldValue(ConnectionUtils.class, "firstTime");
 		}
-		Seriex.logger().debug(totalUnsafeMS + "");
+		Seriex.logger().debug(String.valueOf(System.currentTimeMillis() - startMS));
 	}
 }
