@@ -170,7 +170,7 @@ public class DatabaseReflection {
 				columns.add(new Pair<>(name, found));
 				names.add(name);
 			}
-			String[] array = names.stream().toArray(String[]::new);
+			String[] array = names.toArray(new String[0]);
 			return new Pair<>(array, columns);
 		});
 	}
@@ -183,7 +183,7 @@ public class DatabaseReflection {
 			String string = "ALTER TABLE ^ ADD IF NOT EXISTS ^ ^";
 			commands.add(new YSQLCommand(string).putRaw(tables.get(clazz)).putRaw(pair.item1()).putRaw(pair.item2().mySQL));
 		}
-		return commands.stream().toArray(YSQLCommand[]::new);
+		return commands.toArray(new YSQLCommand[0]);
 	}
 
 	public static YSQLCommand create(Class<? extends IStruct> clazz) {

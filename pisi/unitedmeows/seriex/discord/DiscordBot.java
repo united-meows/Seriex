@@ -31,6 +31,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -92,7 +93,7 @@ public class DiscordBot extends Manager implements Once {
 				break auto_configure;
 			}
 			String guildID = discordConfig.ID_GUILD.value();
-			if ("".equals(guildID)) {
+			if (guildID != null && guildID.isEmpty()) {
 				Seriex.logger().fatal("Discord Guild ID is empty!");
 				break auto_configure;
 			}
@@ -152,10 +153,15 @@ public class DiscordBot extends Manager implements Once {
 								logger().info("Created language role %s for the guild %s!", language.name(), guild.getName());
 								guild.createRole().setColor(-1).setMentionable(false).setName(language.name()).queue();
 							} else {
-								logger().info("Created cache for the role %s in the guild %s!", language.name(), guild.getName());
-								Role value = rolesByName.stream().findFirst().get();
-								map.put(language, value);
-								roleCache.put(guild.getId(), map);
+								Optional<Role> optional = rolesByName.stream().findFirst();
+								if (optional.isPresent()) {
+									logger().info("Created cache for the role %s in the guild %s!", language.name(), guild.getName());
+									Role value = optional.get();
+									map.put(language, value);
+									roleCache.put(guild.getId(), map);
+								} else {
+									logger().info("Couldn't create cache for the role %s in the guild %s!", language.name(), guild.getName());
+								}
 							}
 						});
 					}
@@ -167,8 +173,15 @@ public class DiscordBot extends Manager implements Once {
 					if (embed == null) return;
 					String configID = discordConfig.ID_GUILD.value();
 					Guild guild = event.getJDA().getGuildById(configID);
+					String serverChatID = discordConfig.ID_SERVER_CHAT.value();
 					if (guild != null) {
-						guild.getTextChannelById(discordConfig.ID_SERVER_CHAT.value()).sendMessageEmbeds(embed);
+						// todoh add null check
+						TextChannel textChannelById = guild.getTextChannelById(serverChatID);
+						if (textChannelById != null) {
+							textChannelById.sendMessageEmbeds(embed);
+						} else {
+							Seriex.logger().fatal("Cant find server chat with the id %s", serverChatID);
+						}
 					} else {
 						Seriex.logger().fatal("Cant find guild with the id %s", configID);
 					}

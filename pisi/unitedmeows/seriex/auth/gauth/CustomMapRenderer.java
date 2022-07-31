@@ -9,8 +9,8 @@ import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 
 public class CustomMapRenderer extends MapRenderer {
-	private UUID uuid;
-	private BufferedImage image;
+	private final UUID uuid;
+	private final BufferedImage image;
 
 	@Override
 	public void render(MapView map, MapCanvas canvas, Player player) {

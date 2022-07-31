@@ -1,8 +1,8 @@
 package pisi.unitedmeows.seriex.listener;
 
-import static java.nio.charset.StandardCharsets.*;
-import static java.time.Duration.*;
-import static org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.time.Duration.ofDays;
+import static org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -18,8 +18,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
+import org.bukkit.event.player.PlayerChatTabCompleteEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -28,7 +36,11 @@ import net.dv8tion.jda.api.entities.UserSnowflake;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.command.Command;
 import pisi.unitedmeows.seriex.database.SeriexDB;
-import pisi.unitedmeows.seriex.database.structs.impl.player.*;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayer;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerDiscord;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerFirstLogin;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerLastLogin;
+import pisi.unitedmeows.seriex.database.structs.impl.player.StructPlayerSettings;
 import pisi.unitedmeows.seriex.managers.sign.impl.SignCommand;
 import pisi.unitedmeows.seriex.util.config.impl.server.BanActionsConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
@@ -100,7 +112,9 @@ public class SeriexSpigotListener implements Listener {
 				Member member = guild.getMember(UserSnowflake.fromId(playerStructDiscord.discord_id));
 				// TODO (for 0 iq intellij users)
 				// TODOH should all bans be 7 days long?
-				if (!member.isTimedOut()) {
+				if (member == null) {
+					Seriex.logger().fatal("Can`t timeout from discord because member is null!");
+				} else if (!member.isTimedOut()) {
 					member.timeoutFor(ofDays(7));
 				}
 			}

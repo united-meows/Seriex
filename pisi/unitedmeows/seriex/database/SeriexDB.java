@@ -155,9 +155,9 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 			for (int i = 0; i < length; i++) {
 				String name = columnNames[i];
 				if (i == length - 1) {
-					builder.append(name + ") ");
+					builder.append(name).append(") ");
 				} else {
-					builder.append(name + ", ");
+					builder.append(name).append(", ");
 				}
 			}
 			// INSERT INTO player(player_id, api_access, username, password, token, gAuth, salt)
@@ -178,7 +178,7 @@ public class SeriexDB extends YDatabaseClient implements ICleanup {
 				if (isFieldString) {
 					builder.append("'");
 				}
-				builder.append(valueOfField.toString());
+				builder.append(valueOfField);
 				if (isFieldString) {
 					builder.append("'");
 				}
