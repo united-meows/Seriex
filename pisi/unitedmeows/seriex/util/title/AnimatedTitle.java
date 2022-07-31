@@ -17,6 +17,7 @@ public class AnimatedTitle {
 		title.setStayTime(20 + speed);
 		final BukkitRunnable bukkitRunnable = new BukkitRunnable() {
 			int mainTicks = 0 , subTicks = 0;
+
 			@Override
 			public void run() {
 				if (mainTicks + 1 < mainTitle.length) {
@@ -43,32 +44,34 @@ public class AnimatedTitle {
 		return bukkitRunnable;
 	}
 
-	// TODO optimize this shit kekw
 	public static String[] animateText(final String kek, final String highlightedWord, final String primaryColor, final String highlightColor) {
 		final String cool = "&r&l&k!il&r";
-		final String coolSuffix = " " + cool;
-		final String coolPrefix = cool + " ";
+		final String coolSuffix = new StringBuilder().append(" ").append(cool).toString();
+		final String coolPrefix = new StringBuilder().append(cool).append(" ").toString();
 		final char[] charArray = kek.toCharArray();
 		final Set<String> frames = new LinkedHashSet<>();
 		for (int i = 0; i < charArray.length; i++) {
 			final String message = kek.substring(0, i + 1);
+			char[] messageCharacters = message.toCharArray();
+			if (messageCharacters[messageCharacters.length - 1] == ' ') {
+				continue;
+			}
 			final char[] highlightedChars = highlightedWord.toCharArray();
 			if (charArray.length - 1 == i) {
 				frames.add(primaryColor + kek);
 			}
 			for (int j = 0; j < highlightedChars.length; j++) {
-				// with stringbuilder we get one less object :DDDDDDDDD
-				final String highlightedBefore = new StringBuilder().append(primaryColor).append(highlightedWord.substring(0, j)).toString();
-				final String highlightedChar = new StringBuilder().append(highlightColor).append(highlightedWord.substring(j, j + 1)).toString();
-				final String highlightedAfter = new StringBuilder().append(primaryColor).append(highlightedWord.substring(j + 1)).toString();
-				final String newHighlighted = new StringBuilder().append(highlightedBefore).append(highlightedChar).append(highlightedAfter).toString();
-				final String string = i == charArray.length - 1 ? message.replace(highlightedWord, newHighlighted) : message;
-				final String replace = new StringBuilder().append(primaryColor).append(string).toString();
+				String highlightedBefore = new StringBuilder().append(primaryColor).append(highlightedWord.substring(0, j)).toString();
+				String highlightedChar = new StringBuilder().append(highlightColor).append(highlightedWord.substring(j, j + 1)).toString();
+				String highlightedAfter = new StringBuilder().append(primaryColor).append(highlightedWord.substring(j + 1)).toString();
+				String newHighlighted = new StringBuilder().append(highlightedBefore).append(highlightedChar).append(highlightedAfter).toString();
+				String string = i == charArray.length - 1 ? message.replace(highlightedWord, newHighlighted) : message;
+				String replace = new StringBuilder().append(primaryColor).append(string).toString();
 				frames.add(replace);
 			}
 		}
 		final Set<String> realFrames = new LinkedHashSet<>();
 		frames.forEach(string -> realFrames.add(coolPrefix + string + coolSuffix));
-		return realFrames.stream().toArray(String[]::new);
+		return realFrames.toArray(new String[0]);
 	}
 }

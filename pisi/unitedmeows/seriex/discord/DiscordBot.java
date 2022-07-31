@@ -235,7 +235,9 @@ public class DiscordBot extends Manager implements Once {
 				if (Objects.equals(event.getChannel().getId(), event.getGuild().getTextChannelById(discordConfig.ID_LANGUAGE_CHANNEL.value()).getId())) {
 					String emoteName = event.getReaction().getEmoji().getName();
 					Language foundLang = null;
-					for (Language language : Language.values()) {
+					Language[] values = Language.values();
+					for (int i = 0; i < values.length; i++) {
+						Language language = values[i];
 						if (Objects.equals(language.unicode(), emoteName)) {
 							foundLang = language;
 							break;
@@ -260,7 +262,9 @@ public class DiscordBot extends Manager implements Once {
 				if (Objects.equals(event.getChannel().getId(), event.getGuild().getTextChannelById(discordConfig.ID_LANGUAGE_CHANNEL.value()).getId())) {
 					String emoteName = event.getReaction().getEmoji().getName();
 					Language foundLang = null;
-					for (Language language : Language.values()) {
+					Language[] values = Language.values();
+					for (int i = 0; i < values.length; i++) {
+						Language language = values[i];
 						if (Objects.equals(language.unicode(), emoteName)) {
 							foundLang = language;
 							break;
@@ -320,8 +324,9 @@ public class DiscordBot extends Manager implements Once {
 			public void onSelectMenuInteraction(SelectMenuInteractionEvent event) {
 				String guildID = event.getGuild().getId();
 				if (!Objects.equals(guildID, discordConfig.ID_GUILD.value())) return;
-				if (event.getComponentId().startsWith("2FA-")) {
-					String username = event.getComponentId().replace("2FA-", "");
+				String componentId = event.getComponentId();
+				if (componentId.startsWith("2FA-")) {
+					String username = componentId.replace("2FA-", "");
 					StructPlayer player = Seriex.get().database().getPlayer(username);
 					if (event.getValues().isEmpty()) {
 						event.reply("what").setEphemeral(true).queue();
@@ -356,7 +361,7 @@ public class DiscordBot extends Manager implements Once {
 								player.gAuth = "-";
 								player.update();
 							} else {
-								event.reply("You cant change your 2FA selection.").setEphemeral(true).queue();
+								event.reply("You cant change your 2FA selection. (not added yet)").setEphemeral(true).queue();
 							}
 						}
 					} else {

@@ -2,7 +2,9 @@ package pisi.unitedmeows.seriex.util.language;
 
 import static pisi.unitedmeows.seriex.util.suggestion.WordList.LOWERCASE_WORDS;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -55,6 +57,18 @@ public enum Language {
 
 	public static Language getLanguage(int id) {
 		return values()[(int) (Math.log(id) / Math.log(2))];
+	}
+
+	public static List<Language> getLanguages(int id) {
+		List<Language> languages = new ArrayList<>();
+		Language[] values = values();
+		for (int i = 0; i < values.length; i++) {
+			Language language = values[i];
+			if (isLanguageSelected(id, language.id)) {
+				languages.add(language);
+			}
+		}
+		return languages;
 	}
 
 	public Suggester getSuggester() {

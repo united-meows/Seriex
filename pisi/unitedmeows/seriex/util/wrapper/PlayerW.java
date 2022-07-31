@@ -85,7 +85,6 @@ public class PlayerW extends HookClass<Player> {
 		}
 		playerDiscord = Seriex.get().database().getPlayerDiscord(_player.getName());
 		if (playerDiscord == null) {
-			// todo remove
 			Seriex.get().kick(getHooked(), "Please contact an maintainer... [0xDISCORD]");
 			return;
 		}

@@ -1,7 +1,7 @@
 package pisi.unitedmeows.seriex.util;
 
-import static java.util.Locale.*;
-import static org.fusesource.jansi.Ansi.*;
+import static java.util.Locale.ROOT;
+import static org.fusesource.jansi.Ansi.ansi;
 import static org.fusesource.jansi.Ansi.Color.*;
 
 import java.io.File;
@@ -14,6 +14,7 @@ import org.fusesource.jansi.Ansi.Color;
 
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.yystal.logger.ILogger;
+import test.TestState;
 
 // yfile is broken loololo using normal file ;(
 public class SLogger implements ILogger {
@@ -128,6 +129,52 @@ public class SLogger implements ILogger {
 			Seriex.get().getServer().getLogger().log(Level.SEVERE, generateAnsiString(text, "FATAL", BLACK, true, true));
 		} else {
 			System.out.println(generateAnsiString(text, "FATAL", BLACK, true, false));
+		}
+	}
+
+	public void test(boolean detailed, TestState state, String name, String... extraMessage) {
+		String seperator = "--------";
+		if (state == null) {
+			Seriex.logger().fatal("TestState is null for the test %s", name);
+			return;
+		}
+		switch (state) {
+			case FAIL:
+				fatal("Test %s has failed!", name);
+				break;
+			case FATAL_ERROR:
+				if (detailed) {
+					fatal("%s FATAL ERROR %s", seperator, seperator);
+					fatal("Current test: %s", name);
+					fatal("Current thread: %s", Thread.currentThread().getName());
+					fatal("Current ms: %s", System.currentTimeMillis());
+					fatal("%s EXCEPTION START %s", seperator, seperator);
+					for (int i = 0; i < extraMessage.length; i++) {
+						String message = extraMessage[i];
+						fatal("#%s // %s", i, message);
+					}
+					fatal("%s EXCEPTION END %s", seperator, seperator);
+				} else {
+					fatal("Test %s has a FATAL error!", name);
+				}
+				break;
+			case SUCCESS:
+				info("Test %s has passed!", name);
+				break;
+			case WARNING:
+				debug("Test %s has some warnings!");
+				if (detailed) {
+					debug("%s WARNING %s", seperator, seperator);
+					for (int i = 0; i < extraMessage.length; i++) {
+						String message = extraMessage[i];
+						debug("#%s // %s", i, message);
+					}
+					debug("%s WARNING END %s", seperator, seperator);
+				}
+				break;
+			default:
+				fatal("Not supported TestState:" + " %s", state.name());
+				break;
 		}
 	}
 

@@ -1,4 +1,4 @@
-package test;
+package test.impl;
 
 import static java.lang.String.*;
 import static java.lang.System.*;

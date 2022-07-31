@@ -1,4 +1,4 @@
-package test;
+package test.impl;
 
 import pisi.unitedmeows.seriex.util.suggestion.suggesters.EditDistance;
 

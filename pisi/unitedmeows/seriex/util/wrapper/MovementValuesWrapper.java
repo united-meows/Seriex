@@ -1,6 +1,5 @@
 package pisi.unitedmeows.seriex.util.wrapper;
 
-// todo: find better name for this class
 public class MovementValuesWrapper {
 	public float walkSpeed , flySpeed;
 	public int foodLevel;

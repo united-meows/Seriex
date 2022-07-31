@@ -1,4 +1,4 @@
-package test;
+package test.impl;
 
 import static pisi.unitedmeows.seriex.util.unsafe.UnsafeReflect.getFieldValue;
 

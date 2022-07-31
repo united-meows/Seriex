@@ -144,7 +144,7 @@ public class WordList {
 	// for slangs...
 	public static void readBooks(String languageTag) {
 		read();
-		String desktopPath = String.format("%s/", FileSystemView.getFileSystemView().getHomeDirectory().toString());
+		String desktopPath = String.format("%s\\", FileSystemView.getFileSystemView().getHomeDirectory().toString());
 		String writtenFileName = languageTag + ".slang";
 		String PATH_TO_BOOKS = desktopPath + "dataset";
 		String PATH_TO_WRITE = desktopPath + writtenFileName;

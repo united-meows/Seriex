@@ -1,14 +1,42 @@
-package test;
+package test.impl;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+
+import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.util.timings.TimingsCalculator;
+import pisi.unitedmeows.seriex.util.title.AnimatedTitle;
 
 public class TextAnimationTest {
+	private static AtomicReference<String[]> troll = new AtomicReference<>(null);
+	private static AtomicReference<String[]> troll2 = new AtomicReference<>(null);
+
 	public static void main(String... args) {
-		Arrays.stream(animateText("Welcome to Seriex!", "Seriex", "&d", "&5&l")).forEach(frame -> {
-			System.err.println(frame);
-		});
+		TimingsCalculator.GET.benchmark(() -> {
+			String[] text = animateText("Welcome to Seriex!", "Seriex", "&d", "&5&l");
+			troll.set(text);
+		}, "old text animation");
+		TimingsCalculator.GET.benchmark(() -> {
+			String[] text = AnimatedTitle.animateText("Welcome to Seriex!", "Seriex", "&d", "&5&l");
+			troll2.set(text);
+		}, "new text animation");
+		boolean areTheAnimationsEqual = Arrays.equals(troll.get(), troll2.get());
+		Seriex.logger().debug("Animations are %s", areTheAnimationsEqual ? "equal" : "not equal");
+		if (!areTheAnimationsEqual) {
+			String seperator = "----------------------------";
+			System.out.println(seperator);
+			print(troll.get());
+			System.out.println(seperator);
+			print(troll2.get());
+			System.out.println(seperator);
+		}
+		System.exit(areTheAnimationsEqual ? 0 : -1);
+	}
+
+	private static void print(String... str) {
+		Arrays.stream(str).forEach(System.out::println);
 	}
 
 	private static String[] animateText(String kek, String highlightedWord, String primaryColor, String highlightColor) {
@@ -20,6 +48,10 @@ public class TextAnimationTest {
 		for (int i = 0; i < charArray.length; i++) {
 			char c = charArray[i];
 			String message = kek.substring(0, i + 1);
+			char[] messageCharacters = message.toCharArray();
+			if (messageCharacters[messageCharacters.length - 1] == ' ') {
+				continue;
+			}
 			char[] highlightedChars = highlightedWord.toCharArray();
 			if (charArray.length - 1 == i) {
 				frames.add(primaryColor + kek);
