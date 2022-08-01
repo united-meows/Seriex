@@ -16,6 +16,7 @@ public class ConnectionUtils {
 
 	public static boolean hasInternetConnection() {
 		if (firstTime) {
+			atomicBoolean.set(connectedToAnyHost());
 			Async.async_loop(() -> {
 				boolean connection = connectedToAnyHost();
 				atomicBoolean.set(connection);

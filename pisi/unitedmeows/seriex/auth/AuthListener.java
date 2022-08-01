@@ -49,9 +49,6 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import pisi.unitedmeows.eventapi.event.listener.Listener;
-import pisi.unitedmeows.pispigot.Pispigot;
-import pisi.unitedmeows.pispigot.event.impl.client.C14PacketTabComplete;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.auth.gauth.GAuth;
 import pisi.unitedmeows.seriex.managers.Manager;
@@ -72,7 +69,6 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 	private Map<PlayerW, AuthInfo> playerMap = new HashMap<>();
 	private Method getShooter;
 	private Method subscribe;
-	private Pispigot pispigot;
 	private boolean shooterIsLivingEntity;
 
 	@Override
@@ -99,7 +95,6 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 			computeAuthInfo(player);
 			player.teleport(getServerConfig().getWorldSpawn());
 		}
-		Pispigot.playerSystem(player).subscribeAll(this);
 	}
 
 	@Override
@@ -109,7 +104,6 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 	}
 
 	public void stopAuthentication(PlayerW playerW) {
-		Pispigot.playerSystem(playerW.getHooked()).unsubscribeAll(this);
 		final AuthInfo authentication = playerMap.get(playerW);
 		authentication.onLogin();
 	}
@@ -244,14 +238,6 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 	private ServerConfig getServerConfig() {
 		return (ServerConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().SERVER);
 	}
-
-	public Listener<C14PacketTabComplete> tabcompleteListener = new Listener<>(event -> {
-		Player player = event.player();
-		if (waitingForLogin(player)) {
-			event.cancel(true);
-			event.setSilentCancel(true); // does this do smth i dont remember lololol @slowcheet4h
-		}
-	});
 
 	@EventHandler(ignoreCancelled = true , priority = EventPriority.LOWEST)
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {

@@ -25,6 +25,7 @@ public class TomlTest {
 		list.add(max);
 		config.set("kumalala", list);
 		System.out.println("Config: " + config);
+		config.get("kumalala");
 		File configFile = new File("commentedConfig.toml");
 		TomlWriter writer = new TomlWriter();
 		writer.write(config, configFile, WritingMode.REPLACE);

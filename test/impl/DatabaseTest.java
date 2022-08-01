@@ -41,6 +41,7 @@ public class DatabaseTest extends Test {
 				return TestState.FATAL_ERROR;
 			}
 			try (FileConfig fileConfig = FileConfig.of(file)) {
+				fileConfig.load();
 				String username = fileConfig.get("username");
 				String password = fileConfig.get("password");
 				String databaseName = fileConfig.get("database");
