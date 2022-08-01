@@ -133,6 +133,7 @@ public class SLogger implements ILogger {
 	}
 
 	public void test(boolean detailed, TestState state, String name, String... extraMessage) {
+		boolean addExtraMessage = state.isSpecial() && extraMessage != null && extraMessage.length > 0;
 		String seperator = "--------";
 		if (state == null) {
 			Seriex.logger().fatal("TestState is null for the test %s", name);
@@ -148,12 +149,14 @@ public class SLogger implements ILogger {
 					fatal("Current test: %s", name);
 					fatal("Current thread: %s", Thread.currentThread().getName());
 					fatal("Current ms: %s", System.currentTimeMillis());
-					fatal("%s EXCEPTION START %s", seperator, seperator);
-					for (int i = 0; i < extraMessage.length; i++) {
-						String message = extraMessage[i];
-						fatal("#%s // %s", i, message);
+					if (addExtraMessage) {
+						fatal("%s EXCEPTION START %s", seperator, seperator);
+						for (int i = 0; i < extraMessage.length; i++) {
+							String message = extraMessage[i];
+							fatal("#%s // %s", i, message);
+						}
+						fatal("%s EXCEPTION END %s", seperator, seperator);
 					}
-					fatal("%s EXCEPTION END %s", seperator, seperator);
 				} else {
 					fatal("Test %s has a FATAL error!", name);
 				}
@@ -162,8 +165,8 @@ public class SLogger implements ILogger {
 				info("Test %s has passed!", name);
 				break;
 			case WARNING:
-				debug("Test %s has some warnings!");
-				if (detailed) {
+				debug("Test %s has warning(s)!");
+				if (detailed && addExtraMessage) {
 					debug("%s WARNING %s", seperator, seperator);
 					for (int i = 0; i < extraMessage.length; i++) {
 						String message = extraMessage[i];

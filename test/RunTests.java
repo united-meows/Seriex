@@ -22,14 +22,14 @@ public class RunTests {
 		tests.add(new LanguageMaskTest());
 		boolean detailed = false;
 		FormatDetector.registerExtension("seriex", TomlFormat.instance());
-		for (Test test : tests) {
+		boolean success = true;
+		for (int i = 0; i < tests.size(); i++) {
+			Test test = tests.get(i);
 			TestState testState = test.run();
-			String testName = NAME_REPLACE_PATTERN.matcher(test.getClass().getSimpleName()).replaceAll("");
-			if (testState.isSpecial() && test.message != null) {
-				Seriex.logger().test(detailed, testState, testName, test.message);
-			} else {
-				Seriex.logger().test(detailed, testState, testName);
-			}
+			Class<? extends Test> testClass = test.getClass();
+			String className = testClass.getSimpleName();
+			String testName = NAME_REPLACE_PATTERN.matcher(className).replaceAll("");
+			Seriex.logger().test(detailed, testState, testName, test.message);
 		}
 		System.exit(0); // TODOH exit code depending on if some tests failed / have a warning / etc...
 	}

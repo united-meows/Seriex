@@ -136,7 +136,7 @@ public class AuthListener extends Manager implements org.bukkit.event.Listener {
 				cachedWelcome = AnimatedTitle.animateText("Welcome to " + serverName + "!", serverName, "&d", "&5&l");
 			}
 			joinMessageRunnable = AnimatedTitle.animatedTitle(player, cachedWelcome, null);
-			// TODO translations & guest support
+			// TODO guest support
 		}
 
 		public void onRealLogin() {

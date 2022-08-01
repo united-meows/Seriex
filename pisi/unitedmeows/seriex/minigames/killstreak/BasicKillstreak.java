@@ -16,7 +16,8 @@ public class BasicKillstreak implements IKillstreak {
 			// msg
 			Seriex.get().getServer().getOnlinePlayers().forEach(onlinePlayer -> {
 				String translationMessage = Seriex.get().I18n().getString("minigame.winstreak", Seriex.get().dataManager().user(onlinePlayer));
-				// TODO add translation message: "%s has gotten a %s killstreak" to TranslationConfig
+				// TODO set message ("minigame.winstreak") in TranslationConfig
+				// default message -> %s has gotten a %s killstreak
 				Seriex.get().msg(player, translationMessage, player.getName(), kills);
 			});
 		}

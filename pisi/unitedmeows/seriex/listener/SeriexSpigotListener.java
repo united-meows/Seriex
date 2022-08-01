@@ -110,7 +110,6 @@ public class SeriexSpigotListener implements Listener {
 				DiscordConfig config = (DiscordConfig) Seriex.get().fileManager().getConfig(Seriex.get().fileManager().DISCORD);
 				Guild guild = JDA.getGuildById(config.ID_GUILD.value());
 				Member member = guild.getMember(UserSnowflake.fromId(playerStructDiscord.discord_id));
-				// TODO (for 0 iq intellij users)
 				// TODOH should all bans be 7 days long?
 				if (member == null) {
 					Seriex.logger().fatal("Can`t timeout from discord because member is null!");
