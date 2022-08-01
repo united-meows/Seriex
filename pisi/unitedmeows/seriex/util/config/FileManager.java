@@ -24,6 +24,7 @@ import pisi.unitedmeows.seriex.util.config.impl.server.DiscordConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.MaintainersConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.MinigameConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.RanksConfig;
+import pisi.unitedmeows.seriex.util.config.impl.server.ServerConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.TranslationsConfig;
 import pisi.unitedmeows.seriex.util.config.impl.server.WorldConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
@@ -72,6 +73,7 @@ public class FileManager extends Manager {
 			createFile(verifier, BAN_ACTIONS, new BanActionsConfig());
 			createFile(verifier, RANKS, new RanksConfig());
 			createFile(verifier, MAINTAINERS, new MaintainersConfig());
+			createFile(verifier, SERVER, new ServerConfig());
 			// todo use @Cfg to get configs from reflection ✌
 			set = true;
 		}
