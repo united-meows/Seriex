@@ -154,6 +154,10 @@ public class PlayerW {
 	private List<String> ignored;
 
 	private final boolean canBeInitialized;
+    /**
+     * HashMap to lookup for players
+     */
+    private Map<UUID, PlayerW> playersToLog;
 
 	@RegisterAttribute(Enum = NAME)
 	private final IAttributeHolder nameAtr = () -> player.getName();
@@ -239,6 +243,7 @@ public class PlayerW {
 		this.ignored = new ArrayList<>();
 		this.newPlayMS();
 		this.canBeInitialized = true;
+        this.playersToLog = new HashMap<>();
 	}
 
 	public PlayerW init() {
@@ -825,6 +830,10 @@ public class PlayerW {
 	public Player hook() {
 		return player;
 	}
+
+    public Map<UUID, PlayerW> lookupMap() {
+        return playersToLog;
+    }
 
 	@Override
 	public String toString() {
