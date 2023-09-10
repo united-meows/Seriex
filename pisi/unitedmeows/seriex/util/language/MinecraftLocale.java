@@ -29,7 +29,7 @@ public class MinecraftLocale {
 		map.put("depth_strider", DEPTH_STRIDER);
 		map.put("sharpness", DAMAGE_ALL);
 		map.put("smite", DAMAGE_UNDEAD);
-		map.put("bane_of_arthropods", DAMAGE_UNDEAD);
+		map.put("bane_of_arthropods", DAMAGE_ARTHROPODS);
 		map.put("knockback", KNOCKBACK);
 		map.put("fire_aspect", FIRE_ASPECT);
 		map.put("looting", LOOT_BONUS_MOBS);

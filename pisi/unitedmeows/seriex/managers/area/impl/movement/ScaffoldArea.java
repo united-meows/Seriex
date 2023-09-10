@@ -64,10 +64,7 @@ public class ScaffoldArea extends Area {
 	@Override
 	public boolean block_place(Player placedBy, Block placed) {
 		boolean isPlacedInside = limits.intersectsWith(placed.getLocation().add(0.5, 0.5, 0.5));
-		if (!isInside(placedBy) && isPlacedInside)
-			return true;
-
-		if(!isBlockSafe(placed))
+		if(!isBlockSafe(placed) && isPlacedInside)
 			return true;
 		
 		if (isPlacedInside)
