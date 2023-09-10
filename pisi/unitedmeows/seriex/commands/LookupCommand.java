@@ -84,7 +84,6 @@ public class LookupCommand {
 			return;
 
 		var seriex = Seriex.get();
-
 		if(hookType == MovementHookType.HOOK) {
 			seriex.playerLogger().hookToPlayer(sender, playerW);
 		} else if(hookType == MovementHookType.UNHOOK) {
