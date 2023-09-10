@@ -74,10 +74,15 @@ public class BabaPvP extends Minigame {
 
 	@Override
 	public void onJoin(PlayerW playerW) {
+		this.onJoinRunnable = () -> {
+			KIT.giveIf(playerW.hook(), playerW::isInventoryEmpty);
+			Anticheat.NCP_FC.convert(playerW);
+		};
 		super.onJoin(playerW);
-		KIT.giveIf(playerW.hook(), playerW::isInventoryEmpty);
-		Anticheat.NCP_FC.convert(playerW);
 	}
+
+
+
 
 	@Override
 	public void onRespawn(PlayerW playerW) {

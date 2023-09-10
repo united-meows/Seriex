@@ -117,9 +117,12 @@ public class Survival extends Minigame {
 
 	@Override
 	public void onJoin(PlayerW playerW) {
+		this.onJoinRunnable = () -> {
+			KIT.clearAndGive(playerW.hook());
+			Anticheat.NCP_MINEZ.convert(playerW);
+		};
+
 		super.onJoin(playerW);
-		KIT.clearAndGive(playerW.hook());
-		Anticheat.NCP_MINEZ.convert(playerW);
 	}
 
 	@Override

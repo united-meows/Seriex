@@ -40,17 +40,12 @@ public class Minigame {
 	public Set<UUID> playersInMinigame = new HashSet<>();
 	private Map<UUID, PlayerHistory> playerHistory = new HashMap<>();
 	private final Map<UUID, Integer> killStreakTracker = new HashMap<>();
+	protected Runnable onJoinRunnable;
 
 	public void onJoin(PlayerW playerW) {
 		int delay = 0;
 
-		Minigame currentMinigame = playerW.currentMinigame();
-		if (currentMinigame != null && currentMinigame != this) {
-			currentMinigame.onLeave(playerW);
-			delay = 10;
-		}
-
-		Seriex.get().runLater(() -> {
+		Runnable joinActivities = () -> {
 			UUID uniqueId = playerW.uuid();
 			Player hooked = playerW.hook();
 			playerHistory.put(uniqueId, PlayerHistory.createHistory(hooked));
@@ -63,8 +58,20 @@ public class Minigame {
 			playersInMinigame.add(uniqueId);
 			playerW.playerState(PlayerState.MINIGAMES);
 			playerW.currentMinigame(this);
-		}, delay);
+			onJoinRunnable.run();
+		};
+
+		Minigame currentMinigame = playerW.currentMinigame();
+		if (currentMinigame != null && currentMinigame != this) {
+			currentMinigame.onLeave(playerW);
+			delay = 10;
+		}
+
+		if (delay == 0) joinActivities.run();
+		else Seriex.get().runLater(joinActivities, delay);
+
 	}
+
 
 	public void onLeave(PlayerW playerW) {
 		UUID uniqueId = playerW.uuid();

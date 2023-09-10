@@ -5,6 +5,7 @@ import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.json.JsonMapper;
+import io.javalin.plugin.bundled.CorsPluginConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +32,7 @@ public class WebServer extends Manager {
 					.create(config -> {
 						config.jsonMapper(this.gsonMapper());
 						config.showJavalinBanner = false;
+						config.plugins.enableCors(cors -> cors.add(CorsPluginConfig::anyHost));
 					})
 					.get("/players", this::players)
 					.get("/online_players", this::online_players)
