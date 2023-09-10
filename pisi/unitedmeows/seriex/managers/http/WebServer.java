@@ -74,7 +74,7 @@ public class WebServer extends Manager {
 	private record OnlinePlayer(String username, PlayerDiscord discord, long onlineTime) {
 		public static OnlinePlayer fromPlayer(Player player) {
 			var playerW = Seriex.get().dataManager().user(player);
-			return new OnlinePlayer(playerW.attribute(NAME), PlayerDiscord.fromPlayerW(playerW), playerW.playMS());
+			return new OnlinePlayer(playerW.attribute(NAME), PlayerDiscord.fromPlayerW(playerW), System.currentTimeMillis() - playerW.playMS());
 		}
 	}
 
@@ -87,7 +87,7 @@ public class WebServer extends Manager {
 			return new DatabasePlayer(
 						structPlayer.username,
 						playerDiscord,
-						System.currentTimeMillis() - structPlayer.playTime,
+						structPlayer.playTime,
 						playerLogins.stream().map(struct -> struct.ms).findFirst().orElse(0L)
 			);
 		}

@@ -568,6 +568,7 @@ public class SeriexSpigotListener implements Listener {
 		} else {
 			Seriex.get().msg(player, Messages.SPAM_SLOWDOWN);
 			event.setCancelled(true);
+			return;
 		}
 
 		if(System.currentTimeMillis() - deleteMS > Duration.ofMinutes(5).toMillis()) {

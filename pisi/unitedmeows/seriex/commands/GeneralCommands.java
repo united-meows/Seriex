@@ -58,6 +58,7 @@ public class GeneralCommands {
 		seriex.msg_no_translation(sender,
 					sections.stream()
 								.map(CommandSection::getName)
+								.distinct()
 								.collect(seriex.collector())
 		);
 	}

@@ -197,5 +197,6 @@ public class RegisterModal implements IModal {
 						channel.sendMessage(formattedString).queue();
 					});
 
+		event.reply("Registered, check your direct messages with the bot").setEphemeral(true).complete();
 	}
 }
