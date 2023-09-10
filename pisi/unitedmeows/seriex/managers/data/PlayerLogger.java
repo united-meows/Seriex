@@ -14,7 +14,7 @@ import java.util.List;
 import static pisi.unitedmeows.seriex.util.wrapper.PlayerW.Attributes.NAME;
 
 public class PlayerLogger extends Manager {
-    private List<PlayerW> loggers;
+	private List<PlayerW> loggers;
 
 	@Override
 	public void start(Seriex seriex) {
@@ -25,30 +25,30 @@ public class PlayerLogger extends Manager {
 		if (loggers.isEmpty())
 			return;
 		PlayerLog log = PlayerLog.createLog(event);
-        for (int i = 0; i < loggers.size(); i++) {
-            PlayerW logger = loggers.get(i);
-            Player player = Bukkit.getPlayer(logger.uuid());
-            if (player == null) {
-                loggers.remove(i--);
-                continue;
-            }
-            if (logger.lookupMap().containsKey(log.player.getUniqueId())) {
-                Seriex.get().msg_no_translation(player, "[PlayerLog] => %s", log.toString());
-            }
-        }
+		for (int i = 0; i < loggers.size(); i++) {
+			PlayerW logger = loggers.get(i);
+			Player player = Bukkit.getPlayer(logger.uuid());
+			if (player == null) {
+				loggers.remove(i--);
+				continue;
+			}
+			if (logger.lookupMap().containsKey(log.player.getUniqueId())) {
+				Seriex.get().msg_no_translation(player, "[PlayerLog] => %s", log.toString());
+			}
+		}
 	}
 
 	public void hookToPlayer(PlayerW logger, PlayerW logged) {
-        var playerName = logged.attribute(NAME);
-        if (logger.lookupMap().containsKey(logged.uuid())) {
-            Seriex.get().msg_no_translation(logger.hook(), "Player '%s' is already being logged!", playerName);
-        } else {
-            logger.lookupMap().put(logged.uuid(), logged);
-            if (!loggers.contains(logger)) {
-                loggers.add(logger);
-            }
-            Seriex.get().msg_no_translation(logger.hook(), "Player '%s' is being logged!", playerName);
-        }
+		var playerName = logged.attribute(NAME);
+		if (logger.lookupMap().containsKey(logged.uuid())) {
+			Seriex.get().msg_no_translation(logger.hook(), "Player '%s' is already being logged!", playerName);
+		} else {
+			logger.lookupMap().put(logged.uuid(), logged);
+			if (!loggers.contains(logger)) {
+				loggers.add(logger);
+			}
+			Seriex.get().msg_no_translation(logger.hook(), "Player '%s' is being logged!", playerName);
+		}
 	}
 
 	public void unhookToPlayer(PlayerW logger, PlayerW logged) {
@@ -57,11 +57,11 @@ public class PlayerLogger extends Manager {
 			Seriex.get().msg_no_translation(logger.hook(), "You are not logging any players.", playerName);
 			return;
 		}
-        boolean removed = logger.lookupMap().remove(logged.uuid()) != null;
+		boolean removed = logger.lookupMap().remove(logged.uuid()) != null;
 		if (removed) {
-            if (logger.lookupMap().isEmpty()) {
-                loggers.remove(logger);
-            }
+			if (logger.lookupMap().isEmpty()) {
+				loggers.remove(logger);
+			}
 			Seriex.get().msg_no_translation(logger.hook(), "Player '%s' is no longer being logged.", playerName);
 		} else {
 			Seriex.get().msg_no_translation(logger.hook(), "Player '%s' was not being logged.", playerName);

@@ -7,7 +7,6 @@ import dev.rollczi.litecommands.suggestion.Suggestion;
 import org.bukkit.Material;
 import panda.std.Result;
 import pisi.unitedmeows.seriex.commands.utils.CommandUtilities;
-import pisi.unitedmeows.seriex.util.suggestion.suggesters.EditDistance;
 
 import java.util.Arrays;
 import java.util.List;

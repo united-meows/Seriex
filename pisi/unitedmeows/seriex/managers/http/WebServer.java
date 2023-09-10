@@ -43,23 +43,23 @@ public class WebServer extends Manager {
 		server.close();
 	}
 
-	public void chat(Context ctx) {
+	private void chat(Context ctx) {
 		// SeriexSpigotListener.serverChatMessages
 		ctx.json(serverChatMessages);
 		ctx.status(HttpStatus.OK);
 	}
 
-	public void online_players(Context ctx) {
+	private void online_players(Context ctx) {
 		ctx.json(Bukkit.getOnlinePlayers().stream().map(OnlinePlayer::fromPlayer).toList());
 		ctx.status(HttpStatus.OK);
 	}
 
-	public void players(Context ctx) {
+	private void players(Context ctx) {
 		ctx.json(Seriex.get().database().getPlayers().stream().map(DatabasePlayer::fromStruct).toList());
 		ctx.status(HttpStatus.OK);
 	}
 
-	record PlayerDiscord(long snowflake, String discord_avatar, long registeredAt) {
+	private record PlayerDiscord(long snowflake, String discord_avatar, long registeredAt) {
 		public static PlayerDiscord fromPlayerW(PlayerW playerW) {
 			var discord = playerW.playerDiscord();
 			return new PlayerDiscord(discord.snowflake, discord.user().getAvatarUrl(), discord.linkMS);
@@ -71,14 +71,14 @@ public class WebServer extends Manager {
 		}
 	}
 
-	record OnlinePlayer(String username, PlayerDiscord discord, long onlineTime) {
+	private record OnlinePlayer(String username, PlayerDiscord discord, long onlineTime) {
 		public static OnlinePlayer fromPlayer(Player player) {
 			var playerW = Seriex.get().dataManager().user(player);
 			return new OnlinePlayer(playerW.attribute(NAME), PlayerDiscord.fromPlayerW(playerW), playerW.playMS());
 		}
 	}
 
-	record DatabasePlayer(String username, PlayerDiscord discord, long playTime, long lastLogin) {
+	private record DatabasePlayer(String username, PlayerDiscord discord, long playTime, long lastLogin) {
 		public static DatabasePlayer fromStruct(StructPlayer structPlayer) {
 			SeriexDB database = Seriex.get().database();
 			var playerDiscord = PlayerDiscord.fromStruct(structPlayer);

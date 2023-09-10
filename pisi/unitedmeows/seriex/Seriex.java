@@ -15,7 +15,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.Main;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Pig;
@@ -28,7 +27,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import panda.std.Option;
@@ -76,7 +74,6 @@ import pisi.unitedmeows.seriex.util.logging.LoggingOutputStream;
 import pisi.unitedmeows.seriex.util.math.AxisBB;
 import pisi.unitedmeows.seriex.util.math.Rotation;
 import pisi.unitedmeows.seriex.util.safety.Try;
-import pisi.unitedmeows.seriex.util.suggestion.WordList;
 import pisi.unitedmeows.seriex.util.timings.Benchmark;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 import pisi.unitedmeows.yystal.parallel.Async;
@@ -305,38 +302,6 @@ public class Seriex implements PsuedoJavaPlugin {
 		}
 	}
 
-	private void handleJansi() {
-		try {
-			// bypass shading
-			var klass = Class.forName("org.fusesource.j4nsi.AnsiConsole".replace("4", "a"));
-			var method = Reflexion.on(klass).findMethod("systemUninstall").orElseThrow();
-			var installed = (int) Reflexion.on(klass).findField("installed").orElseThrow().getValue().getOrThrow();
-			var previousOut = (PrintStream) Reflexion.on(klass).findField("system_out").orElseThrow().getValue().getOrThrow();
-			var previousErr = (PrintStream) Reflexion.on(klass).findField("system_err").orElseThrow().getValue().getOrThrow();
-
-			var previousOut0 = System.out;
-			var previousErr0 = System.err;
-
-			System.out.println("uninstalling");
-			for (int i = 0; i < installed + 1; i++) {
-				method.invoke().ifSuccess(yes -> System.out.println("uninstalled succesfully"));
-			}
-
-			System.out.println("test 1");
-			System.setOut(previousOut);
-			System.setErr(previousErr);
-			System.out.println("test 2");
-			System.setOut(previousOut0);
-			System.setErr(previousErr0);
-			System.out.println("test 3");
-
-			AnsiConsole.systemInstall();
-		}
-		catch (Exception exception) {
-			exception.printStackTrace();
-		}
-	}
-
 	private void handleMain() {
 		if (instance != null)
 			throw SeriexException.create("Instance already exists");
@@ -350,7 +315,6 @@ public class Seriex implements PsuedoJavaPlugin {
 
 		System.setProperty("nightconfig.preserveInsertionOrder", "true");
 		FormatDetector.registerExtension("seriex", TomlFormat.instance());
-		WordList.read();
 	}
 
 	private int serverTick;

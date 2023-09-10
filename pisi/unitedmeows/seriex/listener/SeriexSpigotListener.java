@@ -69,6 +69,7 @@ import pisi.unitedmeows.seriex.util.wrapper.PlayerState;
 public class SeriexSpigotListener implements Listener {
 	private static final Map<String, IPApiResponse> responseCache = new HashMap<>();
 	public static final List<ServerChatMessage> serverChatMessages = new ArrayList<>();
+	private HashMap<UUID, Long> chatDelay = new HashMap<>();
 	private Map<Item, Long> itemTracker;
 	private long deleteMS;
 
@@ -558,12 +559,22 @@ public class SeriexSpigotListener implements Listener {
 	public void onAsyncChat(final AsyncPlayerChatEvent event) {
 		if (event.isCancelled()) return;
 
+		var player = event.getPlayer();
+		var uniqueId = player.getUniqueId();
+		if (!chatDelay.containsKey(uniqueId)) {
+			chatDelay.put(uniqueId, System.currentTimeMillis());
+		} else if (System.currentTimeMillis() - chatDelay.get(uniqueId) >= 1000) {
+			chatDelay.remove(uniqueId);
+		} else {
+			Seriex.get().msg(player, Messages.SPAM_SLOWDOWN);
+			event.setCancelled(true);
+		}
+
 		if(System.currentTimeMillis() - deleteMS > Duration.ofMinutes(5).toMillis()) {
 			serverChatMessages.clear();
 			deleteMS = System.currentTimeMillis();
 		}
 
-		var player = event.getPlayer();
 		var name = player.getName();
 		var user = Seriex.get().dataManager().user(player);
 		var stringBuilder = new StringBuilder("(");

@@ -19,6 +19,7 @@ import pisi.unitedmeows.seriex.util.safety.Try;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW;
 import pisi.unitedmeows.seriex.util.wrapper.PlayerW.Attributes;
 
+@Deprecated(forRemoval = true)
 public class LoginGUI {
 	public static void open(PlayerW _w, AuthManager authListener) {
 		Try.safe(() -> {

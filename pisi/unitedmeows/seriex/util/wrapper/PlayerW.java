@@ -46,6 +46,7 @@ import pisi.unitedmeows.seriex.util.placeholder.annotations.RegisterAttribute;
 import pisi.unitedmeows.seriex.util.placeholder.api.IAttributeHolder;
 import pisi.unitedmeows.yystal.hook.YString;
 
+import static pisi.unitedmeows.seriex.util.language.Language.ENGLISH;
 import static pisi.unitedmeows.seriex.util.wrapper.PlayerW.Attributes.NAME;
 
 public class PlayerW {
@@ -74,7 +75,7 @@ public class PlayerW {
 	/**
 	 * Current selected language for the player
 	 */
-	private Language selectedLanguage = Language.ENGLISH;
+	private Language selectedLanguage = ENGLISH;
 	/**
 	 * Selected languages from player`s selections in discord. <br> Works by getting the player discord user from JDA and getting roles. <br> Kicks the player if there is no verified role.
 	 */
@@ -153,11 +154,11 @@ public class PlayerW {
 	 */
 	private List<String> ignored;
 
-	private final boolean canBeInitialized;
-    /**
-     * HashMap to lookup for players
-     */
-    private Map<UUID, PlayerW> playersToLog;
+	private boolean canBeInitialized = false;
+	/**
+	 * HashMap to lookup for players
+	 */
+	private Map<UUID, PlayerW> playersToLog;
 
 	@RegisterAttribute(Enum = NAME)
 	private final IAttributeHolder nameAtr = () -> player.getName();
@@ -174,80 +175,45 @@ public class PlayerW {
 
 	public PlayerW(Player _player) {
 		player = _player;
-		String name = player.getName();
-		StructPlayer playerInfo = playerInfo();
-		DiscordConfig discordConfig = Seriex.get().fileManager().config(DiscordConfig.class);
+		var name = player.getName();
+		var playerInfo = playerInfo();
+		var discordConfig = (DiscordConfig) Seriex.get().fileManager().config(DiscordConfig.class);
+
 		if (playerInfo == null) {
 			Seriex.get().logger().warn("Database values of player {} was missing! (maybe not verified?)", name);
 			Seriex.get().kick_no_translation(_player, "Please register on discord!\n%s%s", ChatColor.BLUE, discordConfig.INVITE_LINK.value());
-			this.canBeInitialized = false;
 			return;
 		}
+
 		StructPlayerDiscord playerDiscord = this.playerDiscord();
 		if (playerDiscord == null) {
 			Seriex.get().kick_no_translation(hook(), "Please contact a maintainer... [DISCORD]");
-			this.canBeInitialized = false;
 			return;
 		}
-		if (handleSelectedLanguages(discordConfig, playerDiscord)) {
-			this.canBeInitialized = false;
-			return; // something failed
-		}
-		/* tries to retrieve player's settings if not exists creates new one */
 
-		StructPlayerSettings playerSettings = playerSettings();
-		if (playerSettings == null) {
-			Seriex.get().logger().warn("The player {} does not have Settings row on database (maybe first login?)", name);
-			playerSettings = new StructPlayerSettings();
-			playerSettings.player_id = playerInfo.player_id;
-			playerSettings.anticheat = Anticheat.VANILLA.name();
-			playerSettings.guest = false;
-			playerSettings.flags = true;
-			playerSettings.hunger = false;
-			playerSettings.selectedLanguage = Language.ENGLISH.languageCode();
-			playerSettings.create();
-		}
-
-		// failsafe
-		boolean update = false;
-		if (playerSettings.anticheat == null) {
-			playerSettings.anticheat = Anticheat.VANILLA.name();
-			Seriex.get().logger().error("Player '{}' had no anticheat in the database.", name);
-			update = true;
-		}
-		if (playerSettings.selectedLanguage == null) {
-			playerSettings.selectedLanguage = Language.ENGLISH.languageCode();
-			Seriex.get().logger().error("Player '{}' had no selected language in the database.", name);
-			update = true;
-		}
-
-		if (update)
-			playerSettings.update();
-
-		if (playerInfo.rank_name == null) {
-			Seriex.get().logger().error("Player '{}' had no rank in the database.", name);
-			playerInfo.rank_name = MaintainersUtil.isMaintainer(name) ? Ranks.MAINTAINER.internalName() : Ranks.TESTER.internalName();
-			playerInfo.update();
-		}
+		if (handleSelectedLanguages(discordConfig, playerDiscord)) return;
+		var playerSettings = handleDatabaseFails(playerInfo, name);
 
 		this.rank = Ranks.of(playerInfo.rank_name);
 		Seriex.get().rankManager().onChangePlayerRank(this);
 		this.attributeHoldersString = new HashMap<>();
 		this.attributeHoldersEnum = new EnumMap<>(Attributes.class);
 		this.registerAttributes();
-		this.selectedLanguage = Language.fromCode(playerSettings.selectedLanguage, null);
+		this.selectedLanguage = Language.fromCode(playerSettings.selectedLanguage, ENGLISH);
 		this.playerState = PlayerState.SPAWN;
 		this.eventSystem = new SeriexEventSystem();
 		this.eventSystem.subscribeAll(this);
 		this.prevValues = null;
 		this.ignored = new ArrayList<>();
 		this.newPlayMS();
+		this.playersToLog = new HashMap<>();
 		this.canBeInitialized = true;
-        this.playersToLog = new HashMap<>();
 	}
 
 	public PlayerW init() {
-		if (!canBeInitialized) return this;
+		if (!canBeInitialized)
+			return this;
+
 		Anticheat.tryToGetFromName(playerSettings().anticheat).convert(this);
 		return this;
 	}
@@ -259,7 +225,6 @@ public class PlayerW {
 		}
 	}
 
-	// this runs every 5 ticks
 	public Listener<EventTick> tickEvent = new Listener<EventTick>(event -> {
 		ServerConfig serverConfig = Seriex.get().fileManager().config(ServerConfig.class);
 		World playerWorld = hook().getWorld();
@@ -396,7 +361,9 @@ public class PlayerW {
 		if (amount < 0) amount *= -1;
 
 		StructPlayerWallet playerWallet = playerWallet();
-		if (playerWallet.coins + amount >= Integer.MAX_VALUE) playerWallet.coins = Integer.MAX_VALUE;
+		if (playerWallet.coins + amount == Integer.MAX_VALUE)
+			playerWallet.coins = Integer.MAX_VALUE;
+
 		else playerWallet.coins += amount;
 		playerWallet.update();
 		Seriex.get().msg(player, Messages.PLAYER_RECEIVE_MONEY, amount);
@@ -647,11 +614,50 @@ public class PlayerW {
 		return finalIp.toString();
 	}
 
+	private StructPlayerSettings handleDatabaseFails(StructPlayer playerInfo, String name) {
+		StructPlayerSettings playerSettings = playerSettings();
+		if (playerSettings == null) {
+			Seriex.get().logger().warn("The player {} does not have Settings row on database (maybe first login?)", name);
+			playerSettings = new StructPlayerSettings();
+			playerSettings.player_id = playerInfo.player_id;
+			playerSettings.anticheat = Anticheat.VANILLA.name();
+			playerSettings.guest = false;
+			playerSettings.flags = true;
+			playerSettings.hunger = false;
+			playerSettings.selectedLanguage = ENGLISH.languageCode();
+			playerSettings.create();
+		}
+
+		// failsafe
+		boolean update = false;
+		if (playerSettings.anticheat == null) {
+			playerSettings.anticheat = Anticheat.VANILLA.name();
+			Seriex.get().logger().error("Player '{}' had no anticheat in the database.", name);
+			update = true;
+		}
+		if (playerSettings.selectedLanguage == null) {
+			playerSettings.selectedLanguage = ENGLISH.languageCode();
+			Seriex.get().logger().error("Player '{}' had no selected language in the database.", name);
+			update = true;
+		}
+
+		if (update)
+			playerSettings.update();
+
+		if (playerInfo.rank_name == null) {
+			Seriex.get().logger().error("Player '{}' had no rank in the database.", name);
+			playerInfo.rank_name = MaintainersUtil.isMaintainer(name) ? Ranks.MAINTAINER.internalName() : Ranks.TESTER.internalName();
+			playerInfo.update();
+		}
+
+		return playerSettings;
+	}
+
 	private boolean handleSelectedLanguages(DiscordConfig discordConfig, StructPlayerDiscord playerDiscord) {
 		selectedLanguages = EnumSet.noneOf(Language.class);
 		DiscordBot discordBot = Seriex.get().discordBot();
 		String guildID = discordConfig.ID_GUILD.value();
-		Map<Language, Role> map = DiscordBot.LANGUAGE_ROLE_CACHE.get(guildID);
+		Map<Language, Role> map = discordBot.discordCache.languageRoles().get(guildID);
 		Guild guildById = discordBot.JDA().getGuildById(guildID);
 		UserSnowflake snowflake = UserSnowflake.fromId(playerDiscord.snowflake);
 		if (guildById == null) {
@@ -672,16 +678,21 @@ public class PlayerW {
 		boolean hasVerifiedRole = false;
 		boolean hasAnyLanguageRole = false;
 		for (Role role : roles) {
-			if (!hasVerifiedRole && Objects.equals(role, DiscordBot.VERIFIED_ROLE_CACHE.get(guildID))) {
+			if (!hasVerifiedRole && Objects.equals(role, discordBot.discordCache.verifiedRoles().get(guildID))) {
 				hasVerifiedRole = true;
 			}
 			if (!hasAnyLanguageRole && map.containsValue(role)) {
 				hasAnyLanguageRole = true;
 			}
 		}
+
+		if(!hasVerifiedRole) {
+			Seriex.get().kick_no_translation(hook(), "You are not registered in the discord server.");
+			return true;
+		}
+
 		// this fixes adding roles like "not a random" etc...
-		boolean onlyHasVerified = hasVerifiedRole && !hasAnyLanguageRole;
-		if (onlyHasVerified) {
+		if (!hasAnyLanguageRole) {
 			Seriex.get().kick_no_translation(hook(), "You have no language roles selected.");
 			return true;
 		}
@@ -831,9 +842,9 @@ public class PlayerW {
 		return player;
 	}
 
-    public Map<UUID, PlayerW> lookupMap() {
-        return playersToLog;
-    }
+	public Map<UUID, PlayerW> lookupMap() {
+		return playersToLog;
+	}
 
 	@Override
 	public String toString() {

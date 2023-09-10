@@ -26,6 +26,7 @@ public class DiscordConfig extends SingleConfig {
 	@ConfigField public ConfigValue<String> ID_LANGUAGE_CHANNEL = new ConfigValue<>("id.language_channel", "0");
 	@ConfigField public ConfigValue<String> ID_REGISTER_LOGS = new ConfigValue<>("id.register_logs", "0");
 	@ConfigField public ConfigValue<String> ID_SERVER_CHAT = new ConfigValue<>("id.server_chat", "0");
-	@ConfigField public ConfigValue<String> ID_BAN_LOGS = new ConfigValue<>("id.ban_logs", "0");
 
+	// TODO: implement ban logs
+	@ConfigField public ConfigValue<String> ID_BAN_LOGS = new ConfigValue<>("id.ban_logs", "0");
 }

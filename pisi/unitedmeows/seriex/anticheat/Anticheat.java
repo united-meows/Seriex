@@ -1,7 +1,6 @@
 package pisi.unitedmeows.seriex.anticheat;
 
 import static pisi.unitedmeows.seriex.anticheat.AnticheatCache.allPossibleNamesCache;
-import static pisi.unitedmeows.seriex.anticheat.AnticheatCache.forcedSuggestion;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -228,9 +227,6 @@ public enum Anticheat {
 		allPossibleNamesCache.put(displayName, this);
 		allPossibleNamesCache.put(pluginName, this);
 
-		if (pluginName != null)
-			forcedSuggestion.add(pluginName);
-		forcedSuggestion.add(databaseName);
 	}
 
 	public static Anticheat tryToGetFromName(String nameToSearch) {

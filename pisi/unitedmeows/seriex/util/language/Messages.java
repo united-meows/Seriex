@@ -140,6 +140,8 @@ public enum Messages {
 	SCOREBOARD_INFO_TITLE("scoreboard.title_info" , "Info"),
 	SCOREBOARD_INFO_SERVER("scoreboard.title_server" , "Server"),
 
+	SPAM_SLOWDOWN("spam.slowdown", "You are sending messages too fast!"),
+
 	BAN_ACTIONS_ANNOUNCE_IP("ban_actions.announce_ip" , "Player '%s' (IP: '%s') tried to join the server, but is banned.");
 
 	public String cfgString, defaultValue;

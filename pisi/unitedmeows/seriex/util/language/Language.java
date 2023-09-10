@@ -1,6 +1,5 @@
 package pisi.unitedmeows.seriex.util.language;
 
-import static pisi.unitedmeows.seriex.util.suggestion.WordList.LOWERCASE_WORDS;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +8,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import pisi.unitedmeows.seriex.Seriex;
-import pisi.unitedmeows.seriex.util.suggestion.suggesters.Suggester;
 
 public enum Language {
 	ENGLISH(Locale.ENGLISH , new String[] {
@@ -31,20 +29,12 @@ public enum Language {
 	private final String languageCode;
 	private final Locale locale;
 	private final String unicode;
-	private final Suggester suggester;
 	private final String[] keyboard_rows;
 	private final int id;
 	private final String headData;
 
 	Language(Locale locale, String[] keyboard_row, int id, int[] unicode, String headData) {
 		this.languageCode = locale.toString();
-		Set<String> words = LOWERCASE_WORDS.get(languageCode);
-		if (words != null && !words.isEmpty()) {
-			this.suggester = new Suggester(words);
-		} else {
-			this.suggester = null;
-			Seriex.get().logger().warn("No suggester is available for language {}", name());
-		}
 		this.locale = locale;
 		this.id = id;
 		this.keyboard_rows = keyboard_row;
@@ -92,8 +82,6 @@ public enum Language {
 		}
 		return languages;
 	}
-
-	public Suggester suggester() { return suggester; }
 
 	public static boolean isLanguageSelected(int totalID, int id) {
 		return (totalID & id) != 0;

@@ -8,7 +8,6 @@ import org.bukkit.potion.PotionType;
 import panda.std.Result;
 import pisi.unitedmeows.seriex.commands.utils.CommandUtilities;
 import pisi.unitedmeows.seriex.managers.rank.Ranks;
-import pisi.unitedmeows.seriex.util.suggestion.suggesters.EditDistance;
 
 import java.util.Arrays;
 import java.util.List;
