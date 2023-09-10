@@ -1,7 +1,10 @@
 package pisi.unitedmeows.seriex.util.inventories;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
+import java.util.function.BooleanSupplier;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -9,6 +12,14 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.potion.Potion;
+import org.bukkit.potion.PotionType;
+
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+
+import dev.derklaro.reflexion.Reflexion;
 
 public final class ItemBuilder {
 	private final ItemStack is;
@@ -29,8 +40,31 @@ public final class ItemBuilder {
 		return new ItemBuilder(is);
 	}
 
+	public static ItemBuilder head(String data) {
+		return new ItemBuilder(Material.SKULL_ITEM).durability(3).headData(data);
+	}
+
+	public static ItemBuilder potion(PotionType type, int level, boolean splash, boolean extended) {
+		return new ItemBuilder(Material.POTION).applyPotion(type, level, splash, extended);
+	}
+
 	public ItemBuilder amount(final int amount) {
 		this.is.setAmount(amount);
+		return this;
+	}
+
+
+	private static void profile(SkullMeta meta, GameProfile profile) {
+		Reflexion.on(meta.getClass()).findField("profile").orElseThrow().setValue(meta, profile);
+	}
+
+	private ItemBuilder headData(String data) {
+		SkullMeta itemMeta = (SkullMeta) is.getItemMeta();
+		GameProfile profile = new GameProfile(UUID.randomUUID(), null);
+		byte[] encodedData = Base64.getEncoder().encode(String.format("{textures:{SKIN:{url:\"%s\"}}}", "http://textures.minecraft.net/texture/" + data).getBytes());
+		profile.getProperties().put("textures", new Property("textures", new String(encodedData)));
+		profile(itemMeta, profile);
+		is.setItemMeta(itemMeta);
 		return this;
 	}
 
@@ -55,7 +89,7 @@ public final class ItemBuilder {
 		return this;
 	}
 
-	public ItemBuilder setUnbreakable(final boolean yes) {
+	public ItemBuilder unbreakable(final boolean yes) {
 		final ItemMeta meta = this.is.getItemMeta();
 		meta.spigot().setUnbreakable(yes);
 		return this;
@@ -82,8 +116,19 @@ public final class ItemBuilder {
 		return this;
 	}
 
+	public ItemBuilder selected(BooleanSupplier supplier) {
+		return supplier.getAsBoolean()
+					? enchantment(Enchantment.PROTECTION_ENVIRONMENTAL, -2173).addFlags(ItemFlag.HIDE_ENCHANTS)
+					: this;
+	}
+
 	public ItemBuilder enchantment(final Enchantment enchantment) {
 		this.is.addUnsafeEnchantment(enchantment, 1);
+		return this;
+	}
+
+	public ItemBuilder max_enchantment(final Enchantment enchantment) {
+		this.is.addUnsafeEnchantment(enchantment, enchantment.getMaxLevel());
 		return this;
 	}
 
@@ -106,6 +151,15 @@ public final class ItemBuilder {
 		return this;
 	}
 
+	public ItemBuilder addFlags(ItemFlag... flags) {
+		final ItemMeta itemMeta = this.is.getItemMeta();
+		for (ItemFlag flag : flags)
+			itemMeta.addItemFlags(flag);
+		this.is.setItemMeta(itemMeta);
+		return this;
+
+	}
+
 	public ItemBuilder clearFlags() {
 		final ItemMeta itemMeta = this.is.getItemMeta();
 		itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_POTION_EFFECTS, ItemFlag.HIDE_PLACED_ON);
@@ -115,5 +169,10 @@ public final class ItemBuilder {
 
 	public ItemStack build() {
 		return this.is;
+	}
+
+	private ItemBuilder applyPotion(PotionType type, int level, boolean splash, boolean extended) {
+		new Potion(type, level, splash, extended).apply(is);
+		return this;
 	}
 }

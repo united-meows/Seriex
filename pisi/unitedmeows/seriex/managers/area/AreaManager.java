@@ -1,94 +1,165 @@
 package pisi.unitedmeows.seriex.managers.area;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.reflections.Reflections;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import com.electronwill.nightconfig.core.CommentedConfig;
-
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.managers.Manager;
-import pisi.unitedmeows.seriex.managers.area.areas.Area;
-import pisi.unitedmeows.seriex.managers.area.areas.Area.Category;
-import pisi.unitedmeows.seriex.managers.area.areas.base.BasicArea;
-import pisi.unitedmeows.seriex.managers.area.areas.util.ImplementArea;
-import pisi.unitedmeows.seriex.util.collections.GlueList;
+import pisi.unitedmeows.seriex.managers.area.impl.Area;
+import pisi.unitedmeows.seriex.managers.area.impl.Area.AreaCategory;
+import pisi.unitedmeows.seriex.managers.area.impl.AreaBase;
+import pisi.unitedmeows.seriex.managers.area.impl.AreaData;
 import pisi.unitedmeows.seriex.util.config.FileManager;
-import pisi.unitedmeows.seriex.util.config.impl.server.AreaConfig;
+import pisi.unitedmeows.seriex.util.config.multi.impl.AreaConfig;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
-import pisi.unitedmeows.yystal.utils.Pair;
 
 public class AreaManager extends Manager implements Listener {
-	public List<Area> areaList = new GlueList<>();
-	public Map<String, Pair<ImplementArea, Class<? extends Area>>> classMap = new HashMap<>();
+	public Map<AreaBase, Class<? extends Area>> baseMap;
+	public Map<Class<? extends Area>, AreaData> areaDataMap;
+
+	public List<Area> areaList;
+
+	@Override
+	public void start(Seriex seriex) {
+		this.baseMap = new HashMap<>();
+		this.areaDataMap = new HashMap<>();
+		this.areaList = new ArrayList<>();
+		try (ScanResult result = new ClassGraph().enableAllInfo().acceptPackages("pisi.unitedmeows.seriex.managers.area.impl").scan(4)) {
+			result.getAllClasses().filter(f -> f.extendsSuperclass(Area.class)).forEach(info -> {
+				Class<? extends Area> areaClass = (Class<? extends Area>) info.loadClass();
+				boolean annotationPresent = areaClass.isAnnotationPresent(AreaData.class);
+				if (!annotationPresent)
+					seriex.logger().error("Skipping class {} no annotation found.", areaClass.getName());
+				AreaData annotation = areaClass.getAnnotation(AreaData.class);
+				this.baseMap.put(annotation.base(), areaClass);
+				this.areaDataMap.put(areaClass, annotation);
+			});
+		}
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				for (Area area : areaList) {
+					area.tick();
+				}
+			}
+		}.runTaskTimer(seriex.plugin(), 0, 1L);
+	}
+
+	public void addNewArea(Area area, AreaBase base) {
+		Class<? extends Area> klass = baseMap.get(base);
+		AreaData areaData = areaDataMap.get(klass);
+		area.category = AreaCategory.valueOf(getPackageOfClass(klass).split("impl.")[1].toUpperCase(Locale.ENGLISH));
+		area.autoJoin = areaData.autoJoin();
+		areaList.add(area);
+		area.start();
+	}
 
 	@Override
 	public void post(Seriex seriex) {
-		classMap.clear(); // reload & restart
-		Reflections sorry = new Reflections("pisi.unitedmeows.seriex.managers.area.areas.impl");
-		Set<Class<? extends BasicArea>> areaClasses = sorry.getSubTypesOf(BasicArea.class);
-		areaClasses.stream().forEach(areaClass -> {
-			try {
-				boolean annotationPresent = areaClass.isAnnotationPresent(ImplementArea.class);
-				if (!annotationPresent) {
-					seriex.logger().fatal("Skipping class " + areaClass.getName() + " no annotation found.");
+		try {
+			AreaConfig areaConfig = seriex.fileManager().config(AreaConfig.class);
+			File parentDirectory = areaConfig.configDirectory();
+			File[] files = parentDirectory.listFiles();
+			for (File cfgFile : files) {
+				String fileName = cfgFile.getName();
+				if (fileName.endsWith(FileManager.EXTENSION)) {
+					String cfgName = fileName.replace(FileManager.EXTENSION, "");
+					areaConfig.initializeSingleCfg(areaConfig.configDirectory(), cfgName, areaConfig);
+					String areaBase = areaConfig.get(cfgName, areaConfig.area_base);
+					Class<? extends Area> klass = baseMap.get(AreaBase.valueOf(areaBase));
+					Area area = klass.getConstructor(String.class).newInstance(cfgName);
+					AreaData areaData = areaDataMap.get(klass);
+					area.category = AreaCategory.valueOf(getPackageOfClass(klass).split("impl.")[1].toUpperCase(Locale.ENGLISH));
+					area.autoJoin = areaData.autoJoin();
+					areaList.add(area);
 				}
-				ImplementArea annotation = areaClass.getAnnotation(ImplementArea.class);
-				classMap.put(annotation.name(), new Pair<>(annotation, areaClass));
 			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-		FileManager fileManager = seriex.get().fileManager();
-		AreaConfig areaConfig = (AreaConfig) fileManager.getConfig(fileManager.AREAS);
-		areaConfig.getConfigs().forEach((String configName, Pair<File, CommentedConfig> pair) -> {
-			try {
-				CommentedConfig config = pair.item2();
-				String baseClassName = config.get("base");
-				if ("".equals(baseClassName)) return;
-				Pair<ImplementArea, Class<? extends Area>> pair2 = classMap.get(baseClassName);
-				Class<? extends Area> baseClass = pair2.item2();
-				ImplementArea annotation = pair2.item1();
-				Category category = Category.valueOf(baseClass.getPackage().getName().split("impl.")[1].toUpperCase(Locale.ENGLISH));
-				Area clazz = baseClass.getConstructor(areaConfig.getClass(), config.getClass(), category.getClass()).newInstance(areaConfig, config, category);
-				areaList.add(clazz);
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-		areaList.forEach(Area::enable);
+			areaList.forEach(Area::loadPointers);
+			areaList.forEach(Area::start);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent event) {
-		for (int i = 0; i < areaList.size(); i++) {
-			Area area = areaList.get(i);
-			boolean prevInside = area.limits().isLocInside(event.getFrom());
-			boolean nowInside = area.limits().isLocInside(event.getTo());
+		areaList.forEach(area -> {
+			boolean inside = area.limits.intersectsWith(event.getTo());
 			Player player = event.getPlayer();
-			if (!prevInside && nowInside) {
-				area.enter(player);
-				area.playersInArea().add(player);
-			} else if (prevInside && !nowInside) {
-				area.leave(player);
-				area.playersInArea().remove(player);
+
+			if (area.autoJoin) {
+				boolean contains = area.isInside(player);
+				if (inside && !contains) {
+					area.handleEnter(player);
+				} else if (!inside && contains) {
+					area.handleLeave(player);
+				}
 			}
-		}
+
+			if (area.isInside(player)) {
+				boolean cancel = area.move(player);
+				if (cancel) event.setCancelled(true);
+			}
+		});
+	}
+
+	@EventHandler
+	public void onAttack(EntityDamageByEntityEvent event) {
+		areaList.forEach(area -> {
+			if (event.getDamager() instanceof Player player && event.getEntity() instanceof LivingEntity damaged) {
+				boolean cancel = area.attack(player, damaged, event);
+				if (cancel) event.setCancelled(true);
+			}
+		});
+	}
+
+	@EventHandler
+	public void onBlockPlace(BlockPlaceEvent event) {
+		areaList.forEach(area -> {
+			Player player = event.getPlayer();
+			boolean cancel = area.block_place(player, event.getBlock());
+			if (cancel) event.setCancelled(true);
+		});
+	}
+
+	@EventHandler
+	public void onPlayerSneakToggleEvent(PlayerToggleSneakEvent event) {
+		areaList.forEach(area -> {
+			Player player = event.getPlayer();
+			boolean cancel = area.sneak(player, event.isSneaking());
+			if (cancel) event.setCancelled(true);
+		});
 	}
 
 	@Override
 	public void cleanup() throws SeriexException {
-		areaList.forEach(Area::disable);
+		if (areaList == null)
+			return;
+
+		areaList.forEach(Area::saveConfig);
+		areaList.forEach(Area::stop);
+	}
+
+	private String getPackageOfClass(Class<?> klass) {
+		String fullName = klass.getName();
+		String simpleName = klass.getSimpleName();
+		return fullName.replace("." + simpleName, "");
 	}
 }

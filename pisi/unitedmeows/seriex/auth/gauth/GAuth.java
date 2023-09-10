@@ -49,12 +49,18 @@ public class GAuth {
 			throw new IllegalStateException(e);
 		}
 	}
-
+	public static String createQRCodeURL(String barCodeData) {
+		try {
+			return String.format(IMAGE_URL_FORMAT, URLEncoder.encode(barCodeData, "UTF-8"));
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 	public static BufferedImage createQRCode(String barCodeData) {
 		try {
-			String imageUrl = String.format(IMAGE_URL_FORMAT, URLEncoder.encode(barCodeData, "UTF-8"));
-			URL input = new URL(imageUrl);
-			return ImageIO.read(input);
+			return ImageIO.read(new URL(createQRCodeURL(barCodeData)));
 		}
 		catch (Exception e) {
 			e.printStackTrace();

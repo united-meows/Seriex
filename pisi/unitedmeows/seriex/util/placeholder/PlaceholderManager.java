@@ -1,11 +1,11 @@
 package pisi.unitedmeows.seriex.util.placeholder;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class PlaceholderManager extends Manager {
 
@@ -36,6 +36,5 @@ public class PlaceholderManager extends Manager {
     @Override
     public void cleanup() throws SeriexException {
         _CONSTS.clear();
-        super.cleanup();
     }
 }

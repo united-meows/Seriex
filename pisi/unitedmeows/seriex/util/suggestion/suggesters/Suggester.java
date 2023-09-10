@@ -1,6 +1,10 @@
 package pisi.unitedmeows.seriex.util.suggestion.suggesters;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import pisi.unitedmeows.seriex.util.collections.GlueList;
 import pisi.unitedmeows.seriex.util.suggestion.WordList;
@@ -24,9 +28,8 @@ public class Suggester {
 			set.add(str);
 			return;
 		}
-		StringBuilder sb = null;
 		addWildcards(editsLeft, str, idx + 1, set);
-		sb = new StringBuilder(str);
+		StringBuilder sb = new StringBuilder(str);
 		addWildcards(editsLeft - 1, sb.insert(idx, WILDCARD).toString(), idx + 1, set);
 		if (idx != str.length()) {
 			sb = new StringBuilder(str);
@@ -57,9 +60,22 @@ public class Suggester {
 			suggestions.addAll(trie.wildcardMatches(s));
 		}
 		suggestions = new GlueList<>(new HashSet<>(suggestions));
-		Collections.sort(suggestions, new ProximityComparator(str));
-		if (suggestions.size() >= max) return suggestions.subList(0, max);
-		return suggestions;
+		
+		List<String> returnValue = suggestions;
+		if (suggestions.size() >= max)
+			returnValue = suggestions.subList(0, max);
+	
+		Collections.sort(returnValue, (arg0, arg1) -> {
+			Integer freq1 = WordList.FREQUENCY.get(arg0);
+			Integer freq2 = WordList.FREQUENCY.get(arg1);
+
+			int unboxedF1 = freq1 == null ? 0 : freq1;
+			int unboxedF2 = freq2 == null ? 0 : freq2;
+
+			return Integer.compare(unboxedF2, unboxedF1);
+		});
+		Collections.sort(returnValue, new ProximityComparator(str));
+		return returnValue;
 	}
 
 	/**
@@ -75,7 +91,8 @@ public class Suggester {
 			else if (freq2 == null) return -1;
 			return freq2 - freq1;
 		});
-		if (suggestions.size() >= max) return suggestions.subList(0, max);
+		if (suggestions.size() >= max)
+			return suggestions.subList(0, max);
 		return suggestions;
 	}
 }

@@ -8,7 +8,6 @@ import pisi.unitedmeows.seriex.managers.Manager;
 import pisi.unitedmeows.seriex.managers.sign.impl.SignCommand;
 import pisi.unitedmeows.seriex.util.exceptions.SeriexException;
 
-// lol get formatted
 public class SignManager extends Manager {
 	private static List<SignCommand> signCommands;
 

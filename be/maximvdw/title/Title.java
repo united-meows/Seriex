@@ -17,8 +17,8 @@ import pisi.unitedmeows.seriex.Seriex;
  * @version 1.0.5
  *
  * @author Maxim Van de Wynckel
- *         ^^ cant code tbh
  */
+@SuppressWarnings("all")
 public class Title {
 	/* Title packet */
 	private static Class<?> packetTitle;
@@ -239,19 +239,19 @@ public class Title {
 				// Send timings first
 				final Object handle = getHandle(player);
 				if (handle == null) {
-					Seriex.logger().fatal("Handle is null @ Title!");
+					Seriex.get().logger().error("Handle is null @ Title!");
 					return;
 				}
 				final Field field = getField(handle.getClass(), "playerConnection");
 				if (field == null) {
-					Seriex.logger().fatal("Field is null @ Title!");
+					Seriex.get().logger().error("Field is null @ Title!");
 					return;
 				}
 				final Object connection = field.get(handle);
 				final Object[] actions = packetActions.getEnumConstants();
 				final Method sendPacket = getMethod(connection.getClass(), "sendPacket");
 				if (sendPacket == null) {
-					Seriex.logger().fatal("Method is null @ Title!");
+					Seriex.get().logger().error("Method is null @ Title!");
 					return;
 				}
 				Object packet = packetTitle.getConstructor(packetActions, chatBaseComponent, Integer.TYPE, Integer.TYPE, Integer.TYPE).newInstance(actions[2], null, fadeInTime * (ticks ? 1 : 20),
@@ -426,8 +426,7 @@ public class Title {
 
 	private String getVersion() {
 		final String name = Bukkit.getServer().getClass().getPackage().getName();
-		final String version = name.substring(name.lastIndexOf('.') + 1) + ".";
-		return version;
+		return name.substring(name.lastIndexOf('.') + 1) + ".";
 	}
 
 	private Class<?> getNMSClass(final String className) {

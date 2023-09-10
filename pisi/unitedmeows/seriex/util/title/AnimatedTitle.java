@@ -1,6 +1,8 @@
 package pisi.unitedmeows.seriex.util.title;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.bukkit.entity.Player;
@@ -11,7 +13,7 @@ import pisi.unitedmeows.seriex.Seriex;
 
 public class AnimatedTitle {
 	public static BukkitRunnable animatedTitle(final Player player, final String[] mainTitle, final String[] subTitle) {
-		final int speed = 20;
+		final int speed = 5;
 		final Title title = new Title("");
 		title.setFadeInTime(0);
 		title.setStayTime(20 + speed);
@@ -40,7 +42,7 @@ public class AnimatedTitle {
 				title.send(player);
 			}
 		};
-		bukkitRunnable.runTaskTimer(Seriex.get(), 0, speed);
+		bukkitRunnable.runTaskTimer(Seriex.get().plugin(), 0, speed);
 		return bukkitRunnable;
 	}
 
@@ -70,8 +72,9 @@ public class AnimatedTitle {
 				frames.add(replace);
 			}
 		}
-		final Set<String> realFrames = new LinkedHashSet<>();
+		final List<String> realFrames = new ArrayList<>();
 		frames.forEach(string -> realFrames.add(coolPrefix + string + coolSuffix));
-		return realFrames.toArray(new String[0]);
+		realFrames.add(coolPrefix + primaryColor + kek + coolSuffix);
+		return realFrames.stream().toArray(String[]::new);
 	}
 }

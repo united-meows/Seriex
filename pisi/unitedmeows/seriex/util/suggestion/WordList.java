@@ -24,10 +24,11 @@ import java.util.stream.Stream;
 
 import javax.swing.filechooser.FileSystemView;
 
-import org.reflections.Reflections;
-import org.reflections.scanners.Scanners;
-
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ResourceList;
+import io.github.classgraph.ScanResult;
 import pisi.unitedmeows.seriex.Seriex;
+import pisi.unitedmeows.seriex.util.Parser;
 import pisi.unitedmeows.seriex.util.language.Language;
 import pisi.unitedmeows.yystal.parallel.Async;
 
@@ -43,64 +44,68 @@ public class WordList {
 
 	public static void read() {
 		try {
-			Reflections reflections = new Reflections("pisi.unitedmeows.seriex.util.suggestion.resources", Scanners.Resources);
 			Map<String, Integer> wordCount = new HashMap<>();
 			Map<String, Integer> slangCount = new HashMap<>();
-			reflections.getResources(RESOURCE_PATTERN).forEach(tempString -> {
-				String realString = "/" + tempString;
-				String[] split = realString.split("/");
-				String string = split[split.length - 1];
-				String locale = string.substring(0, string.indexOf('.'));
-				String extension = string.substring(string.indexOf('.') + 1);
-				boolean isWords = "words".equals(extension);
-				try (InputStream inputStream = WordList.class.getResourceAsStream(realString)) {
-					Set<String> localeSet = new HashSet<>();
-					try (BufferedReader bf = new BufferedReader(new InputStreamReader(inputStream, UTF_8))) {
-						if (isWords) {
-							String readLine = "";
-							int a = 0;
-							while ((readLine = bf.readLine()) != null) {
-								if (PATTERN.matcher(readLine).find() && !readLine.contains(" ")) {
-									localeSet.add(readLine.toLowerCase(Locale.forLanguageTag(locale)));
-									a++;
+			try (ScanResult result = new ClassGraph().acceptPaths("wordlist").scan();
+						ResourceList resourcesMatchingPattern = result.getAllResources()) {
+				resourcesMatchingPattern.forEach(resource -> {
+					String realString = "/" + resource.getPath();
+					String[] split = realString.split("/");
+					String string = split[split.length - 1];
+					String locale = string.substring(0, string.indexOf('.'));
+					String extension = string.substring(string.indexOf('.') + 1);
+					if (!"words".equals(extension) && !"slang".equals(extension)) {
+						return;
+					} 
+					boolean isWords = "words".equals(extension);
+					try (InputStream inputStream = WordList.class.getResourceAsStream(realString)) {
+						Set<String> localeSet = new HashSet<>();
+						try (BufferedReader bf = new BufferedReader(new InputStreamReader(inputStream, UTF_8))) {
+							if (isWords) {
+								String readLine = "";
+								int a = 0;
+								while ((readLine = bf.readLine()) != null) {
+									if (PATTERN.matcher(readLine).find() && !readLine.contains(" ")) {
+										localeSet.add(readLine.toLowerCase(Locale.forLanguageTag(locale)));
+										a++;
+									}
 								}
-							}
-							wordCount.put(locale, a);
-							LOWERCASE_WORDS.put(locale, localeSet);
-						} else {
-							String readLine = "";
-							int a = 0;
-							while ((readLine = bf.readLine()) != null) {
-								if (PATTERN.matcher(readLine).find() && !readLine.contains(" ")) {
-									String lowerCase = readLine.toLowerCase(Locale.forLanguageTag(locale));
-									String[] splitMoment = lowerCase.split(":");
-									FREQUENCY.put(splitMoment[0], Integer.parseInt(splitMoment[1]));
-									a++;
+								wordCount.put(locale, a);
+								LOWERCASE_WORDS.put(locale, localeSet);
+							} else {
+								String readLine = "";
+								int a = 0;
+								while ((readLine = bf.readLine()) != null) {
+									if (PATTERN.matcher(readLine).find() && !readLine.contains(" ")) {
+										String lowerCase = readLine.toLowerCase(Locale.forLanguageTag(locale));
+										String[] splitMoment = lowerCase.split(":");
+										FREQUENCY.put(splitMoment[0], Parser.parseInt(splitMoment[1], 0));
+										a++;
+									}
+									slangCount.put(locale, a);
 								}
-								slangCount.put(locale, a);
 							}
 						}
+						catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
-					catch (IOException e) {
-						e.printStackTrace();
+					catch (IOException e1) {
+						e1.printStackTrace();
 					}
-				}
-				catch (IOException e1) {
-					e1.printStackTrace();
-				}
-			});
+				});
+			}
 			Language[] values = Language.values();
-			for (int i = 0; i < values.length; i++) {
-				Language language = values[i];
+			for (Language language : values) {
 				if (!LOWERCASE_WORDS.containsKey(language.languageCode())) {
 					LOWERCASE_WORDS.put(language.languageCode(), new HashSet<>());
 				}
 			}
 			wordCount.forEach((locale, wordAmount) -> {
-				Seriex.logger().info("Read %s amount of words from locale %s", wordAmount, locale);
+				Seriex.get().logger().info("Read {} amount of words from locale {}", wordAmount, locale);
 			});
 			slangCount.forEach((locale, slangAmount) -> {
-				Seriex.logger().info("Read %s amount of slang from locale %s", slangAmount, locale);
+				Seriex.get().logger().info("Read {} amount of slang from locale {}", slangAmount, locale);
 			});
 		}
 		catch (Exception e) {
@@ -111,8 +116,7 @@ public class WordList {
 	public static String removePunctutation(final String input) {
 		final StringBuilder builder = new StringBuilder();
 		char[] charArray = input.toCharArray();
-		for (int i = 0; i < charArray.length; i++) {
-			final char c = charArray[i];
+		for (final char c : charArray) {
 			if (Character.isLetterOrDigit(c)) {
 				builder.append(Character.isLowerCase(c) ? c : Character.toLowerCase(c));
 			}
@@ -146,10 +150,10 @@ public class WordList {
 		read();
 		String desktopPath = String.format("%s\\", FileSystemView.getFileSystemView().getHomeDirectory().toString());
 		String writtenFileName = languageTag + ".slang";
-		String PATH_TO_BOOKS = desktopPath + "dataset";
+		String PATH_TO_BOOKS = desktopPath + "dataset" + "\\" + languageTag;
 		String PATH_TO_WRITE = desktopPath + writtenFileName;
 		Async.async_loop_condition(() -> {
-			Seriex.logger().debug("Read %s amount of words... (time passed: %s)", totalWords, System.currentTimeMillis() - ms);
+			Seriex.get().logger().debug("Read {} amount of words... (time passed: {})", totalWords, System.currentTimeMillis() - ms);
 		}, 1000L, () -> !readAll.get());
 		try (Stream<Path> paths = Files.walk(Paths.get(PATH_TO_BOOKS))) {
 			Locale locale = Locale.forLanguageTag(languageTag); // the language tag
@@ -176,7 +180,7 @@ public class WordList {
 								totalWords++;
 							}
 						}
-						Seriex.logger().fatal("Read %s amount of words from %s!", currentWords, string);
+						Seriex.get().logger().error("Read {} amount of words from {}!", currentWords, string);
 					}
 					catch (IOException e) {
 						e.printStackTrace();
@@ -189,11 +193,11 @@ public class WordList {
 			Optional<Entry<String, Integer>> max = freqMap.entrySet().stream().max(Entry.comparingByValue());
 			if (max.isPresent()) {
 				Entry<String, Integer> entry = max.get();
-				Seriex.logger().info("Most used word: %s -> %s", entry.getKey(), entry.getValue());
+				Seriex.get().logger().info("Most used word: {} -> {}", entry.getKey(), entry.getValue());
 			} else {
-				Seriex.logger().fatal("There isnt any most used word...?");
+				Seriex.get().logger().error("There isn't any most used word...?");
 			}
-			Seriex.logger().fatal("Written %s words! (took %s ms)", strings.size(), System.currentTimeMillis() - ms);
+			Seriex.get().logger().error("Written {} words! (took {} ms)", strings.size(), System.currentTimeMillis() - ms);
 		}
 		catch (IOException e) {
 			e.printStackTrace();

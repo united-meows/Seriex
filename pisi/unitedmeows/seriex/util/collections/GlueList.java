@@ -6,10 +6,16 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.*;
+import java.util.AbstractList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializable {
-
 	private static final long serialVersionUID = 4629641037522698945L;
 	transient Node<T> first;
 	transient Node<T> last;
@@ -105,7 +111,8 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 	}
 
 	private void rangeCheckForAdd(final int index) {
-		if (index > size || index < 0) throw new ArrayIndexOutOfBoundsException(index);
+		if (index > size || index < 0)
+			throw new ArrayIndexOutOfBoundsException(index);
 	}
 
 	private void updateNodesAfterAdd(final Node<T> nodeFrom) {
@@ -120,7 +127,8 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 		Objects.requireNonNull(c);
 		final Object[] collection = c.toArray();
 		final int len = collection.length;
-		if (len == 0) return false;
+		if (len == 0)
+			return false;
 		if (size == 0) {
 			if (initialCapacity >= len) {
 				System.arraycopy(collection, 0, last.elementData, 0, len);
@@ -309,9 +317,10 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 		if (arr.length == 0) return false;
 		boolean isModified = false;
 		final Object[] elements = toArray();
-		for (final Object element : elements) if (!c.contains(element)) {
-			isModified |= remove(element);
-		}
+		for (final Object element : elements)
+			if (!c.contains(element)) {
+				isModified |= remove(element);
+			}
 		return isModified;
 	}
 
@@ -397,11 +406,6 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 	}
 
 	@Override
-	public List<T> subList(final int fromIndex, final int toIndex) {
-		return super.subList(fromIndex, toIndex);
-	}
-
-	@Override
 	public Object[] toArray() {
 		final Object[] objects = new Object[size];
 		int i = 0;
@@ -416,14 +420,12 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 	}
 
 	@Override
-	public <T> T[] toArray(final T[] a) {
-		return (T[]) Arrays.copyOf(toArray(), size, a.getClass());
+	public <V> V[] toArray(final V[] a) {
+		return (V[]) Arrays.copyOf(toArray(), size, a.getClass());
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return size == 0;
-	}
+	public boolean isEmpty() { return size == 0; }
 
 	@Override
 	public Iterator<T> iterator() {
@@ -431,7 +433,6 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 	}
 
 	private class Itr implements Iterator<T> {
-
 		Node<T> node = first;
 		int i = 0;// inner-array index
 		int j = 0;// total index -> cursor
@@ -502,7 +503,6 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 	}
 
 	private class ListItr extends Itr implements ListIterator<T> {
-
 		public ListItr(final int index) {
 			node = index == size ? last : getNode(index);
 			j = index;
@@ -610,7 +610,6 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 		}
 	}
 
-	// what the fuck where is modCount updated?
 	private void writeObject(final ObjectOutputStream s) throws IOException {
 		final int expectedModCount = modCount;
 		s.defaultWriteObject();
@@ -620,10 +619,11 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 				s.writeObject(node.elementData[i]);
 			}
 		}
-		if (modCount != expectedModCount) throw new ConcurrentModificationException();
+		if (modCount != expectedModCount)
+			throw new ConcurrentModificationException();
 	}
 
-	private void readObject(final ObjectInputStream s) throws IOException,ClassNotFoundException {
+	private void readObject(final ObjectInputStream s) throws IOException , ClassNotFoundException {
 		clear();
 		s.defaultReadObject();
 		for (int i = 0; i < s.readInt(); i++) {
@@ -632,7 +632,6 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 	}
 
 	static class Node<T> {
-
 		Node<T> pre;
 		Node<T> next;
 		int listSize;
@@ -665,9 +664,7 @@ public class GlueList<T> extends AbstractList<T> implements Cloneable, Serializa
 			else throw new IllegalArgumentException("Illegal Capacity: " + capacity);
 		}
 
-		boolean isAddable() {
-			return elementDataPointer < elementData.length;
-		}
+		boolean isAddable() { return elementDataPointer < elementData.length; }
 
 		void add(final T element) {
 			elementData[elementDataPointer++] = element;

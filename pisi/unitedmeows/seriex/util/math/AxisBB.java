@@ -20,6 +20,7 @@ public class AxisBB implements Iterable<Block> {
 	public int maxY;
 	public int maxZ;
 
+	
 	public AxisBB(Location l1, Location l2) {
 		if (!l1.getWorld().equals(l2.getWorld())) throw new IllegalArgumentException("Locations must be on the same world!");
 		this.worldName = l1.getWorld().getName();
@@ -34,7 +35,7 @@ public class AxisBB implements Iterable<Block> {
 	public AxisBB(AxisBB other) {
 		this(other.worldName, other.minX, other.minY, other.minZ, other.maxX, other.maxY, other.maxZ);
 	}
-
+	
 	public AxisBB(final String worldName, final int x1, final int y1, final int z1, final int x2, final int y2, final int z2) {
 		this.worldName = worldName;
 		this.minX = Math.min(x1, x2);
@@ -143,11 +144,16 @@ public class AxisBB implements Iterable<Block> {
 	}
 
 	public boolean intersectsWith(final AxisBB other) {
-		return other.maxX > this.minX && other.minX < this.maxX && (other.maxY > this.minY && other.minY < this.maxY ? other.maxZ > this.minZ && other.minZ < this.maxZ : false);
+		return other.maxX > this.minX	&& other.minX < this.maxX 
+			 && other.maxY > this.minY && other.minY < this.maxY 
+			 && other.maxZ > this.minZ && other.minZ < this.maxZ;
 	}
 
-	public boolean isLocInside(final Location vec) {
-		return vec.getX() > this.minX && vec.getX() < this.maxX && (vec.getY() > this.minY && vec.getY() < this.maxY ? vec.getZ() > this.minZ && vec.getZ() < this.maxZ : false);
+	public boolean intersectsWith(final Location vec) {
+		return vec.getWorld().getName().equals(worldName) 
+			 && vec.getX() > this.minX && vec.getX() < this.maxX
+			 && vec.getY() > this.minY && vec.getY() < this.maxY 
+			 && vec.getZ() > this.minZ && vec.getZ() < this.maxZ;
 	}
 
 	public double getAverageEdgeLength() {
@@ -184,15 +190,15 @@ public class AxisBB implements Iterable<Block> {
 	}
 
 	public int getSizeX() {
-		return (this.maxX - this.minX) + 1;
+		return this.maxX - this.minX + 1;
 	}
 
 	public int getSizeY() {
-		return (this.maxY - this.minY) + 1;
+		return this.maxY - this.minY + 1;
 	}
 
 	public int getSizeZ() {
-		return (this.maxZ - this.minZ) + 1;
+		return this.maxZ - this.minZ + 1;
 	}
 
 	public Location getMinCoords() {

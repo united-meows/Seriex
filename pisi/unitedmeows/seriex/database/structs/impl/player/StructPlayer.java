@@ -3,45 +3,23 @@ package pisi.unitedmeows.seriex.database.structs.impl.player;
 import pisi.unitedmeows.seriex.Seriex;
 import pisi.unitedmeows.seriex.database.SeriexDB;
 import pisi.unitedmeows.seriex.database.structs.IStruct;
-import pisi.unitedmeows.seriex.database.util.DatabaseReflection;
 import pisi.unitedmeows.seriex.database.util.annotation.Column;
 import pisi.unitedmeows.seriex.database.util.annotation.Struct;
-import pisi.unitedmeows.yystal.sql.YSQLCommand;
 
 @Struct(name = "player")
 public class StructPlayer implements IStruct {
-	@Column
-	public int player_id;
-	@Column
-	public int api_access;
-	@Column
-	public String username;
-	@Column
-	public String password;
-	@Column
-	public String token;
-	@Column
-	public String gAuth;
-	@Column
-	public String salt;
-	@Column
-	public boolean banned;
-	@Column
-	public boolean firstLogin;
-	@Column
-	public int timesLogined;
-	@Column
-	public long playTime;
-
-	@Override
-	public String[] getColumns() {
-		return DatabaseReflection.getColumnsFromClass(this.getClass()).item1();
-	}
-
-	@Override
-	public YSQLCommand[] setColumns() {
-		return DatabaseReflection.setAndGetColumns(this.getClass());
-	}
+	@Column(primaryKey = true , discriminator = true) public int player_id;
+	@Column public int api_access;
+	@Column public String username;
+	@Column public String password;
+	@Column public String token;
+	@Column public String salt;
+	@Column public String recovery_key;
+	@Column public boolean has2FA;
+	@Column public boolean banned;
+	@Column public long playTime;
+	@Column public int loginCounter;
+	@Column public String rank_name;
 
 	/**
 	 * testing uses only
@@ -71,10 +49,17 @@ public class StructPlayer implements IStruct {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("StructPlayer [player_id=").append(player_id).append(", api_access=").append(api_access).append(", username=").append(username).append(", password=").append(password)
-					.append(", token=").append(token).append(", gAuth=").append(gAuth).append(", salt=").append(salt).append(", banned=").append(banned).append(", firstLogin=").append(firstLogin)
-					.append(", timesLogined=").append(timesLogined).append(", playTime=").append(playTime).append("]");
-		return builder.toString();
+		return new StringBuilder()
+					.append("StructPlayer [player_id=").append(player_id)
+					.append(", api_access=").append(api_access)
+					.append(", username=").append(username)
+					.append(", password=").append(password)
+					.append(", token=").append(token)
+					.append(", has2FA=").append(has2FA)
+					.append(", salt=").append(salt)
+					.append(", recovery_key=").append(recovery_key)
+					.append(", banned=").append(banned)
+					.append(", loginCounter=").append(loginCounter)
+					.append(", playTime=").append(playTime).append("]").toString();
 	}
 }
