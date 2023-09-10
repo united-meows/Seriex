@@ -41,7 +41,7 @@ public class PlayerLogger extends Manager {
 	public void hookToPlayer(PlayerW logger, PlayerW logged) {
         var playerName = logged.attribute(NAME);
         if (logger.lookupMap().containsKey(logged.uuid())) {
-            Seriex.get().msg_no_translation(logger.hook(), "Player '%s' is being logged!", playerName);
+            Seriex.get().msg_no_translation(logger.hook(), "Player '%s' is already being logged!", playerName);
         } else {
             logger.lookupMap().put(logged.uuid(), logged);
             if (!loggers.contains(logger)) {
